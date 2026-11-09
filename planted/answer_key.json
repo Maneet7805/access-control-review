@@ -1,7 +1,14 @@
 {
   "rows-01-profiles": {
     "vulnerable": [
-      {"kind": "rows", "table": "profiles", "actor": "visitor", "action": "read", "expected": "leaks_rows"}
+      {"kind": "rows", "table": "profiles", "actor": "visitor", "action": "read", "expected": "leaks_rows"},
+      {"kind": "rows", "table": "profiles", "actor": "user-a", "action": "read", "expected": "leaks_other_users_rows"}
+    ],
+    "fixed": []
+  },
+  "rows-02-profiles-all-authenticated": {
+    "vulnerable": [
+      {"kind": "rows", "table": "profiles", "actor": "user-a", "action": "read", "expected": "leaks_other_users_rows"}
     ],
     "fixed": []
   }
