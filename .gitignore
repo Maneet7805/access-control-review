@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node (web page, later)
+node_modules/
+.next/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Private working material: scans of real public apps, never commit
+private/
+cases/
+scans/
+
+# Archives and local artefacts
+*.zip
+*.7z
+*.log
+.DS_Store
+Thumbs.db
