@@ -5,7 +5,7 @@ Conventions for this codebase. Short on purpose: if the code and this file disag
 ## Stack
 
 - Python, with pytest for tests.
-- PostgreSQL in Docker for the disposable database copy. Each review starts a fresh copy and throws it away. Whether to use Supabase's local setup or a plain PostgreSQL image is decided by the first test.
+- PostgreSQL in Docker for the disposable database copy. Each review starts a fresh copy and throws it away. The first test passed on plain `postgres:16` with `anon` and `authenticated` roles created by the migration and `SET ROLE` to act as them, so that is what we use. Move to Supabase's image only when a test needs something plain PostgreSQL cannot fake.
 - A local model through Ollama, only to word questions. The model is not the place where findings are decided.
 - Everything else is added when the code needs it. When a test shows a choice here does not work, change it here in the same PR.
 
@@ -47,3 +47,9 @@ Make it correct first. Measure before optimising.
 - Conventional Commits: `feat`, `fix`, `docs`, `test`, `chore`, with an optional scope.
 - One change per PR. Never push to `main`.
 - Never run a destructive command (`rm -rf`, force-push, dropping a database) without checking with the owner first.
+
+## Layout
+
+- `src/access_review/`: the tool. `sandbox.py` rebuilds an app's database in Docker, `probes.py` attacks it.
+- `planted/`: apps with a known flaw. One folder per app named `kind-number-shortname`, each with `vulnerable/` and `fixed/` migrations, and an entry in `planted/answer_key.json`.
+- `tests/`: pytest. Run `pip install -e ".[dev]"` once, then `pytest` (needs Docker running).

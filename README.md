@@ -12,7 +12,7 @@ Prototyped, not built. This repository is where the real tool will be built. It 
 
 1. Read an app's repository and its database files to find the access rules.
 2. Rebuild the database in an isolated copy. The tool never contacts a live system.
-3. Test access as a visitor and as different signed-in users. Tests run in transactions that are rolled back.
+3. Test access as a visitor and as different signed-in users. Tests run on a throwaway copy that is deleted afterwards.
 4. Execution decides every finding. A language model never does.
 5. Report each finding with proof, a plain-language explanation and a fix. The tool never edits the developer's code.
 
