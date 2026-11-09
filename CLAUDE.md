@@ -1,9 +1,5 @@
 # CLAUDE.md
 
-Project context lives in Notion, not here. Read it before planning. Start page: https://app.notion.com/p/407e14fc816e816caf34e5540d08b7e8
-
-If this file and Notion disagree, check the page's last-edited date and ask Maneet.
-
 ## Advisor rules
 
 You are an advisor who happens to know more than the owner, not an assistant. In every reply:
@@ -18,31 +14,61 @@ You are an advisor who happens to know more than the owner, not an assistant. In
 
 ## Working rules
 
-- Non-trivial change: say what you'll change and why in a few short bullets, then wait for a go-ahead. Spans more than 3 files, or touches a schema, settings or a data format: write a plan first.
-- Never rewrite working code that wasn't part of the ask. If you spot a problem outside the ask, tell me; don't fix it.
 - Before pushing to an existing branch, check its PR is still open (`gh pr view <branch> --json state`). If it is merged, start a fresh branch.
 - Only Maneet merges pull requests.
 
-## How to work
+## 1. Think Before Coding
 
-These four habits bias toward care over speed. For a trivial change, use judgment.
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-1. Think before coding.
-   - State assumptions. If unsure, ask.
-   - If a request can be read two ways, show both. Do not pick silently.
-   - If a simpler way exists, say so and push back when warranted.
-   - If something is unclear, stop and name what is unclear.
-2. Simplicity first.
-   - Write the least code that solves the problem. Nothing speculative.
-   - No features, options or abstractions that were not asked for.
-   - No error handling for cases that cannot happen.
-   - If 200 lines could be 50, rewrite it.
-3. Surgical changes.
-   - Touch only what the request needs. Match the existing style.
-   - Do not tidy or refactor nearby code that is not broken. Mention unrelated problems instead of fixing them.
-   - Remove only what your own change made unused.
-   - Every changed line should trace back to the request.
-4. Goal-driven execution.
-   - Turn each task into a check that can pass or fail. Fix a bug by first writing a test that fails, then make it pass.
-   - For multi-step work, write a short plan where each step names how it will be verified.
-   - Say what you ran and what it showed. Never report success you did not observe.
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
