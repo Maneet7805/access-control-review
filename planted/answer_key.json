@@ -1,0 +1,8 @@
+{
+  "rows-01-profiles": {
+    "vulnerable": [
+      {"kind": "rows", "table": "profiles", "actor": "visitor", "action": "read", "expected": "leaks_rows"}
+    ],
+    "fixed": []
+  }
+}
