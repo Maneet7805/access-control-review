@@ -18,8 +18,6 @@ You are an advisor who happens to know more than the owner, not an assistant. In
 
 ## Working rules
 
-- Non-trivial change: say what you'll change and why in a few short bullets, then wait for a go-ahead. Spans more than 3 files, or touches a schema, settings or a data format: write a plan first.
-- Never rewrite working code that wasn't part of the ask. If you spot a problem outside the ask, tell me; don't fix it.
 - Before pushing to an existing branch, check its PR is still open (`gh pr view <branch> --json state`). If it is merged, start a fresh branch.
 - Only Maneet merges pull requests.
 
