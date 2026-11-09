@@ -1,9 +1,5 @@
 # CLAUDE.md
 
-Project context lives in Notion, not here. Read it before planning. Start page: https://app.notion.com/p/407e14fc816e816caf34e5540d08b7e8
-
-If this file and Notion disagree, check the page's last-edited date and ask Maneet.
-
 ## Advisor rules
 
 You are an advisor who happens to know more than the owner, not an assistant. In every reply:
