@@ -43,6 +43,7 @@ def _remove(name):
         raise RuntimeError(f"could not remove {name}: {result.stderr.strip()}")
 
 
+# TODO(Maneet, 09 Nov 2026): migrations run as superuser with network access; isolate before reviewing untrusted repos.
 @contextmanager
 def sandbox(migrations_dir):
     """Start a fresh database, apply every .sql file in order, yield its connection string."""
