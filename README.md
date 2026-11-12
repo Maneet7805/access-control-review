@@ -30,7 +30,7 @@ Planted apps are small apps where the flaw is put in on purpose, so the right an
 | `rows-01-profiles` | Row level security is off | yes | yes |
 | `rows-02-profiles-all-authenticated` | Policy lets every signed-in user read every row | no | yes |
 
-Each fixed twin returns nothing to both attackers.
+Each fixed twin shows a visitor nothing, and shows user A only their own row.
 
 ## What is planned
 
