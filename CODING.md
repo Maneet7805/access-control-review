@@ -28,6 +28,8 @@ Conventions for this codebase. Short on purpose: if the code and this file disag
 
 - Every bug fix gets a test that fails without the fix.
 - Run `pytest` before every commit.
+- A pull request merges only when CI is green: tests, lint, security scan, CodeQL and the secret scan.
+- Check that the change does what the PR says. Run what can be run; if a check needs a person, list it in the PR and ask the owner.
 
 ## Debugging
 

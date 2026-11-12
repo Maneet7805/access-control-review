@@ -1,10 +1,10 @@
 import json
 
 import pytest
+from conftest import PLANTED
 
 from access_review.probes import user_reads_rows, visitor_reads_rows
 from access_review.sandbox import sandbox
-from conftest import PLANTED
 
 ANSWER_KEY = json.loads((PLANTED / "answer_key.json").read_text())
 VARIANTS = [(app, variant) for app in ANSWER_KEY for variant in ("vulnerable", "fixed")]

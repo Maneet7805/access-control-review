@@ -18,7 +18,8 @@ def visitor_reads_rows(connection_string, table):
             return []
 
 
-# TODO(Maneet, 09 Nov 2026): only sets app.user_id; real Supabase apps read identity from JWT claims (auth.uid()), so the sandbox must set those too.
+# TODO(Maneet, 09 Nov 2026): only sets app.user_id; real Supabase apps read identity
+# from JWT claims (auth.uid()), so the sandbox must set those too.
 def user_reads_rows(connection_string, table, user_id):
     """Rows a signed-in user (role authenticated, identity `user_id`) can read from `table`."""
     with psycopg.connect(connection_string, autocommit=True, row_factory=dict_row,

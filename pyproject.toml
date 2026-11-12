@@ -5,10 +5,22 @@ requires-python = ">=3.11"
 dependencies = ["psycopg[binary]"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "ruff", "bandit", "pip-audit"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+# We call the docker CLI by name with fixed arguments and no shell, on purpose.
+ignore = ["S603", "S607"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, and build throwaway SQL from constants.
+"tests/*" = ["S101", "S608"]
