@@ -1,9 +1,9 @@
 import subprocess
 
 import psycopg
+from conftest import PLANTED
 
 from access_review.sandbox import LABEL, sandbox
-from conftest import PLANTED
 
 
 def _leftover_containers():
