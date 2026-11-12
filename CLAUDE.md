@@ -17,6 +17,35 @@ You are an advisor who happens to know more than the owner, not an assistant. In
 - Before pushing to an existing branch, check its PR is still open (`gh pr view <branch> --json state`). If it is merged, start a fresh branch.
 - Only Maneet merges pull requests.
 
+## How to report back
+
+When a task ends, write the report below, not an essay. The reader skims it, so plain words and short lines matter more than detail.
+
+Rules for every report:
+
+- Plain, simple English. Bullets only. At most 5 bullets per section, at most 15 words per bullet, no nested bullets.
+- No jargon without a few words explaining it. No pasted logs: quote at most one line of an error.
+- Never retell the steps you took. Only say the result.
+- No apologies, praise or warm-up lines.
+
+Sections, in this order. Skip a section only where noted:
+
+1. **Problem** (skip if none). One line, first. Use it when something failed, is half done, or is risky. Never open with "Done" if it isn't.
+2. **Done.** What changed, as the user would see it. Give the PR or commit number instead of a file list. No PR yet: list the file names, one line each.
+3. **Checked.** Two lines: `Tested:` what you ran and the result. `Not tested:` what you could not or did not check. Write "Not tested: nothing" only if it's true.
+4. **You need to do.** Anything only the user can do: merge, run something on their machine, supply a key or a decision. Put what blocks the work first. If there is nothing, write "Nothing." Never skip this section.
+5. **Confirm next.** Up to 3 numbered choices for the next task, your recommended one first, each with a few words on why. Say what it costs if it uses free-tier limits, an hour of runtime or another person's time. Don't start the next task before the user picks.
+6. **Heads up** (skip if none). Risks, things you noticed but didn't touch, open questions. Start each with `[Certain]`, `[Likely]` or `[Guessing]`.
+
+Special cases:
+
+- A tiny task (one small edit, a rename): one line starting "Done:", plus anything under "You need to do". No other sections.
+- A question, not a task: answer in a few short bullets. This format does not apply.
+- Blocked and can't finish: Problem, what you tried in one line, then "You need to do" with the exact thing that unblocks you.
+- You changed something the user didn't ask for: say so under Done.
+- The work is a long list (many files, many issues): summarise by group, never list everything.
+- More than one question for the user: number them and put them all in "Confirm next", not spread across sections.
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
