@@ -25,8 +25,8 @@ def _planted(app, variant, flaw_id):
 @pytest.mark.parametrize("app,variant", VARIANTS)
 def test_probes_match_answer_key(app, variant):
     with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
-        visitor_rows = visitor_reads_rows(box, "profiles")
-        user_a_rows = user_reads_rows(box, "profiles", USER_A)
+        visitor_rows = visitor_reads_rows(box, "profiles").rows_seen
+        user_a_rows = user_reads_rows(box, "profiles", USER_A).rows_seen
     assert bool(visitor_rows) == _planted(app, variant, "R1")
     user_a_sees_others = any(str(row["owner_id"]) != USER_A for row in user_a_rows)
     assert user_a_sees_others == _planted(app, variant, "R2")
@@ -42,7 +42,7 @@ def test_planted_migrations_do_not_create_roles(app, variant):
 @pytest.mark.parametrize("app,variant", FIXED_TWINS)
 def test_allowed_access_survives_in_the_fixed_twin(app, variant):
     with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
-        user_a_rows = user_reads_rows(box, "profiles", USER_A)
+        user_a_rows = user_reads_rows(box, "profiles", USER_A).rows_seen
     for allowed in ANSWER_KEY[app]["allowed"]:
         assert allowed["expect"] == "own_row_only"
         works = [str(row["owner_id"]) for row in user_a_rows] == [USER_A]

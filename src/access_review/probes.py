@@ -4,25 +4,29 @@ import subprocess
 
 from psycopg import sql
 
+from access_review.evidence import Evidence
 from access_review.identity import as_user, as_visitor
 
 
-def _rows(box, identity, table):
-    query = sql.SQL("SELECT coalesce(json_agg(t), '[]'::json) FROM (SELECT * FROM {}) t").format(
-        sql.Identifier(table)).as_string()
+def _read_table(box, probe, actor, identity, table):
+    select = sql.SQL("SELECT * FROM {}").format(sql.Identifier(table))
+    query = select.as_string()
+    wrapped = sql.SQL("SELECT coalesce(json_agg(t), '[]'::json) FROM ({}) t").format(select).as_string()
     try:
-        return json.loads(box.run(identity + query))
+        rows = json.loads(box.run(identity + wrapped))
     except subprocess.CalledProcessError as error:
-        if "permission denied" in (error.stderr or ""):
-            return []
-        raise
+        lines = (error.stderr or "").strip().splitlines()
+        message = lines[0] if lines else "unknown error"
+        result = "permission_denied" if "permission denied" in message else "error"
+        return Evidence(probe, actor, query, result, [], message)
+    return Evidence(probe, actor, query, "ok", rows)
 
 
 def visitor_reads_rows(box, table):
-    """Rows (as dicts) an unauthenticated visitor (role anon) can read from `table` in the sandbox `box`."""
-    return _rows(box, as_visitor(), table)
+    """Evidence of the rows an unauthenticated visitor (role anon) can read from `table` in the sandbox `box`."""
+    return _read_table(box, "visitor_reads_rows", "visitor", as_visitor(), table)
 
 
 def user_reads_rows(box, table, user_id):
-    """Rows (as dicts) a signed-in user (role authenticated, identity `user_id`) can read from `table`."""
-    return _rows(box, as_user(user_id), table)
+    """Evidence of the rows a signed-in user (role authenticated, identity `user_id`) can read from `table`."""
+    return _read_table(box, "user_reads_rows", f"user:{user_id}", as_user(user_id), table)

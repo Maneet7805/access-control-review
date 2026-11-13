@@ -13,7 +13,7 @@ How much detail each part has:
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
-| M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
+| M2 Thin slice | One app, one attack, one plain-language report, end to end | 1/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #30
-- Next eligible task: M2.1 Evidence model
+- Last merged PR: #32
+- Next eligible task: M2.2 Finding model and JSON schema
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -181,7 +181,7 @@ Why first: right now the test apps create their own roles and read identity from
 
 Why: you get the whole flow working once, early. After this, widening is repeating a known pattern.
 
-- [ ] **M2.1 Evidence model.**
+- [x] **M2.1 Evidence model.**
   - Depends on: G1.
   - Goal: a probe returns what it ran and what it saw, not raw rows.
   - Files: `src/access_review/evidence.py`, `src/access_review/probes.py`, `tests/test_evidence.py`.

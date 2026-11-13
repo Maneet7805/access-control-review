@@ -53,13 +53,13 @@ def _owner_policy_app(tmp_path, policy_condition):
 
 def test_user_probe_sees_only_own_rows_when_policy_checks_auth_uid(tmp_path):
     with sandbox(_owner_policy_app(tmp_path, "owner_id = auth.uid()"), baseline=True) as box:
-        assert {row["owner_id"] for row in user_reads_rows(box, "notes", USER_A)} == {USER_A}
+        assert {row["owner_id"] for row in user_reads_rows(box, "notes", USER_A).rows_seen} == {USER_A}
 
 
 def test_user_probe_sees_everyones_rows_when_policy_is_wide_open(tmp_path):
     # Negative control for the probe: the flawed app leaks, so the probe must show both owners.
     with sandbox(_owner_policy_app(tmp_path, "true"), baseline=True) as box:
-        assert {row["owner_id"] for row in user_reads_rows(box, "notes", USER_A)} == {USER_A, USER_B}
+        assert {row["owner_id"] for row in user_reads_rows(box, "notes", USER_A).rows_seen} == {USER_A, USER_B}
 
 
 def test_old_identity_setting_is_gone_from_src():
