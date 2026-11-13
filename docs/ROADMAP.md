@@ -13,7 +13,7 @@ How much detail each part has:
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
-| M2 Thin slice | One app, one attack, one plain-language report, end to end | 3/6 |
+| M2 Thin slice | One app, one attack, one plain-language report, end to end | 4/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #34
-- Next eligible task: M2.4 Plain-language report
+- Last merged PR: #36
+- Next eligible task: M2.5 Command line
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -199,7 +199,7 @@ Why: you get the whole flow working once, early. After this, widening is repeati
   - Files: `src/access_review/rules.py`, `tests/test_rules.py`.
   - Logic: if the table has an owner column that references `auth.users` and the actor sees rows owned by someone else, the finding is `proved`. If the table has no owner column and a visitor can read it, the status is `needs_decision` (it may be public on purpose). Never guess intent.
   - Validation: `rows-01` and `rows-02` vulnerable give one proved finding each. Both fixed twins give none. A new decoy `decoy-01-public-posts` (a table meant to be public, no owner column) gives `needs_decision` and not `proved`. Update the key for it (needs approval).
-- [ ] **M2.4 Plain-language report.**
+- [x] **M2.4 Plain-language report.**
   - Depends on: M2.3.
   - Goal: `report.md` that a novice can read.
   - Files: `src/access_review/report.py`, `tests/test_report.py`, `tests/golden/`.
