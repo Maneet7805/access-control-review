@@ -2,7 +2,9 @@
   "rows-01-profiles": {
     "flaws_vulnerable": [
       {"flaw_id": "R1", "table": "profiles", "actor": "visitor", "action": "read"},
-      {"flaw_id": "R2", "table": "profiles", "actor": "user-a", "action": "read"}
+      {"flaw_id": "R2", "table": "profiles", "actor": "user-a", "action": "read"},
+      {"flaw_id": "R3", "table": "profiles", "actor": "visitor", "action": "insert"},
+      {"flaw_id": "R4", "table": "profiles", "actor": "user-a", "action": "insert"}
     ],
     "flaws_fixed": [],
     "allowed": [
