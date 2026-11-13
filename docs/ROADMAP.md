@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 3/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 4/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #23
-- Next eligible task: M1.4 (needs Maneet's approval before it changes the answer key)
+- Last merged PR: #24
+- Next eligible task: M1.5 (changes the answer key, so needs Maneet's approval first)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -140,7 +140,7 @@ Why first: right now the test apps create their own roles and read identity from
   - Files: `src/access_review/identity.py`, `src/access_review/probes.py` (replace `app.user_id`), `tests/test_identity.py`.
   - Validation: under `as_user(A)`, `auth.uid()` equals A. Under `as_visitor`, it is null. Under `as_user(A)` then `as_user(B)` on the same connection, no leftover identity from A.
   - Done when: no occurrence of `app.user_id` remains in `src/`.
-- [ ] **M1.4 Rewrite the two planted apps in real Supabase style, and extend the answer key.**
+- [x] **M1.4 Rewrite the two planted apps in real Supabase style, and extend the answer key.**
   - Depends on: M1.3.
   - Goal: planted apps look like AI-built Supabase apps and the key says exactly what is wrong and what must keep working.
   - Files: `planted/rows-01-profiles/**`, `planted/rows-02-profiles-all-authenticated/**`, `planted/answer_key.json`, `tests/test_planted.py`.
