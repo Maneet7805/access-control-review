@@ -96,3 +96,11 @@ def test_data_with_a_backtick_cannot_close_the_code_span():
 def test_notes_go_at_the_end_of_the_report():
     report = render_report("notes", [], notes=["Be careful."])
     assert report.rstrip().endswith("**Note:** Be careful.") and NO_VIOLATION in report
+
+
+def test_a_newline_in_a_name_cannot_start_a_new_line_or_heading():
+    evidence = Evidence("visitor_reads_rows", "visitor", 'SELECT * FROM "public"."a\n# Forged"', "ok", [{"id": 1}])
+    finding = replace(_decoy_finding(), proof=[evidence], explanation="Table a\n# Forged is readable")
+    report = render_report("app\n# Forged", [finding])
+    assert not any(line.startswith("# Forged") or line.startswith("## Forged") for line in report.splitlines())
+    assert "\x0a" in report
