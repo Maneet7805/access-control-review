@@ -27,7 +27,7 @@ Conventions for this codebase. Short on purpose: if the code and this file disag
 ## Tests
 
 - Every bug fix gets a test that fails without the fix.
-- Run `pytest` before every commit.
+- Run `python scripts/check.py` before every commit. It runs lint, tests, the security scan and the dependency scan, and prints PASS or FAIL for each.
 - A pull request merges only when CI is green: tests, lint, security scan, CodeQL and the secret scan.
 - Check that the change does what the PR says. Run what can be run; if a check needs a person, list it in the PR and ask the owner.
 
@@ -54,4 +54,5 @@ Make it correct first. Measure before optimising.
 
 - `src/access_review/`: the tool. `sandbox.py` rebuilds an app's database in Docker, `probes.py` attacks it.
 - `planted/`: apps with a known flaw. One folder per app named `kind-number-shortname`, each with `vulnerable/` and `fixed/` migrations, and an entry in `planted/answer_key.json`.
+- `scripts/`: helper scripts. `scripts/check.py` runs every check.
 - `tests/`: pytest. Run `pip install -e ".[dev]"` once, then `pytest` (needs Docker running).
