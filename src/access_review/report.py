@@ -11,16 +11,17 @@ GLOSSARY = (
     ("JWT", "the signed token that proves who a signed-in user is"),
 )
 STATUS_TEXT = {
-    "proved": "Proved. We ran the attack and saw it work.",
-    "needs_decision": "Needs your decision. The data was readable, but that may be on purpose.",
+    "proved": "Proved. We carried out the attack on a test copy of your database and it worked.",
+    "needs_decision": "Needs your decision. Anyone could read this data. That may be on purpose, so only you can say.",
 }
 MAX_ROWS_SHOWN = 3
 
 
 def _who(actor):
     if actor == "visitor":
-        return "Anyone who visits the app without signing in."
-    return f"Any signed-in user (we tested as user {actor.removeprefix('user:')})."
+        return "Anyone who opens your app without signing in."
+    return ("Any user who is signed in. We tested with a made-up test account, "
+            f"user {actor.removeprefix('user:')}.")
 
 
 def _actor_name(actor):
@@ -37,13 +38,19 @@ def _code(text):
     return _plain(text).replace("`", "'")
 
 
+def _row_text(row):
+    return ", ".join(f"{name}: {json.dumps(value)}" for name, value in sorted(row.items()))
+
+
 def _proof(evidence):
     rows = evidence.rows_seen
-    lines = [f"- What we ran: `{_code(evidence.statement)}`, as {_actor_name(evidence.actor)}.",
-             f"- What came back: {len(rows)} row(s)."]
+    lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and asked the database for the table's rows "
+             f"with `{_code(evidence.statement)}`.",
+             f"- What we got back: {len(rows)} {'row' if len(rows) == 1 else 'rows'} of data."]
     if rows:
-        lines.append(f"- The first {min(len(rows), MAX_ROWS_SHOWN)} row(s):")
-        lines += [f"  - `{_code(json.dumps(row, sort_keys=True))}`" for row in rows[:MAX_ROWS_SHOWN]]
+        lines.append(f"- {'The row' if len(rows) == 1 else f'The first {min(len(rows), MAX_ROWS_SHOWN)} rows'}"
+                     " (each line is one row, shown as name: value):")
+        lines += [f"  - `{_code(_row_text(row))}`" for row in rows[:MAX_ROWS_SHOWN]]
     return lines
 
 
@@ -66,11 +73,12 @@ def render_report(app_name, findings, notes=()):
         return "\n".join(lines + _notes(notes)) + "\n"
     ordered = sorted(findings, key=lambda finding: finding.status != "proved")
     proved = sum(finding.status == "proved" for finding in ordered)
-    lines += [f"{proved} problem(s) proved, {len(ordered) - proved} need your decision.", ""]
+    lines += [f"We attacked a test copy of your app's database. {proved} problem(s) proved, "
+              f"{len(ordered) - proved} need your decision.", ""]
     for number, finding in enumerate(ordered, 1):
         lines += [f"## {number}. {_plain(finding.explanation)}", "",
                   f"**Status:** {STATUS_TEXT[finding.status]}", "",
-                  f"**Who can do it:** {_who(finding.actor)}", "", "**Proof:**", ""]
+                  f"**Who can do it:** {_who(finding.actor)}", "", "**What we saw:**", ""]
         for evidence in finding.proof:
             lines += _proof(evidence)
         lines += ["", "**Suggested fix** (you can give this text to your own AI assistant; "
