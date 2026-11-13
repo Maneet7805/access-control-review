@@ -120,7 +120,7 @@ Definition of done for every task, in addition to its own:
   - Files: `scripts/check.py`. Do not touch: CI files.
   - Validation: `python scripts/check.py` passes on a clean tree. Break one test on purpose and the script must report FAIL (negative control).
   - Done when: README and CODING.md mention the command.
-- [ ] **G0 (owner).** Maneet runs `python scripts/check.py`, sees PASS, and reads `docs/ROADMAP.md` once.
+- [x] **G0 (owner).** Maneet runs `python scripts/check.py`, sees PASS, and reads `docs/ROADMAP.md` once.
 
 ### M1 Honest foundations
 
