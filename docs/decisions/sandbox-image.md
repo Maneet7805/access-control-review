@@ -28,7 +28,7 @@ Evidence comes from `python scripts/probe_images.py`, run on 13 Nov 2026. It sta
 | `auth.jwt()` | missing | missing |
 | Extensions | `plpgsql` | `pg_stat_statements`, `pgcrypto`, `plpgsql`, `supabase_vault`, `uuid-ossp` |
 | Default privileges on new tables, sequences, functions in `public` | none | `anon`, `authenticated`, `service_role` get all privileges |
-| Image size on Docker Hub | about 640 MB on disk locally | about 330 MB compressed |
+| Image size on disk (`docker images`) | 642 MB | 1.54 GB |
 | Memory at idle (`docker stats`, two runs) | 31 to 60 MiB | 70 to 71 MiB |
 
 Rerun the script to see the raw tables.
@@ -41,6 +41,7 @@ Rerun the script to see the raw tables.
 - [Certain] In image B the `postgres` role is not a superuser, so migrations applied as `postgres` run with the same limits as a hosted project. This helps the known gap that migrations run as superuser today. The superuser is `supabase_admin`.
 - [Certain] The current planted apps run `CREATE ROLE anon` and `CREATE ROLE authenticated`. On image B those fail because the roles exist. M1.4 already rewrites the planted apps, so this is expected, not new work.
 - [Certain] Image B runs as a single database container. It did not need any of the other Supabase services (login, REST, storage) to give the roles and the `auth` schema.
+- [Certain] Image B is about 2.4 times larger on disk (1.54 GB against 642 MB), so the first pull in CI and on a new laptop takes longer.
 - [Likely] The extra memory over `postgres:16` is small. Idle memory on `postgres:16` varied between my two runs, so I would not read 10 to 40 MiB as a firm difference.
 
 ## Not covered here

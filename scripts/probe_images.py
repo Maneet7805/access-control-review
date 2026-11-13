@@ -51,11 +51,16 @@ def query(container: str, user: str, sql: str) -> str:
 
 
 def wait_ready(container: str, timeout: int = 120) -> str:
-    """Return a working superuser name after three good answers in a row, or raise."""
+    """Return a role that can log in over TCP after three good answers in a row, or raise.
+
+    The images start a temporary server on the unix socket only during setup, so a TCP answer means the final
+    server is up. The role may not be a superuser.
+    """
     deadline, good = time.time() + timeout, 0
     while time.time() < deadline:
         for user in ("postgres", "supabase_admin"):
-            if sh("docker", "exec", container, "psql", "-U", user, "-d", "postgres", "-Atc", "select 1", check=False):
+            if sh("docker", "exec", "-e", f"PGPASSWORD={PASSWORD}", container, "psql", "-h", "127.0.0.1", "-U", user,
+                  "-d", "postgres", "-Atc", "select 1", check=False):
                 good += 1
                 if good >= 3:
                     return user
