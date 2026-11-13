@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 7/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #27
-- Next eligible task: none. G0 and G1 wait for Maneet; D2 to D6 await his decision
+- Last merged PR: #30
+- Next eligible task: none. G1 waits for Maneet
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -170,6 +170,11 @@ Why first: right now the test apps create their own roles and read identity from
   - Goal: when an app cannot be rebuilt, the tool says why, in plain words.
   - Files: `src/access_review/sandbox.py`, `tests/test_not_checkable.py`, fixtures under `tests/fixtures/broken/`.
   - Validation: three broken migration fixtures (missing extension, reference to an unknown schema, syntax error) each give a distinct reason string and the line number. Negative control: a good fixture gives no reason.
+- [x] **M1.8 Demo command for G1.**
+  - Depends on: M1.2, M1.5.
+  - Goal: G1 can be run. `python -m access_review.demo_sandbox <migrations folder>` prints how many rows a visitor, user A and user B can read.
+  - Files: `src/access_review/demo_sandbox.py`, `tests/test_demo_sandbox.py`.
+  - Validation: vulnerable `rows-01-profiles` gives 2, 2, 2. Negative control: its fixed twin gives 0, 1, 1. A broken app prints the plain reason.
 - [ ] **G1 (owner).** Maneet runs `python -m access_review.demo_sandbox planted/rows-01-profiles/vulnerable/migrations` and sees a short table of what a visitor, user A and user B can see. Expected: visitor 2 rows, A 2 rows, B 2 rows for the vulnerable app. Maneet signs off or rejects.
 
 ### M2 Thin slice (one app, one attack, one plain report)
