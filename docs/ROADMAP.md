@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 1/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 2/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #21
-- Next eligible task: M1.2
+- Last merged PR: #22
+- Next eligible task: M1.3
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -127,7 +127,7 @@ Why first: right now the test apps create their own roles and read identity from
   - Steps: start each image. Query `pg_roles` (anon, authenticated, service_role, their attributes), `pg_namespace` (auth, storage), `pg_proc` (auth.uid, auth.role, auth.jwt), `pg_extension`, and the default privileges on schema `public`. Read the Supabase pages on row level security and on the local development setup in full before writing.
   - Validation: `python scripts/probe_images.py` prints one table per image. The document has the table, the memory used by each image at idle, and a recommendation.
   - Done when: Maneet picks A or B (D1) in the PR.
-- [ ] **M1.2 Supabase baseline in the sandbox.**
+- [x] **M1.2 Supabase baseline in the sandbox.**
   - Depends on: M1.1 and D1 decided.
   - Goal: after the baseline loads, a typical AI-built Supabase migration applies without errors.
   - Files: `src/access_review/baseline.sql` (only what the image lacks), `src/access_review/sandbox.py`, `tests/test_baseline.py`. Do not touch: `planted/`.

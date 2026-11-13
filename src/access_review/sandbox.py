@@ -7,6 +7,8 @@ from contextlib import contextmanager
 from pathlib import Path
 
 IMAGE = "postgres:16"
+SUPABASE_IMAGE = "supabase/postgres:15.19.0.019"
+BASELINE = Path(__file__).with_name("baseline.sql")
 LABEL = "access-review-sandbox"
 READY_TIMEOUT_SECONDS = 60
 DOCKER_TIMEOUT_SECONDS = 120
@@ -45,15 +47,24 @@ def _remove(name):
 
 # TODO(Maneet, 09 Nov 2026): migrations run as superuser with network access; isolate before reviewing untrusted repos.
 @contextmanager
-def sandbox(migrations_dir):
-    """Start a fresh database, apply every .sql file in order, yield its connection string."""
+def sandbox(migrations_dir, baseline=False):
+    """Start a fresh database, apply every .sql file in order, yield its connection string.
+
+    With baseline=True the database is Supabase's image plus baseline.sql, and migrations run as the
+    non-superuser postgres role, as on a hosted project. The default stays plain postgres:16 until the
+    planted apps are rewritten.
+    """
     name = f"{LABEL}-{uuid.uuid4().hex[:8]}"
     password = secrets.token_hex(16)
     try:
         _docker("run", "-d", "--rm", "--name", name, "--label", LABEL,
                 "--memory", MEMORY_LIMIT, "--cpus", CPU_LIMIT,
-                "-e", f"POSTGRES_PASSWORD={password}", "-p", "127.0.0.1::5432", IMAGE)
+                "-e", f"POSTGRES_PASSWORD={password}", "-p", "127.0.0.1::5432",
+                SUPABASE_IMAGE if baseline else IMAGE)
         _wait_until_ready(name)
+        if baseline:
+            _docker("exec", "-i", name, "psql", "-h", "127.0.0.1", "-U", "supabase_admin",
+                    "-d", "postgres", "-v", "ON_ERROR_STOP=1", stdin=BASELINE.read_text())
         for sql_file in sorted(Path(migrations_dir).glob("*.sql")):
             _docker("exec", "-i", name, "psql", "-h", "127.0.0.1", "-U", "postgres",
                     "-v", "ON_ERROR_STOP=1", stdin=sql_file.read_text())
