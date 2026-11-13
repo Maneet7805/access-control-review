@@ -25,7 +25,7 @@ How much detail each part has:
 
 - Current milestone: M1
 - Last merged PR: #30
-- Next eligible task: none. G1 waits for Maneet
+- Next eligible task: M2.1 Evidence model
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -175,7 +175,7 @@ Why first: right now the test apps create their own roles and read identity from
   - Goal: G1 can be run. `python -m access_review.demo_sandbox <migrations folder>` prints how many rows a visitor, user A and user B can read.
   - Files: `src/access_review/demo_sandbox.py`, `tests/test_demo_sandbox.py`.
   - Validation: vulnerable `rows-01-profiles` gives 2, 2, 2. Negative control: its fixed twin gives 0, 1, 1. A broken app prints the plain reason.
-- [ ] **G1 (owner).** Maneet runs `python -m access_review.demo_sandbox planted/rows-01-profiles/vulnerable/migrations` and sees a short table of what a visitor, user A and user B can see. Expected: visitor 2 rows, A 2 rows, B 2 rows for the vulnerable app. Maneet signs off or rejects.
+- [x] **G1 (owner).** Maneet runs `python -m access_review.demo_sandbox planted/rows-01-profiles/vulnerable/migrations` and sees a short table of what a visitor, user A and user B can see. Expected: visitor 2 rows, A 2 rows, B 2 rows for the vulnerable app. Maneet signs off or rejects.
 
 ### M2 Thin slice (one app, one attack, one plain report)
 
