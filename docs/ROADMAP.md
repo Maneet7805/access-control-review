@@ -45,7 +45,7 @@ The build order differs from the flow order. We build the middle first (1 to 4) 
 
 1. One task per pull request. Branch name `task/M1.2-short-name`. Never expand scope.
 2. Take only the first unchecked task whose `Depends on` are all checked, and which is not a DECISION or an owner gate. If none is eligible, stop and say why.
-3. Never tick a gate (`G1`, `G2` and so on) or a DECISION. Only Maneet does.
+3. Never tick an owner gate (G0 to G6). You may tick a decision after you have recorded it in ASSUMPTIONS.md.
 4. Never edit the checkbox of another task. In your own PR, tick your task and update section 1.
 5. Every task needs a test that can fail. For every probe and every score, show a negative control: it fires on the flawed app and stays silent on the fixed twin.
 6. Never weaken, skip or delete a test to make it pass. If a test seems wrong, stop and ask.
@@ -54,7 +54,13 @@ The build order differs from the flow order. We build the middle first (1 to 4) 
 9. Never write "secure" about an app. Only "No violation found under this test."
 10. Real public repos are private material. Never commit owner names, repo URLs or scan output. Use cover names. `private/`, `cases/`, `scans/` stay ignored.
 11. Read any web page you rely on in full before using it. Quote at most one line of it.
-12. Stop and ask when: a design decision is needed, a test would have to be weakened, a task needs a paid service, or something outside the task looks broken. Write the blocker down and stop. Do not guess.
+12. You decide engineering and method choices yourself (libraries, file layout, names, how to test, which option fits best, which baselines, which case-study apps). When you decide, do not wait: pick the simplest option that is easy to change later, add an entry to ASSUMPTIONS.md (date, the options you saw, what you picked, why), mention it in the pull request, and carry on. I can reverse it in review. Stop and ask me only when the choice:
+    1. costs money, or needs a paid service or a new account,
+    2. would put a real app's name, URL, code or scan output into a committed file,
+    3. changes the answer key, the scoring rules or docs/EVALUATION.md (put those in their own pull request for my review),
+    4. would force you to weaken or delete a test.
+
+    Put questions in the pull request description under 'Confirm next', not in chat.
 13. Report in the format in CLAUDE.md. Paste the validation commands you ran and one line of their output.
 14. No time estimates anywhere. Plain English. No emojis.
 
@@ -77,16 +83,16 @@ Definition of done for every task, in addition to its own:
 6. Tests were not weakened (the diff does not delete assertions).
 7. Merge. If anything fails, comment on the PR. Do not merge.
 
-## 6. Decisions for Maneet (the agent never decides these)
+## 6. Decisions (the agent decides these; see rule 12)
 
-| ID | Question | Options | Default if you do not mind |
+| ID | Question | Options | Who decides, and notes |
 | --- | --- | --- | --- |
-| D1 | Sandbox base image | A: `postgres:16` plus our own Supabase stubs. B: Supabase's database image | Try B in a spike, fall back to A |
-| D2 | How probes reach a database that has no network | A: run statements through `docker exec`. B: unix socket. C: internal network plus a probe container | A |
-| D3 | Who writes the held-out apps | A: a fresh Claude session given only the flaw catalogue. B: you. C: a classmate | A, reviewed by you |
-| D4 | Which existing tools are the baselines | Semgrep, Supabase advisors, rlsautotest, pgrls, rlsgrid, SupaShield | Ask supervisor after Table 2 comparison |
-| D5 | Which AI applies the fixes in M6, and how many runs | Claude Code, others | Claude Code, runs set when M6 starts |
-| D6 | Which public apps become case studies | Needs licence check | Chosen at M7 |
+| D1 | Sandbox base image | A: `postgres:16` plus our own Supabase stubs. B: Supabase's database image | AGENT-decides. Decided, option B (already recorded). |
+| D2 | How probes reach a database that has no network | A: run statements through `docker exec`. B: unix socket. C: internal network plus a probe container | AGENT-decides. Option A, decided 13 Nov: no network, no extra containers. |
+| D3 | Who writes the held-out apps | A: a fresh Claude session given only the flaw catalogue. B: you. C: a classmate | AGENT-decides. A separate helper session sees only Appendix A, never the code, and writes the held-out apps. Maneet reviews the key at G4. |
+| D4 | Which existing tools are the baselines | Semgrep, Supabase advisors, rlsautotest, pgrls, rlsgrid, SupaShield | AGENT-decides. Baselines must be free, run locally with no network, and cover rows, columns or functions. The set includes Semgrep, the Supabase advisors, and at least one execution-based database tool from Chapter 2 Table 2. Write the choice and the reason for each in docs/baselines.md and commit it BEFORE the held-out run. After that run it cannot change. |
+| D5 | Which AI applies the fixes in M6, and how many runs | Claude Code, others | AGENT-decides. The agent chooses which AI applies the fixes in M6 and how many runs. Record the choice. |
+| D6 | Which public apps become case studies | Needs licence check | AGENT-decides. Case-study apps must be public, have a licence that permits use, show evidence of being AI-built, have real migrations, and rebuild cleanly in the sandbox. The numbers mentioned earlier (for example 80 percent AI commits) are soft starting figures: the agent may adjust them, but records why. Keep the candidate list with names and URLs only in the git-ignored private/ folder. Commit cover names only. |
 
 ## 7. Milestones
 
@@ -102,7 +108,7 @@ Definition of done for every task, in addition to its own:
   - Files: create `docs/ROADMAP.md` (this file), `docs/HANDOVER.md`, `ASSUMPTIONS.md`, `.github/pull_request_template.md` (the section 5 checklist).
   - Validation: `ruff check .` and `pytest -v` still pass. Open the PR and check the template appears.
   - Done when: the three docs and the template are merged.
-- [x] **M0.6 Point CLAUDE.md at the roadmap.** Needs Maneet's approval of the wording first.
+- [x] **M0.6 Point CLAUDE.md at the roadmap.**
   - Depends on: M0.5.
   - Goal: every session starts by reading `docs/ROADMAP.md` and `docs/HANDOVER.md`.
   - Files: `CLAUDE.md` (add a short section only, remove nothing).
