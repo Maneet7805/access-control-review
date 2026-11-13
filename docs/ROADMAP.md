@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 2/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 3/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #22
-- Next eligible task: M1.3
+- Last merged PR: #23
+- Next eligible task: M1.4 (needs Maneet's approval before it changes the answer key)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -134,7 +134,7 @@ Why first: right now the test apps create their own roles and read identity from
   - What the baseline must provide: roles `anon`, `authenticated`, `service_role` with their real attributes (service_role bypasses row security); schema `auth` with `auth.users`; `auth.uid()`, `auth.role()`, `auth.jwt()` reading `request.jwt.claims`; the default privileges Supabase sets on `public`, so that a table with row security off is fully open to `anon` and `authenticated`, as in real life. Confirm each item against the Supabase docs and cite the page.
   - Validation: `pytest tests/test_baseline.py` applies four fixture migrations that mimic real ones (a table with `user_id uuid references auth.users`, a policy using `auth.uid()`, a trigger on `auth.users`, a function with `security definer`). All apply. Negative control: the same fixtures against bare `postgres:16` fail.
   - Stop and ask if: the baseline needs a Supabase service we cannot run locally.
-- [ ] **M1.3 Identity helpers: act as a visitor or a signed-in user.**
+- [x] **M1.3 Identity helpers: act as a visitor or a signed-in user.**
   - Depends on: M1.2.
   - Goal: `as_visitor` and `as_user(uuid)` set role and `request.jwt.claims` so `auth.uid()` returns the right value.
   - Files: `src/access_review/identity.py`, `src/access_review/probes.py` (replace `app.user_id`), `tests/test_identity.py`.
