@@ -1,4 +1,3 @@
-import psycopg
 import pytest
 from conftest import ROOT
 
@@ -11,40 +10,35 @@ USER_B = "22222222-2222-2222-2222-222222222222"
 
 
 @pytest.fixture(scope="module")
-def conn_str(tmp_path_factory):
-    with sandbox(tmp_path_factory.mktemp("empty"), baseline=True) as connection_string:
-        yield connection_string
+def box(tmp_path_factory):
+    with sandbox(tmp_path_factory.mktemp("empty"), baseline=True) as running:
+        yield running
 
 
-def _uid_and_role(conn):
-    return conn.execute("select auth.uid()::text, current_user").fetchone()
+UID_AND_ROLE = "select coalesce(auth.uid()::text, 'null') || '|' || current_user"
 
 
-def test_as_user_makes_auth_uid_return_that_user(conn_str):
-    with psycopg.connect(conn_str, autocommit=True) as conn:
-        as_user(conn, USER_A)
-        assert _uid_and_role(conn) == (USER_A, "authenticated")
+def test_as_user_makes_auth_uid_return_that_user(box):
+    assert box.run(as_user(USER_A) + UID_AND_ROLE) == f"{USER_A}|authenticated"
 
 
-def test_as_visitor_makes_auth_uid_null(conn_str):
-    with psycopg.connect(conn_str, autocommit=True) as conn:
-        as_visitor(conn)
-        assert _uid_and_role(conn) == (None, "anon")
+def test_as_visitor_makes_auth_uid_null(box):
+    assert box.run(as_visitor() + UID_AND_ROLE) == "null|anon"
 
 
-def test_switching_users_on_one_connection_leaves_nothing_behind(conn_str):
-    with psycopg.connect(conn_str, autocommit=True) as conn:
-        as_user(conn, USER_A)
-        as_user(conn, USER_B)
-        assert _uid_and_role(conn) == (USER_B, "authenticated")
-        as_visitor(conn)
-        assert _uid_and_role(conn) == (None, "anon")
+def test_switching_users_in_one_session_leaves_nothing_behind(box):
+    assert box.run(as_user(USER_A) + as_user(USER_B) + UID_AND_ROLE) == f"{USER_B}|authenticated"
+    assert box.run(as_user(USER_A) + as_visitor() + UID_AND_ROLE) == "null|anon"
 
 
-def test_no_identity_without_the_helpers(conn_str):
-    # Negative control: a plain connection has no identity, so the helpers are what set it.
-    with psycopg.connect(conn_str, autocommit=True) as conn:
-        assert conn.execute("select auth.uid()").fetchone()[0] is None
+def test_no_identity_without_the_helpers(box):
+    # Negative control: a plain session has no identity, so the helpers are what set it.
+    assert box.run("select auth.uid() is null") == "t"
+
+
+def test_user_id_must_be_a_uuid():
+    with pytest.raises(ValueError):
+        as_user("x'; drop table notes; --")
 
 
 def _owner_policy_app(tmp_path, policy_condition):
@@ -58,14 +52,14 @@ def _owner_policy_app(tmp_path, policy_condition):
 
 
 def test_user_probe_sees_only_own_rows_when_policy_checks_auth_uid(tmp_path):
-    with sandbox(_owner_policy_app(tmp_path, "owner_id = auth.uid()"), baseline=True) as conn_str:
-        assert {str(row["owner_id"]) for row in user_reads_rows(conn_str, "notes", USER_A)} == {USER_A}
+    with sandbox(_owner_policy_app(tmp_path, "owner_id = auth.uid()"), baseline=True) as box:
+        assert {row["owner_id"] for row in user_reads_rows(box, "notes", USER_A)} == {USER_A}
 
 
 def test_user_probe_sees_everyones_rows_when_policy_is_wide_open(tmp_path):
     # Negative control for the probe: the flawed app leaks, so the probe must show both owners.
-    with sandbox(_owner_policy_app(tmp_path, "true"), baseline=True) as conn_str:
-        assert {str(row["owner_id"]) for row in user_reads_rows(conn_str, "notes", USER_A)} == {USER_A, USER_B}
+    with sandbox(_owner_policy_app(tmp_path, "true"), baseline=True) as box:
+        assert {row["owner_id"] for row in user_reads_rows(box, "notes", USER_A)} == {USER_A, USER_B}
 
 
 def test_old_identity_setting_is_gone_from_src():
