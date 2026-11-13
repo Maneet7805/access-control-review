@@ -62,9 +62,14 @@ def _explain(error, sql_file):
 
 
 def _docker(*args, stdin=None, timeout=DOCKER_TIMEOUT_SECONDS):
-    return subprocess.run(
-        ["docker", *args], input=stdin, capture_output=True, text=True, check=True, timeout=timeout,
-    ).stdout.strip()
+    # Send bytes: Windows text mode would add a carriage return before every newline, changing the SQL.
+    data = stdin.encode() if stdin is not None else None
+    try:
+        done = subprocess.run(["docker", *args], input=data, capture_output=True, check=True, timeout=timeout)
+    except subprocess.CalledProcessError as error:
+        error.stderr = (error.stderr or b"").decode(errors="replace")
+        raise
+    return done.stdout.decode().strip()
 
 
 class Sandbox:

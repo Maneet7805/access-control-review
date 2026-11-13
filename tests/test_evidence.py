@@ -27,7 +27,7 @@ def test_evidence_with_an_unknown_result_is_rejected():
 def test_visitor_probe_returns_evidence_of_the_rows_it_saw(vulnerable):
     evidence = visitor_reads_rows(vulnerable, "profiles")
     assert (evidence.probe, evidence.actor, evidence.result) == ("visitor_reads_rows", "visitor", "ok")
-    assert evidence.statement == 'SELECT * FROM "profiles"'
+    assert evidence.statement == 'SELECT * FROM "public"."profiles"'
     assert len(evidence.rows_seen) == 2 and evidence.error is None
 
 
