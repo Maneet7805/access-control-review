@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 5/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 6/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #25
-- Next eligible task: M1.7 (M1.6 waits for decision D2)
+- Last merged PR: #26
+- Next eligible task: none. M1.6 waits for decision D2; G0 and G1 wait for Maneet
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -159,7 +159,7 @@ Why first: right now the test apps create their own roles and read identity from
   - Must do: apply migrations with no network; drop all Linux capabilities and add back only what the image needs to start (find out by test); no new privileges; memory, CPU and process limits; the container is removed afterwards even on crash.
   - Validation: a hostile migration that tries a program call out to the internet (for example `COPY ... TO PROGRAM`) must not reach the network; the test asserts the call fails. Another hostile migration that loops forever must be killed by the limits. Negative control: the same hostile migration against the old sandbox settings reaches the network (record this once, then delete that test).
   - Done when: the TODOs in `sandbox.py` about isolation are removed.
-- [ ] **M1.7 "Not checkable" reports.**
+- [x] **M1.7 "Not checkable" reports.**
   - Depends on: M1.2.
   - Goal: when an app cannot be rebuilt, the tool says why, in plain words.
   - Files: `src/access_review/sandbox.py`, `tests/test_not_checkable.py`, fixtures under `tests/fixtures/broken/`.
