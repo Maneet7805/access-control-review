@@ -7,9 +7,9 @@ import json
 import sys
 from pathlib import Path
 
-from access_review.probes import user_reads_rows, visitor_reads_rows
+from access_review.probes import user_inserts_row_for_other, user_reads_rows, visitor_inserts_row, visitor_reads_rows
 from access_review.report import render_report
-from access_review.rules import another_users_rows, owner_column
+from access_review.rules import another_users_rows, insert_accepted, owner_column
 from access_review.sandbox import NotCheckable, sandbox
 
 # The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
@@ -31,8 +31,12 @@ def review(box):
     for table in tables:
         owner = owner_column(box, table)
         evidence = [visitor_reads_rows(box, table)] + [user_reads_rows(box, table, user) for user in users]
+        if users:
+            evidence.append(visitor_inserts_row(box, table, owner, users[0]))
+        if owner and len(users) == 2:
+            evidence.append(user_inserts_row_for_other(box, table, owner, users[0], users[1]))
         for item in evidence:
-            finding = another_users_rows(table, owner, item)
+            finding = another_users_rows(table, owner, item) or insert_accepted(table, owner, item)
             if finding and (finding.flaw_id, table) not in seen:
                 seen.add((finding.flaw_id, table))
                 findings.append(finding)

@@ -15,10 +15,15 @@ def _run(app, tmp_path):
     return code, out.read_text(encoding="utf-8") if out.exists() else None
 
 
-def test_vulnerable_app_exits_1_with_one_finding(tmp_path):
+def test_vulnerable_app_exits_1_with_exactly_its_three_findings(tmp_path):
+    # Row security is off on rows-01, so a user can read others' rows (R2), and a visitor and a user can also
+    # write (R3, R4). The answer key lists only the read flaws for this app; see the M3.1 pull request.
     code, report = _run("rows-01-profiles/vulnerable", tmp_path)
     assert code == 1
-    assert report.count("\n## ") == 1 and "1 problem(s) proved" in report
+    assert report.count("\n## ") == 3 and "3 problem(s) proved" in report
+    for wording in ("read rows that belong to other users", "visitor who is not signed in can add rows",
+                    "names someone else as its owner"):
+        assert wording in report
 
 
 def test_fixed_twin_exits_0_with_the_no_violation_sentence(tmp_path):

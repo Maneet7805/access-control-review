@@ -38,6 +38,20 @@ def _decoy_finding():
         status="needs_decision")
 
 
+def _insert_finding(flaw_id):
+    visitor = flaw_id == "R3"
+    actor = "visitor" if visitor else f"user:{USER_A}"
+    probe = "visitor_inserts_row" if visitor else "user_inserts_row_for_other"
+    row = {"id": "cccccccc-0000-0000-0000-000000000001", "owner_id": USER_A if visitor else USER_B, "body": "x"}
+    statement = 'INSERT INTO "public"."notes" ("owner_id", "body") VALUES (\'x\', \'access-review\')'
+    evidence = Evidence(probe, actor, statement, "ok", [row])
+    return Finding(
+        id=f"{flaw_id}:notes:{actor}", flaw_id=flaw_id, actor=actor, proof=[evidence], table="notes",
+        explanation='A visitor who is not signed in can add rows to the table "notes".' if visitor else
+                    'A signed-in user can add a row to the table "notes" that names someone else as its owner.',
+        fix='Add a row security policy on "notes" so only the right people can add rows.', status="proved")
+
+
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
@@ -46,6 +60,8 @@ CASES = {
     "rows-02-profiles-all-authenticated-fixed": [],
     "rows-03-locked-out-fixed": [],
     "decoy-01-public-posts": [_decoy_finding()],
+    "writes-01-visitor-insert-vulnerable": [_insert_finding("R3")],
+    "writes-02-spoofed-owner-vulnerable": [_insert_finding("R4")],
 }
 
 

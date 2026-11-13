@@ -7,6 +7,30 @@ from psycopg import sql
 from access_review.evidence import Evidence
 from access_review.identity import as_user, as_visitor
 
+# What psql says when the database refuses an action. Anything else is reported as a plain error.
+REFUSALS = ("permission denied", "violates row-level security")
+# A harmless value for each column type, used to fill the columns a test row must have.
+TEST_VALUES = {
+    "text": "'access-review'", "character varying": "'access-review'",
+    "integer": "0", "bigint": "0", "smallint": "0", "numeric": "0", "real": "0", "double precision": "0",
+    "boolean": "false", "uuid": "gen_random_uuid()", "date": "current_date",
+    "timestamp with time zone": "now()", "timestamp without time zone": "now()",
+    "json": "'{}'", "jsonb": "'{}'",
+}
+COLUMNS_QUERY = (
+    "SELECT coalesce(json_agg(json_build_object('name', column_name, 'type', data_type, "
+    "'required', is_nullable = 'NO' AND column_default IS NULL AND is_generated = 'NEVER' AND is_identity = 'NO') "
+    "ORDER BY ordinal_position), '[]') FROM information_schema.columns "
+    "WHERE table_schema = 'public' AND table_name = {}"
+)
+
+
+def _failed(probe, actor, query, error):
+    lines = (error.stderr or "").strip().splitlines()
+    message = lines[0] if lines else "unknown error"
+    result = "permission_denied" if any(text in message for text in REFUSALS) else "error"
+    return Evidence(probe, actor, query, result, [], message)
+
 
 def _read_table(box, probe, actor, identity, table):
     select = sql.SQL("SELECT * FROM {}").format(sql.Identifier("public", table))
@@ -15,10 +39,7 @@ def _read_table(box, probe, actor, identity, table):
     try:
         rows = json.loads(box.run(identity + wrapped))
     except subprocess.CalledProcessError as error:
-        lines = (error.stderr or "").strip().splitlines()
-        message = lines[0] if lines else "unknown error"
-        result = "permission_denied" if "permission denied" in message else "error"
-        return Evidence(probe, actor, query, result, [], message)
+        return _failed(probe, actor, query, error)
     return Evidence(probe, actor, query, "ok", rows)
 
 
@@ -30,3 +51,48 @@ def visitor_reads_rows(box, table):
 def user_reads_rows(box, table, user_id):
     """Evidence of the rows a signed-in user (role authenticated, identity `user_id`) can read from `table`."""
     return _read_table(box, "user_reads_rows", f"user:{user_id}", as_user(user_id), table)
+
+
+def _insert_row(box, probe, actor, identity, table, owner, owner_id):
+    """Try to add one row as `identity`, naming `owner_id` as its owner. The write is rolled back.
+
+    Evidence rows_seen holds the row the database accepted, read back inside the same transaction. A refusal,
+    or a table whose columns we cannot fill, gives no rows. Nothing is kept: the transaction always ends in ROLLBACK.
+    """
+    columns = json.loads(box.run(sql.SQL(COLUMNS_QUERY).format(sql.Literal(table)).as_string()))
+    names, values = [], []
+    for column in columns:
+        if column["name"] == owner:
+            names.append(sql.Identifier(column["name"]))
+            values.append(sql.Literal(str(owner_id)))
+        elif column["required"]:
+            if column["type"] not in TEST_VALUES:
+                message = f'cannot build a test row: column "{column["name"]}" has type {column["type"]}'
+                return Evidence(probe, actor, f"INSERT INTO public.{table}", "error", [], message)
+            names.append(sql.Identifier(column["name"]))
+            values.append(sql.SQL(TEST_VALUES[column["type"]]))
+    target = sql.Identifier("public", table)
+    insert = (sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(target, sql.SQL(", ").join(names),
+                                                                sql.SQL(", ").join(values))
+              if names else sql.SQL("INSERT INTO {} DEFAULT VALUES").format(target))
+    readback = sql.SQL(
+        "SELECT coalesce(json_agg(t), '[]'::json) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid"
+    ).format(target)
+    query = insert.as_string()
+    script = f"BEGIN; {identity}{query}; RESET ROLE; {readback.as_string()}; ROLLBACK;"
+    try:
+        output = box.run(script)
+    except subprocess.CalledProcessError as error:
+        return _failed(probe, actor, query, error)
+    return Evidence(probe, actor, query, "ok", json.loads(output.splitlines()[-1]))
+
+
+def visitor_inserts_row(box, table, owner, owner_id):
+    """Evidence of whether an unauthenticated visitor can add a row to `table`, naming `owner_id` as its owner."""
+    return _insert_row(box, "visitor_inserts_row", "visitor", as_visitor(), table, owner, owner_id)
+
+
+def user_inserts_row_for_other(box, table, owner, user_id, victim_id):
+    """Evidence of whether signed-in `user_id` can add a row to `table` that names `victim_id` as its owner."""
+    return _insert_row(box, "user_inserts_row_for_other", f"user:{user_id}", as_user(user_id), table, owner,
+                       victim_id)

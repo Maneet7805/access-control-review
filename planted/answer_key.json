@@ -35,5 +35,25 @@
       {"actor": "visitor", "action": "read", "table": "posts", "expect": "public"}
     ],
     "decoy": true
+  },
+  "writes-01-visitor-insert": {
+    "flaws_vulnerable": [
+      {"flaw_id": "R3", "table": "notes", "actor": "visitor", "action": "insert"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "insert", "table": "notes", "expect": "own_owner_accepted"}
+    ],
+    "decoy": false
+  },
+  "writes-02-spoofed-owner": {
+    "flaws_vulnerable": [
+      {"flaw_id": "R4", "table": "notes", "actor": "user-a", "action": "insert"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "insert", "table": "notes", "expect": "own_owner_accepted"}
+    ],
+    "decoy": false
   }
 }

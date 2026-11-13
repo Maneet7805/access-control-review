@@ -14,7 +14,13 @@ VARIANTS = [
     for variant in ("vulnerable", "fixed")
     if (PLANTED / app / variant / "migrations").is_dir()
 ]
-FIXED_TWINS = [(app, variant) for app, variant in VARIANTS if variant == "fixed"]
+# These tests read the profiles table, so they cover only apps whose key lists a read. Write apps: test_writes.py.
+READ_APPS = {
+    app for app, entry in ANSWER_KEY.items()
+    if any(item["action"] == "read" for item in entry["flaws_vulnerable"] + entry["allowed"])
+}
+READ_VARIANTS = [(app, variant) for app, variant in VARIANTS if app in READ_APPS]
+FIXED_TWINS = [(app, variant) for app, variant in READ_VARIANTS if variant == "fixed"]
 USER_A = "11111111-1111-1111-1111-111111111111"  # seeded as user-a in every planted app
 
 
@@ -22,7 +28,7 @@ def _planted(app, variant, flaw_id):
     return any(f["flaw_id"] == flaw_id for f in ANSWER_KEY[app][f"flaws_{variant}"])
 
 
-@pytest.mark.parametrize("app,variant", VARIANTS)
+@pytest.mark.parametrize("app,variant", READ_VARIANTS)
 def test_probes_match_answer_key(app, variant):
     with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
         visitor_rows = visitor_reads_rows(box, "profiles").rows_seen
