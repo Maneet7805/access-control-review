@@ -54,5 +54,5 @@ Make it correct first. Measure before optimising.
 
 - `src/access_review/`: the tool. `sandbox.py` rebuilds an app's database in Docker, `probes.py` attacks it.
 - `planted/`: apps with a known flaw. One folder per app named `kind-number-shortname`, each with `vulnerable/` and `fixed/` migrations, and an entry in `planted/answer_key.json`.
-- `scripts/`: helper scripts. `scripts/check.py` runs every check.
+- `scripts/`: helper scripts. `scripts/check.py` runs the four local checks (not CodeQL or the secret scan).
 - `tests/`: pytest. Run `pip install -e ".[dev]"` once, then `pytest` (needs Docker running).

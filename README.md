@@ -54,7 +54,7 @@ pytest
 
 The tests start and delete real Docker containers, so the first run downloads the `postgres:16` image.
 
-To run every check CI runs (lint, tests, security scan, dependency scan) and see PASS or FAIL for each:
+To run the four local checks (lint, tests, security scan, dependency scan) and see PASS or FAIL for each. CI also runs CodeQL and a secret scan, which this does not:
 
 ```bash
 python scripts/check.py
@@ -70,7 +70,7 @@ Not in scope: injection, secrets, dependencies, authentication settings, mobile 
 
 - `src/access_review/` is the tool.
 - `planted/` holds the apps with a known flaw and the answer key.
-- `scripts/` holds helper scripts. `scripts/check.py` runs all the checks.
+- `scripts/` holds helper scripts. `scripts/check.py` runs the four local checks.
 - `tests/` holds the pytest checks.
 - `CODING.md` has the coding rules. Every pull request must pass tests, lint, a security scan, CodeQL and a secret scan.
 
