@@ -27,3 +27,4 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Proof: update is read back by transaction id; delete is compared before and after, all in a transaction that is rolled back (tested: data unchanged).
   - A finding is proved when any touched row is owned by someone other than the actor. Limits: a delete blocked by a foreign key, or a table with no settable column, gives an `error` result and no finding.
   - Only the first test user acts. Visitors are not tested for update or delete; R5 and R6 are about users.
+- 2026-11-14, M3.2 review hardening: the update probe tries each settable column in turn; the delete diff counts identical rows one by one; a probe that ends in an error is listed in a report note, so a result is never silently clean. Ownership takeover (change the owner column) stays M3.3.

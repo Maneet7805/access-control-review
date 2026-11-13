@@ -184,3 +184,48 @@ def test_review_finds_exactly_the_planted_change_flaw_and_the_fixed_twin_is_clea
     report = out.read_text(encoding="utf-8")
     assert report.count("\n## ") == 1 and wording in report and "We undid it" in report
     assert main(["review", str(PLANTED / app / "fixed" / "migrations"), "--out", str(out)]) == 0
+
+
+def test_update_probe_tries_the_next_column_when_one_fails_a_unique_rule(tmp_path):
+    (tmp_path / "001.sql").write_text(
+        "insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@example.test'),"
+        " ('22222222-2222-2222-2222-222222222222', 'b@example.test');"
+        "create table public.pages (id uuid primary key default gen_random_uuid(),"
+        " owner_id uuid not null references auth.users (id), slug text not null unique, body text);"
+        "insert into public.pages (owner_id, slug) values ('11111111-1111-1111-1111-111111111111', 'a'),"
+        " ('22222222-2222-2222-2222-222222222222', 'b');")
+    with sandbox(tmp_path, baseline=True) as box:
+        evidence = user_updates_rows(box, "pages", "owner_id", USER_A)
+    assert evidence.result == "ok" and 'SET "body"' in evidence.statement and len(evidence.rows_seen) == 2
+
+
+class _FakeBox:
+    def __init__(self, output):
+        self.output = output
+
+    def run(self, _sql):
+        return self.output
+
+
+def test_deleting_duplicate_rows_is_counted_row_by_row():
+    row = '{"a": 1}'
+    box = _FakeBox(f"[{row}, {row}]\n[{row}]")  # two identical rows before, one left after: exactly one was deleted
+    assert user_deletes_rows(box, "t", USER_A).rows_seen == [{"a": 1}]
+
+
+def test_a_test_that_could_not_run_is_said_in_the_report_not_hidden(tmp_path):
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "001.sql").write_text(
+        "insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@example.test');"
+        "create table public.places (id int primary key, spot point not null);")
+    out = tmp_path / "report.md"
+    assert main(["review", str(app), "--out", str(out)]) == 0
+    report = out.read_text(encoding="utf-8")
+    assert "could not run" in report and 'visitor inserts row on "places"' in report
+
+
+def test_a_clean_app_has_no_could_not_run_note(tmp_path):
+    out = tmp_path / "report.md"
+    main(["review", str(PLANTED / "writes-03-update-others" / "fixed" / "migrations"), "--out", str(out)])
+    assert "could not run" not in out.read_text(encoding="utf-8")

@@ -117,19 +117,23 @@ def user_updates_rows(box, table, owner, user_id):
     actor, probe, target = f"user:{user_id}", "user_updates_rows", sql.Identifier("public", table)
     columns = json.loads(box.run(sql.SQL(COLUMNS_QUERY).format(sql.Literal(table)).as_string()))
     usable = [c for c in columns if c["name"] != owner and c["type"] in TEST_VALUES]
-    column = next((c for c in usable if c["name"] != "id"), usable[0] if usable else None)
-    if column is None:
-        return Evidence(probe, actor, f"UPDATE public.{table}", "error", [],
-                        "cannot build a test change: no column of a type we can set")
-    update = sql.SQL("UPDATE {} SET {} = {}").format(target, sql.Identifier(column["name"]),
-                                                    sql.SQL(TEST_VALUES[column["type"]]))
+    usable.sort(key=lambda c: c["name"] == "id")  # try the ordinary columns before the id
     readback = sql.SQL(
         "SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid").format(target)
-    try:
-        query, lines = _change_run(box, probe, user_id, update, None, readback)
-    except subprocess.CalledProcessError as error:
-        return _failed(probe, actor, update.as_string(), error)
-    return Evidence(probe, actor, query, "ok", json.loads(lines[-1]))
+    failure = Evidence(probe, actor, f"UPDATE public.{table}", "error", [],
+                       "cannot build a test change: no column of a type we can set")
+    for column in usable:  # a column can fail on a unique or check rule, so try the next one
+        update = sql.SQL("UPDATE {} SET {} = {}").format(target, sql.Identifier(column["name"]),
+                                                        sql.SQL(TEST_VALUES[column["type"]]))
+        try:
+            query, lines = _change_run(box, probe, user_id, update, None, readback)
+        except subprocess.CalledProcessError as error:
+            failure = _failed(probe, actor, update.as_string(), error)
+            if failure.result == "permission_denied":
+                return failure
+            continue
+        return Evidence(probe, actor, query, "ok", json.loads(lines[-1]))
+    return failure
 
 
 def user_deletes_rows(box, table, user_id):
@@ -146,4 +150,10 @@ def user_deletes_rows(box, table, user_id):
     except subprocess.CalledProcessError as error:
         return _failed(probe, actor, delete.as_string(), error)
     before, after = json.loads(lines[-2]), json.loads(lines[-1])
-    return Evidence(probe, actor, query, "ok", [row for row in before if row not in after])
+    remaining, gone = list(after), []
+    for row in before:  # one by one, so identical rows in a table with no key are counted correctly
+        if row in remaining:
+            remaining.remove(row)
+        else:
+            gone.append(row)
+    return Evidence(probe, actor, query, "ok", gone)
