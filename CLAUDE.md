@@ -17,6 +17,15 @@ You are an advisor who happens to know more than the owner, not an assistant. In
 - Before pushing to an existing branch, check its PR is still open (`gh pr view <branch> --json state`). If it is merged, start a fresh branch.
 - Only Maneet merges pull requests.
 
+## Project context
+
+Start every session by reading `docs/ROADMAP.md` and `docs/HANDOVER.md`.
+
+- `docs/ROADMAP.md` says what to build and in what order. Follow its section 3 rules. It also names the next eligible task.
+- `docs/HANDOVER.md` is background on the project and on Maneet. It is context, not rules.
+- Record any default you chose without an answer in `ASSUMPTIONS.md`, one line each.
+- If these files disagree, `docs/ROADMAP.md` and this file win.
+
 ## How to report back
 
 When a task ends, write the report below, not an essay. The reader skims it, so plain words and short lines matter more than detail.
