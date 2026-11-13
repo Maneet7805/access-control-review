@@ -27,5 +27,13 @@
       {"actor": "user-a", "action": "read", "table": "profiles", "expect": "own_row_only", "expected_failure": "locks_out_owner"}
     ],
     "decoy": false
+  },
+  "decoy-01-public-posts": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "visitor", "action": "read", "table": "posts", "expect": "public"}
+    ],
+    "decoy": true
   }
 }
