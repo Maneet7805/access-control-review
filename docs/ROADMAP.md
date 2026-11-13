@@ -23,9 +23,9 @@ How much detail each part has:
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
-- Current milestone: M0
-- Last merged PR: #20
-- Next eligible task: none. G0 and M1.1 (decision D1) wait for Maneet
+- Current milestone: M1
+- Last merged PR: #21
+- Next eligible task: none. G0 and D1 wait for Maneet
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
