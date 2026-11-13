@@ -104,3 +104,8 @@ def test_a_newline_in_a_name_cannot_start_a_new_line_or_heading():
     report = render_report("app\n# Forged", [finding])
     assert not any(line.startswith("# Forged") or line.startswith("## Forged") for line in report.splitlines())
     assert "\x0a" in report
+
+
+def test_unicode_line_separators_are_escaped_too():
+    report = render_report("a\u2028b\x85c", [])
+    assert "\u2028" not in report and "\x85" not in report

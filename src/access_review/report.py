@@ -28,8 +28,8 @@ def _actor_name(actor):
 
 
 def _plain(text):
-    """Control characters (newlines too) become visible escapes, so data cannot start a new line or block."""
-    return re.sub(r"[\x00-\x1f\x7f]", lambda match: f"\\x{ord(match.group()):02x}", text)
+    """Control characters and line separators become visible escapes, so data cannot start a new line."""
+    return re.sub(r"[\x00-\x1f\x7f-\x9f\u2028\u2029]", lambda match: f"\\x{ord(match.group()):02x}", text)
 
 
 def _code(text):
