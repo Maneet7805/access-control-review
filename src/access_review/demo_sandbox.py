@@ -20,9 +20,9 @@ def main(argv=None):
     migrations, table = args[0], (args[1] if len(args) > 1 else "profiles")
     try:
         with sandbox(migrations, baseline=True) as box:
-            counts = [("visitor", len(visitor_reads_rows(box, table))),
-                      ("user A", len(user_reads_rows(box, table, USER_A))),
-                      ("user B", len(user_reads_rows(box, table, USER_B)))]
+            counts = [("visitor", len(visitor_reads_rows(box, table).rows_seen)),
+                      ("user A", len(user_reads_rows(box, table, USER_A).rows_seen)),
+                      ("user B", len(user_reads_rows(box, table, USER_B).rows_seen))]
     except NotCheckable as error:
         print(f"Not checkable: {error}")
         return 1

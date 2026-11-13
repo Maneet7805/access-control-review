@@ -12,11 +12,11 @@ def _migration(tmp_path, grant_sql):
 
 def test_visitor_without_select_privilege_reads_no_rows(tmp_path):
     with sandbox(_migration(tmp_path, "")) as box:
-        assert visitor_reads_rows(box, "t") == []
+        assert visitor_reads_rows(box, "t").rows_seen == []
 
 
 def test_table_name_is_quoted_as_an_identifier(tmp_path):
     migration = _migration(tmp_path, 'CREATE TABLE "we""ird" (id int); INSERT INTO "we""ird" VALUES (7);'
                                      'GRANT SELECT ON "we""ird" TO anon;')
     with sandbox(migration) as box:
-        assert visitor_reads_rows(box, 'we"ird') == [{"id": 7}]
+        assert visitor_reads_rows(box, 'we"ird').rows_seen == [{"id": 7}]
