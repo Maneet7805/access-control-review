@@ -13,7 +13,7 @@ How much detail each part has:
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
-| M2 Thin slice | One app, one attack, one plain-language report, end to end | 4/6 |
+| M2 Thin slice | One app, one attack, one plain-language report, end to end | 5/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #36
-- Next eligible task: M2.5 Command line
+- Last merged PR: #37
+- Next eligible task: none. G2 waits for Maneet
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -205,7 +205,7 @@ Why: you get the whole flow working once, early. After this, widening is repeati
   - Files: `src/access_review/report.py`, `tests/test_report.py`, `tests/golden/`.
   - Content per finding: what is wrong in one sentence, who can do it, the proof (the exact statement and what came back), and a fix as text the developer can give to their own AI. When no finding: the exact sentence "No violation found under this test." The tool never changes the developer's code.
   - Validation: golden-file test for each planted app. A jargon test: terms such as "RLS", "policy", "anon", "JWT" must be explained in plain words the first time they appear in a report. A test asserts the word "secure" never appears except inside "No violation found under this test."
-- [ ] **M2.5 Command line.**
+- [x] **M2.5 Command line.**
   - Depends on: M2.4.
   - Goal: `python -m access_review review <migrations_dir> --out report.md`.
   - Files: `src/access_review/cli.py`, `tests/test_cli.py`.
