@@ -27,13 +27,18 @@ def _actor_name(actor):
     return "a visitor who is not signed in" if actor == "visitor" else f"signed-in user {actor.removeprefix('user:')}"
 
 
+def _code(text):
+    """Text for a Markdown code span: backticks are replaced so the data cannot close the span."""
+    return text.replace("`", "'")
+
+
 def _proof(evidence):
     rows = evidence.rows_seen
-    lines = [f"- What we ran: `{evidence.statement}`, as {_actor_name(evidence.actor)}.",
+    lines = [f"- What we ran: `{_code(evidence.statement)}`, as {_actor_name(evidence.actor)}.",
              f"- What came back: {len(rows)} row(s)."]
     if rows:
         lines.append(f"- The first {min(len(rows), MAX_ROWS_SHOWN)} row(s):")
-        lines += [f"  - `{json.dumps(row, sort_keys=True)}`" for row in rows[:MAX_ROWS_SHOWN]]
+        lines += [f"  - `{_code(json.dumps(row, sort_keys=True))}`" for row in rows[:MAX_ROWS_SHOWN]]
     return lines
 
 
@@ -43,13 +48,17 @@ def _explain_first_use(text):
     return text
 
 
-def render_report(app_name, findings):
-    """The report for one app as Markdown. `findings` is a list of Finding."""
+def _notes(notes):
+    return ["", *[f"**Note:** {note}" for note in notes]] if notes else []
+
+
+def render_report(app_name, findings, notes=()):
+    """The report for one app as Markdown. `findings` is a list of Finding; `notes` are cautions for the end."""
     lines = [f"# Access review: {app_name}", ""]
     if not findings:
         lines += [NO_VIOLATION, "",
                   "This means the attacks this tool tried found nothing. It does not cover every possible attack."]
-        return "\n".join(lines) + "\n"
+        return "\n".join(lines + _notes(notes)) + "\n"
     ordered = sorted(findings, key=lambda finding: finding.status != "proved")
     proved = sum(finding.status == "proved" for finding in ordered)
     lines += [f"{proved} problem(s) proved, {len(ordered) - proved} need your decision.", ""]
@@ -61,4 +70,4 @@ def render_report(app_name, findings):
             lines += _proof(evidence)
         lines += ["", "**Suggested fix** (you can give this text to your own AI assistant; "
                       "this tool never changes your code):", "", f"> {finding.fix}", ""]
-    return _explain_first_use("\n".join(lines))
+    return _explain_first_use("\n".join(lines + _notes(notes)))

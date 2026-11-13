@@ -10,7 +10,7 @@
 
 **Proof:**
 
-- What we ran: `SELECT * FROM "profiles"`, as signed-in user 11111111-1111-1111-1111-111111111111.
+- What we ran: `SELECT * FROM "public"."profiles"`, as signed-in user 11111111-1111-1111-1111-111111111111.
 - What came back: 2 row(s).
 - The first 2 row(s):
   - `{"bio": "bio of A", "email": "a@example.test", "id": "aaaaaaaa-0000-0000-0000-000000000001", "owner_id": "11111111-1111-1111-1111-111111111111"}`

@@ -3,6 +3,7 @@
 Exit code 0: nothing proved. 1: at least one problem proved. 2: the app could not be rebuilt.
 """
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -11,14 +12,21 @@ from access_review.report import render_report
 from access_review.rules import another_users_rows, owner_column
 from access_review.sandbox import NotCheckable, sandbox
 
-# The user probes act as the first 2 users already in auth.users.
-TEST_USERS_QUERY = "SELECT id FROM auth.users ORDER BY id LIMIT 2"
+# The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
+TABLES_QUERY = ("SELECT coalesce(json_agg(tablename ORDER BY tablename), '[]') "
+                "FROM pg_tables WHERE schemaname = 'public'")
+TEST_USERS_QUERY = "SELECT coalesce(json_agg(id), '[]') FROM (SELECT id FROM auth.users ORDER BY id LIMIT 2) u"
+NOTE_FEW_USERS = ("The app has fewer than 2 users in its database, so the tests that need a signed-in user "
+                  "could only partly run. Do not read this result as a clean one.")
 
 
 def review(box):
-    """Probe every table in public as a visitor and as each test user. One finding per flaw and table."""
-    tables = box.run("SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY 1").splitlines()
-    users = box.run(TEST_USERS_QUERY).splitlines()
+    """Probe every table in public as a visitor and as each test user. One finding per flaw and table.
+
+    Returns (findings, notes). Notes are plain-words cautions that go at the end of the report.
+    """
+    tables = json.loads(box.run(TABLES_QUERY))
+    users = json.loads(box.run(TEST_USERS_QUERY))
     findings, seen = [], set()
     for table in tables:
         owner = owner_column(box, table)
@@ -28,7 +36,7 @@ def review(box):
             if finding and (finding.flaw_id, table) not in seen:
                 seen.add((finding.flaw_id, table))
                 findings.append(finding)
-    return findings
+    return findings, ([NOTE_FEW_USERS] if len(users) < 2 else [])
 
 
 def _app_name(migrations):
@@ -46,11 +54,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         with sandbox(args.migrations_dir, baseline=True) as box:
-            findings = review(box)
+            findings, notes = review(box)
     except NotCheckable as error:
         print(f"Not checkable: {error}", file=sys.stderr)
         return 2
-    Path(args.out).write_text(render_report(args.name or _app_name(args.migrations_dir), findings), encoding="utf-8")
+    name = args.name or _app_name(args.migrations_dir)
+    Path(args.out).write_text(render_report(name, findings, notes), encoding="utf-8")
     proved = sum(finding.status == "proved" for finding in findings)
     print(f"{proved} proved, {len(findings) - proved} need a decision. Report: {args.out}")
     return 1 if proved else 0

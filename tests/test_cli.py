@@ -46,3 +46,36 @@ def test_python_dash_m_runs_the_same_command(tmp_path):
                                                                 / "vulnerable" / "migrations"), "--out", str(out)],
         capture_output=True, text=True, cwd=ROOT)
     assert result.returncode == 1 and out.exists()
+
+
+def _app(tmp_path, sql):
+    (tmp_path / "001.sql").write_bytes(sql.encode())
+    return tmp_path
+
+
+def test_table_with_a_newline_in_its_name_is_probed_as_one_table(tmp_path):
+    from access_review.cli import review
+    from access_review.sandbox import sandbox
+
+    table = 'public."a\nb"'
+    migrations = _app(tmp_path, f"create table {table} (id int); insert into {table} values (1);"
+                                f"grant select on {table} to anon; alter table {table} enable row level security;"
+                                f"create policy open_read on {table} for select to anon using (true);")
+    with sandbox(migrations, baseline=True) as box:
+        findings, _ = review(box)
+    assert [(f.flaw_id, f.table) for f in findings] == [("R1", "a\nb")]
+
+
+def test_report_says_when_the_app_has_too_few_users_to_act_as(tmp_path):
+    out = tmp_path / "report.md"
+    migrations = tmp_path / "app"
+    migrations.mkdir()
+    _app(migrations, "create table public.t (id int);")
+    assert main(["review", str(migrations), "--out", str(out)]) == 0
+    assert "fewer than 2 users" in out.read_text(encoding="utf-8")
+
+
+def test_no_too_few_users_note_when_the_app_has_two(tmp_path):
+    # Negative control: the planted apps seed two users.
+    _, report = _run("rows-01-profiles/fixed", tmp_path)
+    assert "fewer than 2 users" not in report
