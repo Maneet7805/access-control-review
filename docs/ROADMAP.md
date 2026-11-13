@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 4/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 5/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #24
-- Next eligible task: M1.5 (changes the answer key, so needs Maneet's approval first)
+- Last merged PR: #25
+- Next eligible task: M1.7 (M1.6 waits for decision D2)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -147,7 +147,7 @@ Why first: right now the test apps create their own roles and read identity from
   - Rules: no `CREATE ROLE` in migrations. Owners are `uuid references auth.users`. Seed two users. Key shape is in Appendix B. The flaw ids come from Appendix A.
   - Validation: `pytest tests/test_planted.py` passes. The flaws and fixes are the same as before, only the plumbing changed.
   - Needs Maneet's approval because it changes the key (rule 7).
-- [ ] **M1.5 "Still works" check.**
+- [x] **M1.5 "Still works" check.**
   - Depends on: M1.4.
   - Goal: fixed twins prove that allowed access survives, not only that nothing leaks.
   - Files: `planted/answer_key.json` (the `allowed` list), a new app `planted/rows-03-locked-out/`, `tests/test_planted.py`.
