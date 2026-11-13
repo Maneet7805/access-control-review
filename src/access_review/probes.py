@@ -9,7 +9,7 @@ from access_review.identity import as_user, as_visitor
 
 
 def _read_table(box, probe, actor, identity, table):
-    select = sql.SQL("SELECT * FROM {}").format(sql.Identifier(table))
+    select = sql.SQL("SELECT * FROM {}").format(sql.Identifier("public", table))
     query = select.as_string()
     wrapped = sql.SQL("SELECT coalesce(json_agg(t), '[]'::json) FROM ({}) t").format(select).as_string()
     try:

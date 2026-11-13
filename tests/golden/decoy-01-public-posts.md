@@ -10,7 +10,7 @@
 
 **Proof:**
 
-- What we ran: `SELECT * FROM "posts"`, as a visitor who is not signed in.
+- What we ran: `SELECT * FROM "public"."posts"`, as a visitor who is not signed in.
 - What came back: 1 row(s).
 - The first 1 row(s):
   - `{"body": "First post", "id": "bbbbbbbb-0000-0000-0000-000000000001", "title": "Hello"}`

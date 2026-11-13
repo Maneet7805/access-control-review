@@ -20,3 +20,13 @@ def test_table_name_is_quoted_as_an_identifier(tmp_path):
                                      'GRANT SELECT ON "we""ird" TO anon;')
     with sandbox(migration) as box:
         assert visitor_reads_rows(box, 'we"ird').rows_seen == [{"id": 7}]
+
+
+def test_probe_reads_the_table_in_public_even_if_another_schema_has_the_same_name(tmp_path):
+    # A schema named after the role comes first on the search path, so a bare table name could be redirected.
+    (tmp_path / "001.sql").write_text(
+        "create table public.t (id int); insert into public.t values (1), (2); grant select on public.t to anon;"
+        "create schema anon; create table anon.t (id int); grant usage on schema anon to anon;"
+        "grant select on anon.t to anon;")
+    with sandbox(tmp_path, baseline=True) as box:
+        assert len(visitor_reads_rows(box, "t").rows_seen) == 2

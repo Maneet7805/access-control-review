@@ -18,7 +18,7 @@ POSTS = [{"id": "bbbbbbbb-0000-0000-0000-000000000001", "title": "Hello", "body"
 
 
 def _user_finding():
-    evidence = Evidence("user_reads_rows", f"user:{USER_A}", 'SELECT * FROM "profiles"', "ok", PROFILES)
+    evidence = Evidence("user_reads_rows", f"user:{USER_A}", 'SELECT * FROM "public"."profiles"', "ok", PROFILES)
     return Finding(
         id=f"R2:profiles:user:{USER_A}", flaw_id="R2", actor=f"user:{USER_A}", proof=[evidence], table="profiles",
         explanation='A signed-in user can read rows that belong to other users in the table "profiles".',
@@ -28,7 +28,7 @@ def _user_finding():
 
 
 def _decoy_finding():
-    evidence = Evidence("visitor_reads_rows", "visitor", 'SELECT * FROM "posts"', "ok", POSTS)
+    evidence = Evidence("visitor_reads_rows", "visitor", 'SELECT * FROM "public"."posts"', "ok", POSTS)
     return Finding(
         id="R1:posts:visitor", flaw_id="R1", actor="visitor", proof=[evidence], table="posts",
         explanation='A visitor who is not signed in can read the table "posts", which has no owner column. '
@@ -82,3 +82,17 @@ def test_jargon_is_explained_at_first_use_only():
         assert report.count(f"({meaning})") == 1, term
         first_use = report.index(term)
         assert report[first_use + len(term):].startswith(f" ({meaning})"), term
+
+
+def test_data_with_a_backtick_cannot_close_the_code_span():
+    evidence = Evidence("visitor_reads_rows", "visitor", 'SELECT * FROM "public"."posts"', "ok",
+                        [{"title": "x` **bold** `y"}])
+    finding = replace(_decoy_finding(), proof=[evidence])
+    report = render_report("tick", [finding])
+    row_line = next(line for line in report.splitlines() if "bold" in line)
+    assert row_line.count("`") == 2
+
+
+def test_notes_go_at_the_end_of_the_report():
+    report = render_report("notes", [], notes=["Be careful."])
+    assert report.rstrip().endswith("**Note:** Be careful.") and NO_VIOLATION in report
