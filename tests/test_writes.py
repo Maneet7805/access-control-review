@@ -229,3 +229,12 @@ def test_a_clean_app_has_no_could_not_run_note(tmp_path):
     out = tmp_path / "report.md"
     main(["review", str(PLANTED / "writes-03-update-others" / "fixed" / "migrations"), "--out", str(out)])
     assert "could not run" not in out.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("app,variant", READ_APPS)
+def test_the_key_lists_the_update_and_delete_flaws_the_probes_find_in_the_rows_apps(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        update = user_updates_rows(box, "profiles", "owner_id", USER_A)
+        delete = user_deletes_rows(box, "profiles", USER_A)
+    assert _touches_others(update) == _planted(app, variant, "R5")
+    assert _touches_others(delete) == _planted(app, variant, "R6")
