@@ -94,3 +94,16 @@ def test_review_finds_exactly_the_planted_flaw_and_the_fixed_twin_is_clean(app, 
     report = out.read_text(encoding="utf-8")
     assert report.count("\n## ") == 1 and wording in report and "removed it again" in report
     assert main(["review", str(PLANTED / app / "fixed" / "migrations"), "--out", str(out)]) == 0
+
+
+READ_APPS = [(app, variant) for app in ("rows-01-profiles", "rows-02-profiles-all-authenticated")
+             for variant in ("vulnerable", "fixed")] + [("rows-03-locked-out", "fixed")]
+
+
+@pytest.mark.parametrize("app,variant", READ_APPS)
+def test_the_key_lists_the_write_flaws_the_probes_find_in_the_rows_apps(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        visitor = visitor_inserts_row(box, "profiles", "owner_id", USER_A)
+        spoof = user_inserts_row_for_other(box, "profiles", "owner_id", USER_A, USER_B)
+    assert bool(visitor.rows_seen) == _planted(app, variant, "R3")
+    assert bool(spoof.rows_seen) == _planted(app, variant, "R4")
