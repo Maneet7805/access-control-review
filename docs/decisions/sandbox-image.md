@@ -1,6 +1,6 @@
 # Sandbox base image (D1): what each image provides
 
-Status: evidence only. Maneet picks A or B in the pull request. Nothing here decides D1.
+Status: D1 decided by Maneet on 13 Nov 2026: B, Supabase's database image.
 
 Options (roadmap section 6):
 
