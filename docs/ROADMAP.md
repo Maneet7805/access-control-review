@@ -11,7 +11,7 @@ How much detail each part has:
 
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
-| M0 Harness | Repo, CI, rules, roadmap | 5/7 |
+| M0 Harness | Repo, CI, rules, roadmap | 6/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 0/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
@@ -25,7 +25,7 @@ How much detail each part has:
 
 - Current milestone: M0
 - Last merged PR: #18
-- Next eligible task: M0.6
+- Next eligible task: M0.7
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -102,7 +102,7 @@ Definition of done for every task, in addition to its own:
   - Files: create `docs/ROADMAP.md` (this file), `docs/HANDOVER.md`, `ASSUMPTIONS.md`, `.github/pull_request_template.md` (the section 5 checklist).
   - Validation: `ruff check .` and `pytest -v` still pass. Open the PR and check the template appears.
   - Done when: the three docs and the template are merged.
-- [ ] **M0.6 Point CLAUDE.md at the roadmap.** Needs Maneet's approval of the wording first.
+- [x] **M0.6 Point CLAUDE.md at the roadmap.** Needs Maneet's approval of the wording first.
   - Depends on: M0.5.
   - Goal: every session starts by reading `docs/ROADMAP.md` and `docs/HANDOVER.md`.
   - Files: `CLAUDE.md` (add a short section only, remove nothing).
