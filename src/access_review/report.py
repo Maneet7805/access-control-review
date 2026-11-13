@@ -44,6 +44,11 @@ def _row_text(row):
 
 def _proof(evidence):
     rows = evidence.rows_seen
+    if "inserts_row" in evidence.probe:
+        lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to add a new row "
+                 f"with `{_code(evidence.statement)}`.",
+                 "- What happened: the database accepted the new row. We removed it again, so your data is unchanged."]
+        return lines + ["- The row it accepted (name: value):"] + [f"  - `{_code(_row_text(row))}`" for row in rows]
     lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and asked the database for the table's rows "
              f"with `{_code(evidence.statement)}`.",
              f"- What we got back: {len(rows)} {'row' if len(rows) == 1 else 'rows'} of data."]

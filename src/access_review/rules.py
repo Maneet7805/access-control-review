@@ -23,7 +23,7 @@ def another_users_rows(table, owner, evidence: Evidence):
     - A signed-in user sees rows owned by someone else, and the table has an owner column: proved (R2).
     - A visitor reads a table with no owner column: needs_decision (R1). It may be public on purpose.
     """
-    if evidence.result != "ok" or not evidence.rows_seen:
+    if not evidence.probe.endswith("_reads_rows") or evidence.result != "ok" or not evidence.rows_seen:
         return None
     if evidence.actor.startswith("user:") and owner:
         own_id = evidence.actor.removeprefix("user:")
@@ -42,4 +42,36 @@ def another_users_rows(table, owner, evidence: Evidence):
             fix=f'If "{table}" should not be public, turn on row security for it and allow reads only for the '
                 "people who need them. If it is public on purpose, no change is needed.",
             status="needs_decision", table=table)
+    return None
+
+
+def insert_accepted(table, owner, evidence: Evidence):
+    """Finding when `evidence` shows an insert the database should have refused, else None.
+
+    - A visitor adds a row to a table with an owner column: proved (R3).
+    - A visitor adds a row to a table with no owner column: needs_decision (R3). It may be a public form.
+    - A signed-in user adds a row that names someone else as its owner: proved (R4).
+    """
+    if evidence.result != "ok" or not evidence.rows_seen:
+        return None
+    if evidence.probe == "visitor_inserts_row":
+        return Finding(
+            id=f"R3:{table}:visitor", flaw_id="R3", actor="visitor", proof=[evidence], table=table,
+            explanation=f'A visitor who is not signed in can add rows to the table "{table}".',
+            fix=f'Add a row security policy on "{table}" so only signed-in users can add rows, and only rows '
+                f'where "{owner}" equals their own user id (auth.uid()).' if owner else
+                f'If "{table}" should not accept rows from visitors, turn on row security for it and allow '
+                "inserts only for signed-in users. If it is a public form on purpose, no change is needed.",
+            status="proved" if owner else "needs_decision")
+    if evidence.probe == "user_inserts_row_for_other" and owner:
+        own_id = evidence.actor.removeprefix("user:")
+        if any(str(row.get(owner)) != own_id for row in evidence.rows_seen):
+            return Finding(
+                id=f"R4:{table}:{evidence.actor}", flaw_id="R4", actor=evidence.actor, proof=[evidence],
+                table=table,
+                explanation=f'A signed-in user can add a row to the table "{table}" that names someone else '
+                            "as its owner.",
+                fix=f'Add a check to the insert policy on "{table}" so a new row is only accepted when '
+                    f'"{owner}" equals their own user id (auth.uid()).',
+                status="proved")
     return None

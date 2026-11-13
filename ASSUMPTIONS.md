@@ -14,3 +14,10 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Table and user lists: read as JSON, so a newline in a name cannot split it.
   - Report text: backticks in data are replaced. Other Markdown/HTML in names is not escaped; the web page (M9) must escape.
   - Sandbox now sends SQL as bytes. Windows text mode was adding a carriage return to every newline inside migrations.
+
+- 2026-11-14, M3.1 insert attacks. Options and picks:
+  - How to prove an insert: run it in BEGIN ... ROLLBACK and read the row back inside the same transaction (matched by its transaction id). A trigger that swallows the insert then counts as refused. Picked over counting rows, which a trigger could fool.
+  - Test row: fill only columns that are required and have no default, using one harmless value per type. A required column of any other type gives an `error` result, not a finding. Limit: tables with such columns, or foreign keys other than the owner, are not tested for insert.
+  - R3 on a table with no owner column is `needs_decision` (it may be a public form). With an owner column it is `proved`.
+  - R4 uses the first 2 users in auth.users: the first acts, the second is the victim.
+  - Key: only `notes` with an `insert` allowed entry for each new app. The read tests in test_planted.py now run only for apps whose key lists a read; write apps are covered in test_writes.py. No test was weakened.

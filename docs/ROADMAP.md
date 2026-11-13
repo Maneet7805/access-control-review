@@ -14,7 +14,7 @@ How much detail each part has:
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
-| M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
+| M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 1/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M3
-- Last merged PR: #41
-- Next eligible task: M3.1
+- Last merged PR: #42
+- Next eligible task: M3.2
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -218,7 +218,7 @@ All M3 tasks depend on G2. M3.1 to M3.8 can be done in any order. M3.9 depends o
 
 Pattern for every task below: add the probe, add a planted vulnerable and fixed pair using the flaw ids in Appendix A, add the key entries, and add a negative control. Each new probe returns Evidence (M2.1) and each new rule returns a Finding (M2.2).
 
-- [ ] **M3.1 Insert as a visitor and as a user with someone else's owner id (R3, R4).** Apps: `writes-01-visitor-insert`, `writes-02-spoofed-owner`. Validation: the vulnerable apps accept the insert, the fixed ones refuse it. All writes run inside a transaction that is rolled back.
+- [x] **M3.1 Insert as a visitor and as a user with someone else's owner id (R3, R4).** Apps: `writes-01-visitor-insert`, `writes-02-spoofed-owner`. Validation: the vulnerable apps accept the insert, the fixed ones refuse it. All writes run inside a transaction that is rolled back.
 - [ ] **M3.2 Update and delete another user's row (R5, R6).** Apps: `writes-03-update-others`, `writes-04-delete-others`. Same validation.
 - [ ] **M3.3 Take over a row by changing its owner (R7).** App: `writes-05-owner-change`, missing check on new values. Validation: after the update the row belongs to the attacker (assert).
 - [ ] **M3.4 Protected column is writable by the user (C1).** Apps: `columns-01-self-admin` (a user sets their own `role` or `is_admin`), `columns-02-self-paid`. The probe updates a protected column on the actor's own row. Which columns count as protected comes from names like `role`, `is_admin`, `balance`, `paid`, `owner_id`, and from the key. If unsure, status `needs_decision`.
