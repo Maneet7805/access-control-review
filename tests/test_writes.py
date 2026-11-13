@@ -5,8 +5,13 @@ from conftest import PLANTED
 
 from access_review.cli import main
 from access_review.evidence import Evidence
-from access_review.probes import user_inserts_row_for_other, visitor_inserts_row
-from access_review.rules import insert_accepted
+from access_review.probes import (
+    user_deletes_rows,
+    user_inserts_row_for_other,
+    user_updates_rows,
+    visitor_inserts_row,
+)
+from access_review.rules import insert_accepted, others_rows_changed
 from access_review.sandbox import sandbox
 
 ANSWER_KEY = json.loads((PLANTED / "answer_key.json").read_text())
@@ -107,3 +112,75 @@ def test_the_key_lists_the_write_flaws_the_probes_find_in_the_rows_apps(app, var
         spoof = user_inserts_row_for_other(box, "profiles", "owner_id", USER_A, USER_B)
     assert bool(visitor.rows_seen) == _planted(app, variant, "R3")
     assert bool(spoof.rows_seen) == _planted(app, variant, "R4")
+
+
+# M3.2: update and delete. Each app is keyed by the flaw it plants and the action the owner must still be able to do.
+CHANGE_VARIANTS = [(app, variant) for app in ("writes-03-update-others", "writes-04-delete-others")
+                   for variant in ("vulnerable", "fixed")]
+
+
+def _changes(box):
+    return user_updates_rows(box, "notes", "owner_id", USER_A), user_deletes_rows(box, "notes", USER_A)
+
+
+def _touches_others(evidence):
+    return any(row["owner_id"] != USER_A for row in evidence.rows_seen)
+
+
+@pytest.mark.parametrize("app,variant", CHANGE_VARIANTS)
+def test_update_and_delete_probes_match_answer_key(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        update, delete = _changes(box)
+    assert _touches_others(update) == _planted(app, variant, "R5")
+    assert _touches_others(delete) == _planted(app, variant, "R6")
+
+
+@pytest.mark.parametrize("app,variant", CHANGE_VARIANTS)
+def test_update_and_delete_are_rolled_back(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        _changes(box)
+        assert box.run("select count(*) from public.notes") == "2"
+        assert box.run("select string_agg(body, ',' order by body) from public.notes") == "note of A,note of B"
+
+
+@pytest.mark.parametrize("app,action", [("writes-03-update-others", "update"), ("writes-04-delete-others", "delete")])
+def test_the_owner_can_still_change_or_delete_their_own_row_in_the_fixed_twin(app, action):
+    # Allowed access: the fix must keep the owner's own row workable. A fix that blocks everything would fail this.
+    with sandbox(PLANTED / app / "fixed" / "migrations", baseline=True) as box:
+        update, delete = _changes(box)
+    evidence = update if action == "update" else delete
+    assert [row["owner_id"] for row in evidence.rows_seen] == [USER_A]
+
+
+def test_a_user_with_no_policy_at_all_changes_nothing():
+    # Negative control: writes-01 fixed has insert and select policies only, so update and delete touch no rows.
+    with sandbox(PLANTED / "writes-01-visitor-insert" / "fixed" / "migrations", baseline=True) as box:
+        update, delete = _changes(box)
+    assert update.rows_seen == [] and delete.rows_seen == []
+
+
+def _change(probe, rows):
+    return Evidence(probe, f"user:{USER_A}", "STATEMENT", "ok", rows)
+
+
+def test_changing_or_deleting_someone_elses_row_is_proved_r5_and_r6():
+    rows = [{"owner_id": USER_A}, {"owner_id": USER_B}]
+    assert others_rows_changed("notes", "owner_id", _change("user_updates_rows", rows)).flaw_id == "R5"
+    assert others_rows_changed("notes", "owner_id", _change("user_deletes_rows", rows)).flaw_id == "R6"
+
+
+def test_touching_only_their_own_rows_or_nothing_gives_no_finding():
+    own = [{"owner_id": USER_A}]
+    assert others_rows_changed("notes", "owner_id", _change("user_updates_rows", own)) is None
+    assert others_rows_changed("notes", "owner_id", _change("user_deletes_rows", [])) is None
+    assert others_rows_changed("notes", None, _change("user_updates_rows", [{"x": 1}])) is None
+
+
+@pytest.mark.parametrize("app,wording", [("writes-03-update-others", "can change rows"),
+                                         ("writes-04-delete-others", "can delete rows")])
+def test_review_finds_exactly_the_planted_change_flaw_and_the_fixed_twin_is_clean(app, wording, tmp_path):
+    out = tmp_path / "report.md"
+    assert main(["review", str(PLANTED / app / "vulnerable" / "migrations"), "--out", str(out)]) == 1
+    report = out.read_text(encoding="utf-8")
+    assert report.count("\n## ") == 1 and wording in report and "We undid it" in report
+    assert main(["review", str(PLANTED / app / "fixed" / "migrations"), "--out", str(out)]) == 0
