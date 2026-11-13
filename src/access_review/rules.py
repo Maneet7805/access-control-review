@@ -75,3 +75,30 @@ def insert_accepted(table, owner, evidence: Evidence):
                     f'"{owner}" equals their own user id (auth.uid()).',
                 status="proved")
     return None
+
+
+CHANGES = {
+    "user_updates_rows": ("R5", "change", "update"),
+    "user_deletes_rows": ("R6", "delete", "delete"),
+}
+
+
+def others_rows_changed(table, owner, evidence: Evidence):
+    """Finding when a signed-in user changed or deleted rows that belong to someone else, else None.
+
+    The probe touches every row it is allowed to, so rows_seen holds exactly the rows row security let through.
+    Proved when any of them is owned by another user (R5 for update, R6 for delete).
+    """
+    if evidence.probe not in CHANGES or evidence.result != "ok" or not owner:
+        return None
+    flaw_id, verb, policy = CHANGES[evidence.probe]
+    own_id = evidence.actor.removeprefix("user:")
+    if not any(str(row.get(owner)) != own_id for row in evidence.rows_seen):
+        return None
+    return Finding(
+        id=f"{flaw_id}:{table}:{evidence.actor}", flaw_id=flaw_id, actor=evidence.actor, proof=[evidence],
+        table=table,
+        explanation=f'A signed-in user can {verb} rows that belong to other users in the table "{table}".',
+        fix=f'Add a row security policy on "{table}" so a user can only {verb} rows where "{owner}" equals their '
+            f"own user id (auth.uid()). Check the {policy} policy for a condition that is always true.",
+        status="proved")

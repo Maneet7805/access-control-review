@@ -76,7 +76,7 @@ def _insert_row(box, probe, actor, identity, table, owner, owner_id):
                                                                 sql.SQL(", ").join(values))
               if names else sql.SQL("INSERT INTO {} DEFAULT VALUES").format(target))
     readback = sql.SQL(
-        "SELECT coalesce(json_agg(t), '[]'::json) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid"
+        "SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid"
     ).format(target)
     query = insert.as_string()
     script = f"BEGIN; {identity}{query}; RESET ROLE; {readback.as_string()}; ROLLBACK;"
@@ -96,3 +96,64 @@ def user_inserts_row_for_other(box, table, owner, user_id, victim_id):
     """Evidence of whether signed-in `user_id` can add a row to `table` that names `victim_id` as its owner."""
     return _insert_row(box, "user_inserts_row_for_other", f"user:{user_id}", as_user(user_id), table, owner,
                        victim_id)
+
+
+def _change_run(box, probe, user_id, statement, before_readback, after_readback):
+    """Run `statement` as `user_id` inside a transaction that is rolled back. Returns (query, output lines)."""
+    query = statement.as_string()
+    parts = ["BEGIN;"]
+    if before_readback is not None:
+        parts.append(f"{before_readback.as_string()};")
+    parts += [as_user(user_id), f"{query};", "RESET ROLE;", f"{after_readback.as_string()};", "ROLLBACK;"]
+    return query, box.run(" ".join(parts)).splitlines()
+
+
+def user_updates_rows(box, table, owner, user_id):
+    """Evidence of which rows signed-in `user_id` can change in `table`. The change is rolled back.
+
+    The test sets one column to a harmless value on every row, with no WHERE, so row security alone decides which
+    rows are touched. rows_seen holds the rows that were changed, read back inside the same transaction.
+    """
+    actor, probe, target = f"user:{user_id}", "user_updates_rows", sql.Identifier("public", table)
+    columns = json.loads(box.run(sql.SQL(COLUMNS_QUERY).format(sql.Literal(table)).as_string()))
+    usable = [c for c in columns if c["name"] != owner and c["type"] in TEST_VALUES]
+    usable.sort(key=lambda c: c["name"] == "id")  # try the ordinary columns before the id
+    readback = sql.SQL(
+        "SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid").format(target)
+    failure = Evidence(probe, actor, f"UPDATE public.{table}", "error", [],
+                       "cannot build a test change: no column of a type we can set")
+    for column in usable:  # a column can fail on a unique or check rule, so try the next one
+        update = sql.SQL("UPDATE {} SET {} = {}").format(target, sql.Identifier(column["name"]),
+                                                        sql.SQL(TEST_VALUES[column["type"]]))
+        try:
+            query, lines = _change_run(box, probe, user_id, update, None, readback)
+        except subprocess.CalledProcessError as error:
+            failure = _failed(probe, actor, update.as_string(), error)
+            if failure.result == "permission_denied":
+                return failure
+            continue
+        return Evidence(probe, actor, query, "ok", json.loads(lines[-1]))
+    return failure
+
+
+def user_deletes_rows(box, table, user_id):
+    """Evidence of which rows signed-in `user_id` can delete from `table`. The delete is rolled back.
+
+    The test deletes every row, with no WHERE, so row security alone decides which rows go. rows_seen holds the rows
+    that were gone afterwards, compared inside the same transaction.
+    """
+    actor, probe, target = f"user:{user_id}", "user_deletes_rows", sql.Identifier("public", table)
+    delete = sql.SQL("DELETE FROM {}").format(target)
+    everything = sql.SQL("SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t").format(target)
+    try:
+        query, lines = _change_run(box, probe, user_id, delete, everything, everything)
+    except subprocess.CalledProcessError as error:
+        return _failed(probe, actor, delete.as_string(), error)
+    before, after = json.loads(lines[-2]), json.loads(lines[-1])
+    remaining, gone = list(after), []
+    for row in before:  # one by one, so identical rows in a table with no key are counted correctly
+        if row in remaining:
+            remaining.remove(row)
+        else:
+            gone.append(row)
+    return Evidence(probe, actor, query, "ok", gone)

@@ -44,6 +44,15 @@ def _row_text(row):
 
 def _proof(evidence):
     rows = evidence.rows_seen
+    if evidence.probe in ("user_updates_rows", "user_deletes_rows"):
+        verb, past = ("change", "changed") if evidence.probe == "user_updates_rows" else ("delete", "deleted")
+        shown = rows[:MAX_ROWS_SHOWN]
+        return [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to {verb} every row in the table "
+                f"with `{_code(evidence.statement)}`. Row security should limit this to the user's own rows.",
+                f"- What happened: the database allowed it for {len(rows)} {'row' if len(rows) == 1 else 'rows'}, "
+                "including rows that belong to other users. We undid it, so your data is unchanged.",
+                f"- The {'row' if len(shown) == 1 else 'rows'} it {past} (name: value):"
+                ] + [f"  - `{_code(_row_text(row))}`" for row in shown]
     if "inserts_row" in evidence.probe:
         lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to add a new row "
                  f"with `{_code(evidence.statement)}`.",

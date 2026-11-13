@@ -7,15 +7,24 @@ import json
 import sys
 from pathlib import Path
 
-from access_review.probes import user_inserts_row_for_other, user_reads_rows, visitor_inserts_row, visitor_reads_rows
+from access_review.probes import (
+    user_deletes_rows,
+    user_inserts_row_for_other,
+    user_reads_rows,
+    user_updates_rows,
+    visitor_inserts_row,
+    visitor_reads_rows,
+)
 from access_review.report import render_report
-from access_review.rules import another_users_rows, insert_accepted, owner_column
+from access_review.rules import another_users_rows, insert_accepted, others_rows_changed, owner_column
 from access_review.sandbox import NotCheckable, sandbox
 
 # The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
 TABLES_QUERY = ("SELECT coalesce(json_agg(tablename ORDER BY tablename), '[]') "
                 "FROM pg_tables WHERE schemaname = 'public'")
 TEST_USERS_QUERY = "SELECT coalesce(json_agg(id), '[]') FROM (SELECT id FROM auth.users ORDER BY id LIMIT 2) u"
+NOTE_NOT_RUN = ("These tests could not run, so this result does not cover them: {}. "
+                "Do not read this result as a clean one.")
 NOTE_FEW_USERS = ("The app has fewer than 2 users in its database, so the tests that need a signed-in user "
                   "could only partly run. Do not read this result as a clean one.")
 
@@ -27,7 +36,7 @@ def review(box):
     """
     tables = json.loads(box.run(TABLES_QUERY))
     users = json.loads(box.run(TEST_USERS_QUERY))
-    findings, seen = [], set()
+    findings, seen, not_run = [], set(), set()
     for table in tables:
         owner = owner_column(box, table)
         evidence = [visitor_reads_rows(box, table)] + [user_reads_rows(box, table, user) for user in users]
@@ -35,12 +44,20 @@ def review(box):
             evidence.append(visitor_inserts_row(box, table, owner, users[0]))
         if owner and len(users) == 2:
             evidence.append(user_inserts_row_for_other(box, table, owner, users[0], users[1]))
+        if owner and users:
+            evidence += [user_updates_rows(box, table, owner, users[0]), user_deletes_rows(box, table, users[0])]
         for item in evidence:
-            finding = another_users_rows(table, owner, item) or insert_accepted(table, owner, item)
+            if item.result == "error":
+                not_run.add(f'{item.probe.replace("_", " ")} on "{table}"')
+            finding = (another_users_rows(table, owner, item) or insert_accepted(table, owner, item)
+                       or others_rows_changed(table, owner, item))
             if finding and (finding.flaw_id, table) not in seen:
                 seen.add((finding.flaw_id, table))
                 findings.append(finding)
-    return findings, ([NOTE_FEW_USERS] if len(users) < 2 else [])
+    notes = [NOTE_FEW_USERS] if len(users) < 2 else []
+    if not_run:
+        notes.append(NOTE_NOT_RUN.format("; ".join(sorted(not_run))))
+    return findings, notes
 
 
 def _app_name(migrations):

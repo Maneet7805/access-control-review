@@ -52,6 +52,20 @@ def _insert_finding(flaw_id):
         fix='Add a row security policy on "notes" so only the right people can add rows.', status="proved")
 
 
+def _change_finding(flaw_id):
+    update = flaw_id == "R5"
+    verb = "change" if update else "delete"
+    probe = "user_updates_rows" if update else "user_deletes_rows"
+    statement = 'UPDATE "public"."notes" SET "body" = \'access-review\'' if update else 'DELETE FROM "public"."notes"'
+    rows = [{"id": "cccccccc-0000-0000-0000-000000000001", "owner_id": USER_A, "body": "note of A"},
+            {"id": "cccccccc-0000-0000-0000-000000000002", "owner_id": USER_B, "body": "note of B"}]
+    evidence = Evidence(probe, f"user:{USER_A}", statement, "ok", rows)
+    return Finding(
+        id=f"{flaw_id}:notes:user:{USER_A}", flaw_id=flaw_id, actor=f"user:{USER_A}", proof=[evidence], table="notes",
+        explanation=f'A signed-in user can {verb} rows that belong to other users in the table "notes".',
+        fix=f'Add a row security policy on "notes" so a user can only {verb} their own rows.', status="proved")
+
+
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
@@ -62,6 +76,8 @@ CASES = {
     "decoy-01-public-posts": [_decoy_finding()],
     "writes-01-visitor-insert-vulnerable": [_insert_finding("R3")],
     "writes-02-spoofed-owner-vulnerable": [_insert_finding("R4")],
+    "writes-03-update-others-vulnerable": [_change_finding("R5")],
+    "writes-04-delete-others-vulnerable": [_change_finding("R6")],
 }
 
 

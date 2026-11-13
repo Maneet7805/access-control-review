@@ -21,3 +21,10 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - R3 on a table with no owner column is `needs_decision` (it may be a public form). With an owner column it is `proved`.
   - R4 uses the first 2 users in auth.users: the first acts, the second is the victim.
   - Key: only `notes` with an `insert` allowed entry for each new app. The read tests in test_planted.py now run only for apps whose key lists a read; write apps are covered in test_writes.py. No test was weakened.
+
+- 2026-11-14, M3.2 update and delete. Options and picks:
+  - What to run: UPDATE (one harmless column set to a fixed value) and DELETE on every row, with no WHERE, as the first test user. Picked over "WHERE owner = other user" because Postgres also applies the select policy when a WHERE reads columns, so a missing select policy would hide a real update flaw.
+  - Proof: update is read back by transaction id; delete is compared before and after, all in a transaction that is rolled back (tested: data unchanged).
+  - A finding is proved when any touched row is owned by someone other than the actor. Limits: a delete blocked by a foreign key, or a table with no settable column, gives an `error` result and no finding.
+  - Only the first test user acts. Visitors are not tested for update or delete; R5 and R6 are about users.
+- 2026-11-14, M3.2 review hardening: the update probe tries each settable column in turn; the delete diff counts identical rows one by one; a probe that ends in an error is listed in a report note, so a result is never silently clean. Ownership takeover (change the owner column) stays M3.3.

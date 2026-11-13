@@ -57,5 +57,25 @@
       {"actor": "user-a", "action": "insert", "table": "notes", "expect": "own_owner_accepted"}
     ],
     "decoy": false
+  },
+  "writes-03-update-others": {
+    "flaws_vulnerable": [
+      {"flaw_id": "R5", "table": "notes", "actor": "user-a", "action": "update"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "update", "table": "notes", "expect": "own_row_changed"}
+    ],
+    "decoy": false
+  },
+  "writes-04-delete-others": {
+    "flaws_vulnerable": [
+      {"flaw_id": "R6", "table": "notes", "actor": "user-a", "action": "delete"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "delete", "table": "notes", "expect": "own_row_deleted"}
+    ],
+    "decoy": false
   }
 }
