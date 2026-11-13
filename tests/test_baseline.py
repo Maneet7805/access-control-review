@@ -1,6 +1,5 @@
 import subprocess
 
-import psycopg
 import pytest
 
 from access_review.sandbox import sandbox
@@ -49,46 +48,36 @@ def migrations(tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
-def conn_str(migrations):
-    with sandbox(migrations, baseline=True) as connection_string:
-        yield connection_string
+def box(migrations):
+    with sandbox(migrations, baseline=True) as running:
+        yield running
 
 
-def test_four_typical_migrations_apply_on_the_baseline(conn_str):
-    with psycopg.connect(conn_str) as conn:
-        assert conn.execute("select count(*) from public.notes").fetchone()[0] == 0
+def test_four_typical_migrations_apply_on_the_baseline(box):
+    assert box.run("select count(*) from public.notes") == "0"
 
 
-def test_trigger_on_auth_users_fires(conn_str):
-    with psycopg.connect(conn_str) as conn:
-        conn.execute("insert into auth.users (id) values (%s)", (USER_A,))
-        assert conn.execute("select count(*) from public.profiles").fetchone()[0] == 1
+def test_trigger_on_auth_users_fires(box):
+    box.run(f"insert into auth.users (id) values ('{USER_A}')")
+    assert box.run("select count(*) from public.profiles") == "1"
 
 
-def test_auth_functions_read_request_jwt_claims(conn_str):
-    with psycopg.connect(conn_str) as conn:
-        conn.execute("select set_config('request.jwt.claims', %s, false)",
-                     (f'{{"sub": "{USER_A}", "role": "authenticated"}}',))
-        row = conn.execute("select auth.uid()::text, auth.role(), auth.jwt() ->> 'sub'").fetchone()
-        assert row == (USER_A, "authenticated", USER_A)
-        conn.execute("select set_config('request.jwt.claims', '', false)")
-        assert conn.execute("select auth.uid()").fetchone()[0] is None
+def test_auth_functions_read_request_jwt_claims(box):
+    claims = f'{{"sub": "{USER_A}", "role": "authenticated"}}'
+    query = "select auth.uid()::text || '|' || auth.role() || '|' || (auth.jwt() ->> 'sub')"
+    assert box.run(f"set request.jwt.claims = '{claims}'; {query}") == f"{USER_A}|authenticated|{USER_A}"
+    assert box.run("set request.jwt.claims = ''; select auth.uid() is null") == "t"
 
 
-def test_table_without_row_security_is_open_to_anon_and_authenticated(conn_str):
-    with psycopg.connect(conn_str) as conn:
-        for role in ("anon", "authenticated"):
-            conn.execute(f"set role {role}")  # noqa: S608 - fixed role names
-            assert conn.execute("select count(*) from public.open_table").fetchone()[0] == 2
-            conn.execute("reset role")
+def test_table_without_row_security_is_open_to_anon_and_authenticated(box):
+    for role in ("anon", "authenticated"):
+        assert box.run(f"set role {role}; select count(*) from public.open_table") == "2"
 
 
-def test_roles_have_their_real_attributes(conn_str):
-    with psycopg.connect(conn_str) as conn:
-        rows = dict(conn.execute(
-            "select rolname, rolbypassrls from pg_roles where rolname in ('anon','authenticated','service_role')"
-        ).fetchall())
-        assert rows == {"anon": False, "authenticated": False, "service_role": True}
+def test_roles_have_their_real_attributes(box):
+    rows = box.run("select string_agg(rolname || '=' || rolbypassrls, ',' order by rolname) from pg_roles "
+                   "where rolname in ('anon','authenticated','service_role')")
+    assert rows == "anon=false,authenticated=false,service_role=true"
 
 
 def test_same_migrations_fail_on_bare_postgres(migrations):

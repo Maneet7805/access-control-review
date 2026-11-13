@@ -15,6 +15,10 @@ READY_TIMEOUT_SECONDS = 60
 DOCKER_TIMEOUT_SECONDS = 120
 MEMORY_LIMIT = "512m"
 CPU_LIMIT = "1"
+PIDS_LIMIT = "200"
+MIGRATION_TIMEOUT_SECONDS = 30
+# Linux capabilities the image needs to start. Everything else is dropped. Found by test.
+START_CAPABILITIES = ("CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID")
 
 
 # What psql prints when a migration fails, mapped to a plain-words reason. First match wins.
@@ -57,11 +61,22 @@ def _explain(error, sql_file):
                         f"could not be applied: {message}")
 
 
-def _docker(*args, stdin=None):
+def _docker(*args, stdin=None, timeout=DOCKER_TIMEOUT_SECONDS):
     return subprocess.run(
-        ["docker", *args], input=stdin, capture_output=True, text=True, check=True,
-        timeout=DOCKER_TIMEOUT_SECONDS,
+        ["docker", *args], input=stdin, capture_output=True, text=True, check=True, timeout=timeout,
     ).stdout.strip()
+
+
+class Sandbox:
+    """A running sandbox database. It has no network, so SQL goes in through `docker exec psql`."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def run(self, sql, user="postgres"):
+        """Run `sql` as `user`, return what psql prints (one line per row, columns joined by |)."""
+        return _docker("exec", "-i", self.name, "psql", "-h", "127.0.0.1", "-U", user, "-X", "-q", "-At",
+                       "-v", "ON_ERROR_STOP=1", "-f", "-", stdin=sql)
 
 
 def _wait_until_ready(name):
@@ -86,10 +101,12 @@ def _remove(name):
         raise RuntimeError(f"could not remove {name}: {result.stderr.strip()}")
 
 
-# TODO(Maneet, 09 Nov 2026): migrations run as superuser with network access; isolate before reviewing untrusted repos.
 @contextmanager
 def sandbox(migrations_dir, baseline=False):
-    """Start a fresh database, apply every .sql file in order, yield its connection string.
+    """Start a fresh database, apply every .sql file in order, yield a Sandbox to run SQL in.
+
+    The container has no network, no Linux capabilities beyond START_CAPABILITIES, no new privileges, and
+    limits on memory, CPU and processes. A migration that runs longer than MIGRATION_TIMEOUT_SECONDS is killed.
 
     With baseline=True the database is Supabase's image plus baseline.sql, and migrations run as the
     non-superuser postgres role, as on a hosted project. The default stays plain postgres:16 until the
@@ -99,8 +116,11 @@ def sandbox(migrations_dir, baseline=False):
     password = secrets.token_hex(16)
     try:
         _docker("run", "-d", "--rm", "--name", name, "--label", LABEL,
-                "--memory", MEMORY_LIMIT, "--cpus", CPU_LIMIT,
-                "-e", f"POSTGRES_PASSWORD={password}", "-p", "127.0.0.1::5432",
+                "--network", "none", "--cap-drop", "ALL",
+                *[arg for cap in START_CAPABILITIES for arg in ("--cap-add", cap)],
+                "--security-opt", "no-new-privileges", "--pids-limit", PIDS_LIMIT,
+                "--memory", MEMORY_LIMIT, "--memory-swap", MEMORY_LIMIT, "--cpus", CPU_LIMIT,
+                "-e", f"POSTGRES_PASSWORD={password}",
                 SUPABASE_IMAGE if baseline else IMAGE)
         _wait_until_ready(name)
         if baseline:
@@ -109,10 +129,13 @@ def sandbox(migrations_dir, baseline=False):
         for sql_file in sorted(Path(migrations_dir).glob("*.sql")):
             try:
                 _docker("exec", "-i", name, "psql", "-h", "127.0.0.1", "-U", "postgres",
-                        "-v", "ON_ERROR_STOP=1", "-f", "-", stdin=sql_file.read_text())
+                        "-v", "ON_ERROR_STOP=1", "-f", "-", stdin=sql_file.read_text(),
+                        timeout=MIGRATION_TIMEOUT_SECONDS)
             except subprocess.CalledProcessError as error:
                 raise _explain(error, sql_file) from error
-        port = _docker("port", name, "5432/tcp").splitlines()[0].rsplit(":", 1)[1]
-        yield f"postgresql://postgres:{password}@127.0.0.1:{port}/postgres"
+            except subprocess.TimeoutExpired as error:
+                raise NotCheckable(-1, error.cmd, "", sql_file.name, 0, "timeout",
+                                   f"ran longer than {MIGRATION_TIMEOUT_SECONDS} seconds and was stopped") from error
+        yield Sandbox(name)
     finally:
         _remove(name)

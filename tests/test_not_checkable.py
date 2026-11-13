@@ -24,5 +24,5 @@ def test_broken_migration_gives_its_own_reason_and_line(folder, kind, reason):
 def test_good_migration_gives_no_reason(tmp_path):
     # Negative control: a fine app rebuilds and raises nothing.
     (tmp_path / "001.sql").write_text("-- app migration\ncreate table t (id int);\n")
-    with sandbox(tmp_path) as conn_str:
-        assert conn_str.startswith("postgresql://")
+    with sandbox(tmp_path) as box:
+        assert box.run("select count(*) from t") == "0"

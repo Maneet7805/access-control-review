@@ -12,7 +12,7 @@ How much detail each part has:
 | Milestone | Plain-English purpose | Progress |
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
-| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 6/8 |
+| M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 7/8 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 0/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #26
-- Next eligible task: none. M1.6 waits for decision D2; G0 and G1 wait for Maneet
+- Last merged PR: #27
+- Next eligible task: none. G0 and G1 wait for Maneet; D2 to D6 await his decision
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -152,7 +152,7 @@ Why first: right now the test apps create their own roles and read identity from
   - Goal: fixed twins prove that allowed access survives, not only that nothing leaks.
   - Files: `planted/answer_key.json` (the `allowed` list), a new app `planted/rows-03-locked-out/`, `tests/test_planted.py`.
   - Validation: for every fixed twin, user A reads their own row (assertion). `rows-03-locked-out` has a policy `USING (false)` and must FAIL the allowed check (negative control). That failure is expected and is recorded in the key as `expected_failure: locks_out_owner`.
-- [ ] **M1.6 Sandbox hardening.** Needs DECISION D2.
+- [x] **M1.6 Sandbox hardening.** Needs DECISION D2.
   - Depends on: M1.2, D2 decided.
   - Goal: a stranger's migration cannot reach the network or run with more power than needed.
   - Files: `src/access_review/sandbox.py`, `tests/test_sandbox_hostile.py`, `planted/hostile-01-callout/`.
