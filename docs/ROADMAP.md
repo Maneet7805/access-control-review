@@ -13,7 +13,7 @@ How much detail each part has:
 | --- | --- | --- |
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
-| M2 Thin slice | One app, one attack, one plain-language report, end to end | 2/6 |
+| M2 Thin slice | One app, one attack, one plain-language report, end to end | 3/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 0/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M1
-- Last merged PR: #33
-- Next eligible task: M2.3 First rule
+- Last merged PR: #34
+- Next eligible task: M2.4 Plain-language report
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -193,7 +193,7 @@ Why: you get the whole flow working once, early. After this, widening is repeati
   - Files: `src/access_review/findings.py`, `schemas/finding.schema.json`, `tests/test_findings.py`.
   - Fields: `schema_version`, `id`, `flaw_id` (Appendix A), `owasp`, `table` or `column` or `function`, `actor`, `proof` (evidence), `explanation`, `fix`, `status`. Status is only `proved` or `needs_decision`. Nothing is `proved` without evidence.
   - Validation: sample findings validate against the schema. A finding with no evidence is rejected (negative control).
-- [ ] **M2.3 First rule: another user's rows are readable.**
+- [x] **M2.3 First rule: another user's rows are readable.**
   - Depends on: M2.2.
   - Goal: turn evidence from `user_reads_rows` into a finding.
   - Files: `src/access_review/rules.py`, `tests/test_rules.py`.
