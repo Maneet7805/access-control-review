@@ -1,20 +1,20 @@
-CREATE ROLE anon NOLOGIN;
-CREATE ROLE authenticated NOLOGIN;
+-- Two users, as Supabase would hold them. user-a is 1111..., user-b is 2222...
+insert into auth.users (id, email) values
+  ('11111111-1111-1111-1111-111111111111', 'a@example.test'),
+  ('22222222-2222-2222-2222-222222222222', 'b@example.test');
 
-CREATE TABLE profiles (
-  id serial PRIMARY KEY,
-  owner_id text NOT NULL,
-  email text NOT NULL,
+create table public.profiles (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users (id),
+  email text not null,
   bio text
 );
 
-INSERT INTO profiles (owner_id, email, bio) VALUES
-  ('user-a', 'a@example.test', 'bio of A'),
-  ('user-b', 'b@example.test', 'bio of B');
+insert into public.profiles (owner_id, email, bio) values
+  ('11111111-1111-1111-1111-111111111111', 'a@example.test', 'bio of A'),
+  ('22222222-2222-2222-2222-222222222222', 'b@example.test', 'bio of B');
 
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT SELECT ON profiles TO anon, authenticated;
+alter table public.profiles enable row level security;
 
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY own_rows ON profiles FOR SELECT TO authenticated
-  USING (owner_id = current_setting('app.user_id', true));
+create policy "own profile" on public.profiles for select to authenticated
+  using (owner_id = auth.uid());

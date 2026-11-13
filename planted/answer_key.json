@@ -1,15 +1,23 @@
 {
   "rows-01-profiles": {
-    "vulnerable": [
-      {"kind": "rows", "table": "profiles", "actor": "visitor", "action": "read", "expected": "leaks_rows"},
-      {"kind": "rows", "table": "profiles", "actor": "user-a", "action": "read", "expected": "leaks_other_users_rows"}
+    "flaws_vulnerable": [
+      {"flaw_id": "R1", "table": "profiles", "actor": "visitor", "action": "read"},
+      {"flaw_id": "R2", "table": "profiles", "actor": "user-a", "action": "read"}
     ],
-    "fixed": []
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read", "table": "profiles", "expect": "own_row_only"}
+    ],
+    "decoy": false
   },
   "rows-02-profiles-all-authenticated": {
-    "vulnerable": [
-      {"kind": "rows", "table": "profiles", "actor": "user-a", "action": "read", "expected": "leaks_other_users_rows"}
+    "flaws_vulnerable": [
+      {"flaw_id": "R2", "table": "profiles", "actor": "user-a", "action": "read"}
     ],
-    "fixed": []
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read", "table": "profiles", "expect": "own_row_only"}
+    ],
+    "decoy": false
   }
 }
