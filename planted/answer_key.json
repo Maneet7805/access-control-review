@@ -19,5 +19,13 @@
       {"actor": "user-a", "action": "read", "table": "profiles", "expect": "own_row_only"}
     ],
     "decoy": false
+  },
+  "rows-03-locked-out": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read", "table": "profiles", "expect": "own_row_only", "expected_failure": "locks_out_owner"}
+    ],
+    "decoy": false
   }
 }
