@@ -5,7 +5,7 @@ requires-python = ">=3.11"
 dependencies = ["psycopg[binary]"]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "bandit", "pip-audit"]
+dev = ["pytest", "ruff", "bandit", "pip-audit", "jsonschema"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
