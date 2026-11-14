@@ -136,6 +136,31 @@ def user_updates_rows(box, table, owner, user_id):
     return failure
 
 
+def user_changes_row_owner(box, table, owner, user_id, new_owner_id):
+    """Evidence of whether signed-in `user_id` can hand rows of `table` to `new_owner_id`. The change is rolled back.
+
+    The test sets the owner column to `new_owner_id` on every row, with no WHERE and a literal value, so row security
+    alone decides. rows_seen holds the rows whose content changed, compared inside the same transaction. Rows that
+    already belonged to `new_owner_id` are left out because nothing about them changed.
+    """
+    actor, probe, target = f"user:{user_id}", "user_changes_row_owner", sql.Identifier("public", table)
+    update = sql.SQL("UPDATE {} SET {} = {}").format(target, sql.Identifier(owner), sql.Literal(str(new_owner_id)))
+    before = sql.SQL("SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t").format(target)
+    after = sql.SQL(
+        "SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid").format(target)
+    try:
+        query, lines = _change_run(box, probe, user_id, update, before, after)
+    except subprocess.CalledProcessError as error:
+        return _failed(probe, actor, update.as_string(), error)
+    unchanged, changed = json.loads(lines[-2]), []
+    for row in json.loads(lines[-1]):  # one by one, so identical rows in a table with no key are counted correctly
+        if row in unchanged:
+            unchanged.remove(row)
+        else:
+            changed.append(row)
+    return Evidence(probe, actor, query, "ok", changed)
+
+
 def user_deletes_rows(box, table, user_id):
     """Evidence of which rows signed-in `user_id` can delete from `table`. The delete is rolled back.
 

@@ -14,7 +14,7 @@ How much detail each part has:
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
-| M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 2/9 |
+| M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 3/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
@@ -25,7 +25,7 @@ How much detail each part has:
 
 - Current milestone: M3
 - Last merged PR: #44
-- Next eligible task: M3.3
+- Next eligible task: M3.4
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -220,7 +220,7 @@ Pattern for every task below: add the probe, add a planted vulnerable and fixed 
 
 - [x] **M3.1 Insert as a visitor and as a user with someone else's owner id (R3, R4).** Apps: `writes-01-visitor-insert`, `writes-02-spoofed-owner`. Validation: the vulnerable apps accept the insert, the fixed ones refuse it. All writes run inside a transaction that is rolled back.
 - [x] **M3.2 Update and delete another user's row (R5, R6).** Apps: `writes-03-update-others`, `writes-04-delete-others`. Same validation.
-- [ ] **M3.3 Take over a row by changing its owner (R7).** App: `writes-05-owner-change`, missing check on new values. Validation: after the update the row belongs to the attacker (assert).
+- [x] **M3.3 Take over a row by changing its owner (R7).** App: `writes-05-owner-change`, missing check on new values. Validation: after the update the row belongs to the attacker (assert).
 - [ ] **M3.4 Protected column is writable by the user (C1).** Apps: `columns-01-self-admin` (a user sets their own `role` or `is_admin`), `columns-02-self-paid`. The probe updates a protected column on the actor's own row. Which columns count as protected comes from names like `role`, `is_admin`, `balance`, `paid`, `owner_id`, and from the key. If unsure, status `needs_decision`.
 - [ ] **M3.5 Private column is readable by others (C2).** App: `columns-03-phone-exposed`, a public profile table that also exposes phone numbers. Probe: read a private-looking column as another user or visitor.
 - [ ] **M3.6 A view that bypasses row security (V1).** App: `views-01-bypass`. A view created without the caller's rights shows everyone's rows even though the table underneath is locked. Validation: vulnerable view leaks, fixed view does not. Read the Supabase page on views in full and cite it in the PR.
