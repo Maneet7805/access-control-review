@@ -66,6 +66,17 @@ def _change_finding(flaw_id):
         fix=f'Add a row security policy on "notes" so a user can only {verb} their own rows.', status="proved")
 
 
+def _owner_finding():
+    rows = [{"id": "cccccccc-0000-0000-0000-000000000001", "owner_id": USER_B, "body": "note of A"}]
+    statement = f'UPDATE "public"."notes" SET "owner_id" = \'{USER_B}\''
+    evidence = Evidence("user_changes_row_owner", f"user:{USER_A}", statement, "ok", rows)
+    return Finding(
+        id=f"R7:notes:user:{USER_A}", flaw_id="R7", actor=f"user:{USER_A}", proof=[evidence], table="notes",
+        explanation='A signed-in user can change who owns a row in the table "notes", handing it to another user.',
+        fix='Add a check to the update policy on "notes" so a changed row must still have "owner_id" equal to '
+            "the user's own user id (auth.uid()).", status="proved")
+
+
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
@@ -78,6 +89,7 @@ CASES = {
     "writes-02-spoofed-owner-vulnerable": [_insert_finding("R4")],
     "writes-03-update-others-vulnerable": [_change_finding("R5")],
     "writes-04-delete-others-vulnerable": [_change_finding("R6")],
+    "writes-05-owner-change-vulnerable": [_owner_finding()],
 }
 
 
