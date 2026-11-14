@@ -6,12 +6,13 @@ from conftest import PLANTED
 from access_review.cli import main
 from access_review.evidence import Evidence
 from access_review.probes import (
+    user_changes_row_owner,
     user_deletes_rows,
     user_inserts_row_for_other,
     user_updates_rows,
     visitor_inserts_row,
 )
-from access_review.rules import insert_accepted, others_rows_changed
+from access_review.rules import insert_accepted, others_rows_changed, owner_changed
 from access_review.sandbox import sandbox
 
 ANSWER_KEY = json.loads((PLANTED / "answer_key.json").read_text())
@@ -176,13 +177,15 @@ def test_touching_only_their_own_rows_or_nothing_gives_no_finding():
     assert others_rows_changed("notes", None, _change("user_updates_rows", [{"x": 1}])) is None
 
 
-@pytest.mark.parametrize("app,wording", [("writes-03-update-others", "can change rows"),
-                                         ("writes-04-delete-others", "can delete rows")])
-def test_review_finds_exactly_the_planted_change_flaw_and_the_fixed_twin_is_clean(app, wording, tmp_path):
+# writes-03 vulnerable has "using (true)" and no check, so a user can also hand a row to someone else (R7), on top of
+# the planted R5. The key lists R5 only; R7 for this app is for the follow-up key PR (rule 12.3).
+@pytest.mark.parametrize("app,wording,sections", [("writes-03-update-others", "can change rows", 2),
+                                                  ("writes-04-delete-others", "can delete rows", 1)])
+def test_review_finds_exactly_the_planted_change_flaw_and_the_fixed_twin_is_clean(app, wording, sections, tmp_path):
     out = tmp_path / "report.md"
     assert main(["review", str(PLANTED / app / "vulnerable" / "migrations"), "--out", str(out)]) == 1
     report = out.read_text(encoding="utf-8")
-    assert report.count("\n## ") == 1 and wording in report and "We undid it" in report
+    assert report.count("\n## ") == sections and wording in report and "We undid it" in report
     assert main(["review", str(PLANTED / app / "fixed" / "migrations"), "--out", str(out)]) == 0
 
 
@@ -238,3 +241,72 @@ def test_the_key_lists_the_update_and_delete_flaws_the_probes_find_in_the_rows_a
         delete = user_deletes_rows(box, "profiles", USER_A)
     assert _touches_others(update) == _planted(app, variant, "R5")
     assert _touches_others(delete) == _planted(app, variant, "R6")
+
+
+# M3.3: change a row's owner (R7). The probe hands every row it may touch to the second test user.
+OWNER_VARIANTS = [("writes-05-owner-change", variant) for variant in ("vulnerable", "fixed")]
+
+
+@pytest.mark.parametrize("app,variant", OWNER_VARIANTS)
+def test_owner_change_probe_matches_answer_key(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        evidence = user_changes_row_owner(box, "notes", "owner_id", USER_A, USER_B)
+    # After the update the row belongs to someone other than the actor (the roadmap's "assert").
+    assert bool(evidence.rows_seen) == _planted(app, variant, "R7")
+    assert all(row["owner_id"] == USER_B for row in evidence.rows_seen)
+    assert (evidence.result == "ok") == (variant == "vulnerable")
+
+
+@pytest.mark.parametrize("app,variant", OWNER_VARIANTS)
+def test_owner_change_is_rolled_back(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        user_changes_row_owner(box, "notes", "owner_id", USER_A, USER_B)
+        assert box.run("select count(*) from public.notes") == "2"
+        assert box.run("select string_agg(owner_id::text, ',' order by body) from public.notes") == f"{USER_A},{USER_B}"
+
+
+def test_the_owner_can_still_edit_their_own_row_in_the_fixed_twin():
+    # Allowed access: the fix adds a check on the new owner value; it must not lock the owner out of editing.
+    with sandbox(PLANTED / "writes-05-owner-change" / "fixed" / "migrations", baseline=True) as box:
+        evidence = user_updates_rows(box, "notes", "owner_id", USER_A)
+    assert evidence.result == "ok" and [row["owner_id"] for row in evidence.rows_seen] == [USER_A]
+
+
+def test_an_app_with_no_update_policy_shows_no_owner_change():
+    # Negative control: writes-01 fixed has insert and select policies only.
+    with sandbox(PLANTED / "writes-01-visitor-insert" / "fixed" / "migrations", baseline=True) as box:
+        evidence = user_changes_row_owner(box, "notes", "owner_id", USER_A, USER_B)
+    assert evidence.rows_seen == [] and owner_changed("notes", "owner_id", evidence) is None
+
+
+def _owner(rows, result="ok", probe="user_changes_row_owner"):
+    return Evidence(probe, f"user:{USER_A}", "UPDATE", result, rows)
+
+
+def test_handing_a_row_to_another_user_is_proved_r7():
+    finding = owner_changed("notes", "owner_id", _owner([{"owner_id": USER_B}]))
+    assert (finding.flaw_id, finding.status, finding.table) == ("R7", "proved", "notes")
+
+
+def test_no_changed_rows_a_refusal_another_probe_or_no_owner_column_gives_no_r7():
+    assert owner_changed("notes", "owner_id", _owner([])) is None
+    assert owner_changed("notes", "owner_id", _owner([], "permission_denied")) is None
+    assert owner_changed("notes", "owner_id", _owner([{"owner_id": USER_B}], probe="user_updates_rows")) is None
+    assert owner_changed("notes", None, _owner([{"x": 1}])) is None
+    assert owner_changed("notes", "owner_id", _owner([{"owner_id": USER_A}])) is None
+
+
+def test_rows_already_owned_by_the_new_owner_are_not_counted():
+    row = '{"owner_id": "b"}'
+    other = '{"owner_id": "a"}'
+    box = _FakeBox(f"[{row}, {other}]\n[{row}, {row}]")  # one row really changed, one did not
+    assert user_changes_row_owner(box, "t", "owner_id", USER_A, USER_B).rows_seen == [{"owner_id": "b"}]
+
+
+def test_review_finds_exactly_the_owner_change_and_the_fixed_twin_is_clean(tmp_path):
+    out = tmp_path / "report.md"
+    assert main(["review", str(PLANTED / "writes-05-owner-change" / "vulnerable" / "migrations"),
+                 "--out", str(out)]) == 1
+    report = out.read_text(encoding="utf-8")
+    assert report.count("\n## ") == 1 and "change who owns a row" in report and "We undid it" in report
+    assert main(["review", str(PLANTED / "writes-05-owner-change" / "fixed" / "migrations"), "--out", str(out)]) == 0

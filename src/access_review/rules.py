@@ -146,3 +146,22 @@ def function_callable(function, evidence: Evidence):
         explanation=f'{who} can call the function "{name}", which runs with more rights than the caller.'
                     if elevated else f'{who} can call the function "{name}".',
         fix=fix)
+
+
+def owner_changed(table, owner, evidence: Evidence):
+    """Finding when a signed-in user handed a row to another user by changing its owner column, else None (R7).
+
+    The probe sets the owner to the other test user on every row it is allowed to touch. A row whose owner is now
+    someone other than the actor means the update policy has no working check on the new values.
+    """
+    if evidence.probe != "user_changes_row_owner" or evidence.result != "ok" or not owner:
+        return None
+    own_id = evidence.actor.removeprefix("user:")
+    if not any(str(row.get(owner)) != own_id for row in evidence.rows_seen):
+        return None
+    return Finding(
+        id=f"R7:{table}:{evidence.actor}", flaw_id="R7", actor=evidence.actor, proof=[evidence], table=table,
+        explanation=f'A signed-in user can change who owns a row in the table "{table}", handing it to another user.',
+        fix=f'Add a check to the update policy on "{table}" so a changed row must still have "{owner}" equal to '
+            "the user's own user id (auth.uid()). In SQL this is the WITH CHECK part of the policy.",
+        status="proved")

@@ -109,5 +109,15 @@
       {"actor": "user-a", "action": "call", "function": "note_count", "expect": "own_rows_only"}
     ],
     "decoy": false
+  },
+  "writes-05-owner-change": {
+    "flaws_vulnerable": [
+      {"flaw_id": "R7", "table": "notes", "actor": "user-a", "action": "update"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "update", "table": "notes", "expect": "own_row_changed"}
+    ],
+    "decoy": false
   }
 }

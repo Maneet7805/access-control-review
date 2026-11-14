@@ -37,3 +37,10 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Known limit (false alarms): a security definer function that checks the caller by filtering (for example `where owner_id = auth.uid()`) runs without error and is still reported as U1. The roadmap rule "proved when the call ran" accepts this. The fixed twins here raise an error instead. Revisit in M3.8 if the clean apps trigger it.
   - Side effects that a rollback cannot undo (sequences, notifications) stay inside the throwaway container.
   - Key: new entries only for the three new apps. The allowed list names the call that must keep working; the service role is not a probe actor, so its check is in test_functions.py.
+
+- 2026-11-14, M3.3 owner change (R7). Options and picks:
+  - Deviation from the roadmap wording ("the row belongs to the attacker"): the probe sets the owner to the second test user, so the row ends up owned by someone other than the actor. The actor hands a row away. Options: change the victim's row to the actor (needs R5 first, so it hides the missing-check flaw behind another one), or hand own rows away. Picked the second: it isolates the missing `WITH CHECK` on new values. The assert is that after the update a row's owner is not the actor.
+  - What to run: `UPDATE t SET owner = '<second user>'` with a literal value and no WHERE, as the first test user, rolled back. A literal needs no select policy. Rows already owned by the second user are left out, because nothing about them changed.
+  - Planted flaw is `using (owner_id = auth.uid()) with check (true)`, not "no check". In Postgres an update policy with no `WITH CHECK` reuses its `USING` condition for the new row, so the owner change would be refused and nothing would be planted.
+  - Side effects on other apps, expected: `rows-01` vulnerable (row security off) now shows R7 (CLI count 5 to 6), and `writes-03` vulnerable (`using (true)`, no check) shows R7 next to its planted R5. Tests updated to say so. The answer key is not changed for either (rule 12.3); both R7 entries are for a follow-up key PR.
+  - Needs 2 users and an owner column, like R4. Only the first test user acts.
