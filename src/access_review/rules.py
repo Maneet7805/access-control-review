@@ -1,4 +1,6 @@
 """Rules turn evidence into findings. A rule never runs anything itself; it only reads evidence."""
+import re
+
 from psycopg import sql
 
 from access_review.evidence import Evidence
@@ -102,3 +104,45 @@ def others_rows_changed(table, owner, evidence: Evidence):
         fix=f'Add a row security policy on "{table}" so a user can only {verb} rows where "{owner}" equals their '
             f"own user id (auth.uid()). Check the {policy} policy for a condition that is always true.",
         status="proved")
+
+
+ADMIN_NAME = re.compile(r"(^|_)admin(_|$)", re.IGNORECASE)
+CALLS = ("visitor_calls_function", "user_calls_function")
+
+
+def function_callable(function, evidence: Evidence):
+    """Finding when `evidence` shows a call the database should have refused, else None.
+
+    `function` is a dict with name and definer (True when it runs with its owner's rights). The call must have run.
+    - A visitor can call a function: U3, proved if the function runs with elevated rights, else needs_decision.
+    - A signed-in user can call a function with "admin" in its name: U2, same rule.
+    - A signed-in user can call any other function that runs with elevated rights: U1, proved.
+    A function that runs with the caller's rights is limited by row security, so on its own it is no finding.
+    """
+    if evidence.probe not in CALLS or evidence.result != "ok":
+        return None
+    name, elevated = function["name"], function["definer"]
+    status = "proved" if elevated else "needs_decision"
+    if evidence.probe == "visitor_calls_function":
+        flaw_id, who = "U3", "A visitor who is not signed in"
+        fix = (f'Run REVOKE EXECUTE ON FUNCTION public."{name}" FROM PUBLIC, anon; (Postgres lets everyone call a new '
+               "function unless you remove that). Then allow only the roles that need it. If visitors must call it "
+               "on purpose, no change is needed.")
+    elif ADMIN_NAME.search(name):
+        flaw_id, who = "U2", "A signed-in user who is not an admin"
+        fix = (f'Make "{name}" admin-only: run REVOKE EXECUTE ON FUNCTION public."{name}" FROM PUBLIC, anon, '
+               "authenticated; and call it only from your server, or check inside the function that the caller is "
+               "an admin and raise an error if not.")
+    elif elevated:
+        flaw_id, who = "U1", "A signed-in user"
+        fix = (f'Make "{name}" check who is calling (for example compare auth.uid() with the row owner) and raise an '
+               "error if the caller may not do this, or make it run with the caller's rights (security invoker) so "
+               "row security applies.")
+    else:
+        return None
+    return Finding(
+        id=f"{flaw_id}:{name}:{evidence.actor}", flaw_id=flaw_id, actor=evidence.actor, proof=[evidence],
+        function=name, status=status,
+        explanation=f'{who} can call the function "{name}", which runs with more rights than the caller.'
+                    if elevated else f'{who} can call the function "{name}".',
+        fix=fix)

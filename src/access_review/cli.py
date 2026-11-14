@@ -8,21 +8,37 @@ import sys
 from pathlib import Path
 
 from access_review.probes import (
+    user_calls_function,
     user_deletes_rows,
     user_inserts_row_for_other,
     user_reads_rows,
     user_updates_rows,
+    visitor_calls_function,
     visitor_inserts_row,
     visitor_reads_rows,
 )
 from access_review.report import render_report
-from access_review.rules import another_users_rows, insert_accepted, others_rows_changed, owner_column
+from access_review.rules import (
+    another_users_rows,
+    function_callable,
+    insert_accepted,
+    others_rows_changed,
+    owner_column,
+)
 from access_review.sandbox import NotCheckable, sandbox
 
 # The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
 TABLES_QUERY = ("SELECT coalesce(json_agg(tablename ORDER BY tablename), '[]') "
                 "FROM pg_tables WHERE schemaname = 'public'")
 TEST_USERS_QUERY = "SELECT coalesce(json_agg(id), '[]') FROM (SELECT id FROM auth.users ORDER BY id LIMIT 2) u"
+# Functions written in public (not trigger functions, not part of an extension), with their argument types.
+FUNCTIONS_QUERY = (
+    "SELECT coalesce(json_agg(json_build_object('name', p.proname, 'definer', p.prosecdef, 'args', "
+    "(SELECT coalesce(json_agg(format_type(t, NULL) ORDER BY o), '[]') "
+    "FROM unnest(p.proargtypes::oid[]) WITH ORDINALITY a(t, o))) ORDER BY p.proname, p.oid), '[]') "
+    "FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace AND p.prokind = 'f' "
+    "AND p.prorettype <> 'trigger'::regtype "
+    "AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = p.oid AND d.deptype = 'e')")
 NOTE_NOT_RUN = ("These tests could not run, so this result does not cover them: {}. "
                 "Do not read this result as a clean one.")
 NOTE_FEW_USERS = ("The app has fewer than 2 users in its database, so the tests that need a signed-in user "
@@ -53,6 +69,16 @@ def review(box):
                        or others_rows_changed(table, owner, item))
             if finding and (finding.flaw_id, table) not in seen:
                 seen.add((finding.flaw_id, table))
+                findings.append(finding)
+    for function in json.loads(box.run(FUNCTIONS_QUERY)):
+        name = function["name"]
+        calls = [visitor_calls_function(box, function)] + [user_calls_function(box, function, u) for u in users[:1]]
+        for item in calls:
+            if item.result == "error":
+                not_run.add(f'{item.probe.replace("_", " ")} "{name}"')
+            finding = function_callable(function, item)
+            if finding and ("function", name) not in seen:  # one finding per function; the visitor is tried first
+                seen.add(("function", name))
                 findings.append(finding)
     notes = [NOTE_FEW_USERS] if len(users) < 2 else []
     if not_run:

@@ -14,7 +14,7 @@ How much detail each part has:
 | M0 Harness | Repo, CI, rules, roadmap | 7/7 |
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
-| M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 2/9 |
+| M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 3/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 0/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
@@ -224,7 +224,7 @@ Pattern for every task below: add the probe, add a planted vulnerable and fixed 
 - [ ] **M3.4 Protected column is writable by the user (C1).** Apps: `columns-01-self-admin` (a user sets their own `role` or `is_admin`), `columns-02-self-paid`. The probe updates a protected column on the actor's own row. Which columns count as protected comes from names like `role`, `is_admin`, `balance`, `paid`, `owner_id`, and from the key. If unsure, status `needs_decision`.
 - [ ] **M3.5 Private column is readable by others (C2).** App: `columns-03-phone-exposed`, a public profile table that also exposes phone numbers. Probe: read a private-looking column as another user or visitor.
 - [ ] **M3.6 A view that bypasses row security (V1).** App: `views-01-bypass`. A view created without the caller's rights shows everyone's rows even though the table underneath is locked. Validation: vulnerable view leaks, fixed view does not. Read the Supabase page on views in full and cite it in the PR.
-- [ ] **M3.7 Functions: a signed-in user or visitor can call something they should not (U1, U2, U3).** Apps: `functions-01-admin-delete-any-user`, `functions-02-security-definer-no-check`, `functions-03-default-execute`. Probe: call each function with typed dummy arguments inside a savepoint that is rolled back, and record success, permission denied or other error. Status is `proved` only when the call actually ran.
+- [x] **M3.7 Functions: a signed-in user or visitor can call something they should not (U1, U2, U3).** Apps: `functions-01-admin-delete-any-user`, `functions-02-security-definer-no-check`, `functions-03-default-execute`. Probe: call each function with typed dummy arguments inside a savepoint that is rolled back, and record success, permission denied or other error. Status is `proved` only when the call actually ran.
 - [ ] **M3.8 Decoys and clean apps.** Apps: `decoy-02-public-profile-read` (public on purpose), `decoy-03-shared-team-table`, `clean-01-all-correct`, `clean-02-all-correct-different-style`. Validation: zero `proved` findings on clean apps. Decoys give `needs_decision`, never `proved`. This is the false-alarm test.
 - [ ] **M3.9 The tests must have teeth.**
   - Depends on: M3.1 to M3.8.

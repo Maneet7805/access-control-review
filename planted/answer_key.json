@@ -79,5 +79,35 @@
       {"actor": "user-a", "action": "delete", "table": "notes", "expect": "own_row_deleted"}
     ],
     "decoy": false
+  },
+  "functions-01-admin-delete-any-user": {
+    "flaws_vulnerable": [
+      {"flaw_id": "U2", "function": "admin_delete_user", "actor": "user-a", "action": "call"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "service-role", "action": "call", "function": "admin_delete_user", "expect": "call_runs"}
+    ],
+    "decoy": false
+  },
+  "functions-02-security-definer-no-check": {
+    "flaws_vulnerable": [
+      {"flaw_id": "U1", "function": "set_note_body", "actor": "user-a", "action": "call"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "call", "function": "set_note_body", "expect": "own_note_changed"}
+    ],
+    "decoy": false
+  },
+  "functions-03-default-execute": {
+    "flaws_vulnerable": [
+      {"flaw_id": "U3", "function": "note_count", "actor": "visitor", "action": "call"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "call", "function": "note_count", "expect": "own_rows_only"}
+    ],
+    "decoy": false
   }
 }

@@ -28,3 +28,12 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - A finding is proved when any touched row is owned by someone other than the actor. Limits: a delete blocked by a foreign key, or a table with no settable column, gives an `error` result and no finding.
   - Only the first test user acts. Visitors are not tested for update or delete; R5 and R6 are about users.
 - 2026-11-14, M3.2 review hardening: the update probe tries each settable column in turn; the delete diff counts identical rows one by one; a probe that ends in an error is listed in a report note, so a result is never silently clean. Ownership takeover (change the owner column) stays M3.3.
+
+- 2026-11-14, M3.7 functions. Options and picks:
+  - What to call: every function in public (not trigger functions, not extension members) once as a visitor and once as the first test user, with one harmless value per argument type, in a savepoint inside a transaction that is rolled back, with a 10 second limit. An argument type we cannot fill gives an `error` result (listed in the report note), never a finding.
+  - Proved only when the call ran. A refusal is `permission_denied`: no execute permission, or an error the function raises on purpose (SQLSTATE P0001). Limit: a P0001 raised because our dummy values were wrong looks like a refusal.
+  - Flaw ids: visitor ran it, U3; user ran a function with "admin" in its name, U2; user ran any other function that runs with its owner's rights (security definer), U1. A function that runs with the caller's rights is limited by row security, so a user calling it is no finding, and a visitor calling it is `needs_decision` (it may be public on purpose).
+  - One finding per function; the visitor is tried first, so U3 hides the U1 or U2 for the same function.
+  - Known limit (false alarms): a security definer function that checks the caller by filtering (for example `where owner_id = auth.uid()`) runs without error and is still reported as U1. The roadmap rule "proved when the call ran" accepts this. The fixed twins here raise an error instead. Revisit in M3.8 if the clean apps trigger it.
+  - Side effects that a rollback cannot undo (sequences, notifications) stay inside the throwaway container.
+  - Key: new entries only for the three new apps. The allowed list names the call that must keep working; the service role is not a probe actor, so its check is in test_functions.py.

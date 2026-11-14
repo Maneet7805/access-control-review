@@ -8,7 +8,8 @@ from access_review.evidence import Evidence
 from access_review.identity import as_user, as_visitor
 
 # What psql says when the database refuses an action. Anything else is reported as a plain error.
-REFUSALS = ("permission denied", "violates row-level security")
+# P0001 is the code of an error a function raises on purpose (raise exception); function calls report error codes.
+REFUSALS = ("permission denied", "violates row-level security", "P0001")
 # A harmless value for each column type, used to fill the columns a test row must have.
 TEST_VALUES = {
     "text": "'access-review'", "character varying": "'access-review'",
@@ -157,3 +158,38 @@ def user_deletes_rows(box, table, user_id):
         else:
             gone.append(row)
     return Evidence(probe, actor, query, "ok", gone)
+
+
+def _call_function(box, probe, actor, identity, function):
+    """Call `function` (a dict with name and args, as listed by the CLI) once with typed dummy arguments.
+
+    The call runs in a savepoint inside a transaction that is rolled back, with a time limit, so nothing is kept.
+    result is ok only when the call actually ran. A refusal (no permission, or an error the function raises on
+    purpose) is permission_denied. Anything else, such as an argument type we cannot fill, is an error.
+    """
+    name, target = function["name"], sql.Identifier("public", function["name"])
+    unfillable = [kind for kind in function["args"] if kind not in TEST_VALUES]
+    if unfillable:
+        message = f'cannot build a test call: an argument has type {unfillable[0]}'
+        return Evidence(probe, actor, f"SELECT public.{name}(...)", "error", [], message)
+    arguments = sql.SQL(", ").join(sql.SQL(f"{TEST_VALUES[kind]}::{kind}") for kind in function["args"])
+    call = sql.SQL("SELECT {}({}) AS result").format(target, arguments)
+    wrapped = sql.SQL("SELECT coalesce(jsonb_agg(to_jsonb(f)), '[]'::jsonb) FROM ({}) f").format(call)
+    query = call.as_string()
+    script = ("\\set VERBOSITY verbose\nBEGIN; SET LOCAL statement_timeout = '10s'; SAVEPOINT call; "
+              f"{identity}{wrapped.as_string()}; ROLLBACK TO call; ROLLBACK;")
+    try:
+        output = box.run(script)
+    except subprocess.CalledProcessError as error:
+        return _failed(probe, actor, query, error)
+    return Evidence(probe, actor, query, "ok", json.loads(output.splitlines()[-1]))
+
+
+def visitor_calls_function(box, function):
+    """Evidence of whether an unauthenticated visitor can call `function`."""
+    return _call_function(box, "visitor_calls_function", "visitor", as_visitor(), function)
+
+
+def user_calls_function(box, function, user_id):
+    """Evidence of whether signed-in `user_id` can call `function`."""
+    return _call_function(box, "user_calls_function", f"user:{user_id}", as_user(user_id), function)
