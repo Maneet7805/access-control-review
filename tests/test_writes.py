@@ -178,7 +178,7 @@ def test_touching_only_their_own_rows_or_nothing_gives_no_finding():
 
 
 # writes-03 vulnerable has "using (true)" and no check, so a user can also hand a row to someone else (R7), on top of
-# the planted R5. The key lists R5 only; R7 for this app is for the follow-up key PR (rule 12.3).
+# the planted R5. The key lists both.
 @pytest.mark.parametrize("app,wording,sections", [("writes-03-update-others", "can change rows", 2),
                                                   ("writes-04-delete-others", "can delete rows", 1)])
 def test_review_finds_exactly_the_planted_change_flaw_and_the_fixed_twin_is_clean(app, wording, sections, tmp_path):
@@ -310,3 +310,17 @@ def test_review_finds_exactly_the_owner_change_and_the_fixed_twin_is_clean(tmp_p
     report = out.read_text(encoding="utf-8")
     assert report.count("\n## ") == 1 and "change who owns a row" in report and "We undid it" in report
     assert main(["review", str(PLANTED / "writes-05-owner-change" / "fixed" / "migrations"), "--out", str(out)]) == 0
+
+
+@pytest.mark.parametrize("app,variant", READ_APPS)
+def test_the_key_lists_the_owner_change_flaw_the_probe_finds_in_the_rows_apps(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        evidence = user_changes_row_owner(box, "profiles", "owner_id", USER_A, USER_B)
+    assert bool(evidence.rows_seen) == _planted(app, variant, "R7")
+
+
+@pytest.mark.parametrize("app,variant", CHANGE_VARIANTS)
+def test_the_key_lists_the_owner_change_flaw_the_probe_finds_in_the_update_and_delete_apps(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        evidence = user_changes_row_owner(box, "notes", "owner_id", USER_A, USER_B)
+    assert bool(evidence.rows_seen) == _planted(app, variant, "R7")
