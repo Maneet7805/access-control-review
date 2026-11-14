@@ -6,7 +6,8 @@
       {"flaw_id": "R3", "table": "profiles", "actor": "visitor", "action": "insert"},
       {"flaw_id": "R4", "table": "profiles", "actor": "user-a", "action": "insert"},
       {"flaw_id": "R5", "table": "profiles", "actor": "user-a", "action": "update"},
-      {"flaw_id": "R6", "table": "profiles", "actor": "user-a", "action": "delete"}
+      {"flaw_id": "R6", "table": "profiles", "actor": "user-a", "action": "delete"},
+      {"flaw_id": "R7", "table": "profiles", "actor": "user-a", "action": "update"}
     ],
     "flaws_fixed": [],
     "allowed": [
@@ -62,7 +63,8 @@
   },
   "writes-03-update-others": {
     "flaws_vulnerable": [
-      {"flaw_id": "R5", "table": "notes", "actor": "user-a", "action": "update"}
+      {"flaw_id": "R5", "table": "notes", "actor": "user-a", "action": "update"},
+      {"flaw_id": "R7", "table": "notes", "actor": "user-a", "action": "update"}
     ],
     "flaws_fixed": [],
     "allowed": [
