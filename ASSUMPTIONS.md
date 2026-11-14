@@ -28,3 +28,10 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - A finding is proved when any touched row is owned by someone other than the actor. Limits: a delete blocked by a foreign key, or a table with no settable column, gives an `error` result and no finding.
   - Only the first test user acts. Visitors are not tested for update or delete; R5 and R6 are about users.
 - 2026-11-14, M3.2 review hardening: the update probe tries each settable column in turn; the delete diff counts identical rows one by one; a probe that ends in an error is listed in a report note, so a result is never silently clean. Ownership takeover (change the owner column) stays M3.3.
+
+- 2026-11-14, M3.4 protected columns (C1). Options and picks:
+  - Which columns are protected: a column is protected when one word of its name (split on underscores) is in role, roles, admin, paid, balance, credits, permissions, superuser. Picked over asking the key, because the tool must work on apps that have no key. The owner column is left out (R7 covers it).
+  - Status: always `proved` when the change went through, because the column is picked by name and the test really changed it. `needs_decision` is not used. Limit: a protected column with an unlisted name (for example `tier`) is not tested.
+  - What the test does: set the column to a new value (text: 'admin', then 'access-review' if a check rule refuses the first; boolean: the opposite; number: plus 1) on every row the user may update, only where the value really changes, in a transaction that is rolled back. Proved when one of the changed rows belongs to the acting user. Other users' rows are R5, not C1.
+  - Fix wording and planted fixes: column-level privileges (revoke update on the table, grant update on the harmless columns), as Supabase documents for column security. Picked over a trigger because it is the simplest fix an app can copy.
+  - Key: only `members.role` (columns-01) and `accounts.paid` (columns-02), each with an `update` allowed entry. Existing key entries are unchanged. No existing planted app has a protected-looking column, so no CLI counts moved.

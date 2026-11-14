@@ -12,11 +12,18 @@ from access_review.probes import (
     user_inserts_row_for_other,
     user_reads_rows,
     user_updates_rows,
+    user_writes_protected_columns,
     visitor_inserts_row,
     visitor_reads_rows,
 )
 from access_review.report import render_report
-from access_review.rules import another_users_rows, insert_accepted, others_rows_changed, owner_column
+from access_review.rules import (
+    another_users_rows,
+    insert_accepted,
+    others_rows_changed,
+    owner_column,
+    protected_column_changed,
+)
 from access_review.sandbox import NotCheckable, sandbox
 
 # The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
@@ -46,13 +53,17 @@ def review(box):
             evidence.append(user_inserts_row_for_other(box, table, owner, users[0], users[1]))
         if owner and users:
             evidence += [user_updates_rows(box, table, owner, users[0]), user_deletes_rows(box, table, users[0])]
-        for item in evidence:
+        checks = [(item, None) for item in evidence]
+        if owner and users:
+            checks += [(item, column) for column, item in user_writes_protected_columns(box, table, owner, users[0])]
+        for item, column in checks:
             if item.result == "error":
                 not_run.add(f'{item.probe.replace("_", " ")} on "{table}"')
             finding = (another_users_rows(table, owner, item) or insert_accepted(table, owner, item)
-                       or others_rows_changed(table, owner, item))
-            if finding and (finding.flaw_id, table) not in seen:
-                seen.add((finding.flaw_id, table))
+                       or others_rows_changed(table, owner, item)
+                       or protected_column_changed(table, column, owner, item))
+            if finding and (finding.flaw_id, table, column) not in seen:
+                seen.add((finding.flaw_id, table, column))
                 findings.append(finding)
     notes = [NOTE_FEW_USERS] if len(users) < 2 else []
     if not_run:

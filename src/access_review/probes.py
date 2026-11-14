@@ -17,6 +17,15 @@ TEST_VALUES = {
     "timestamp with time zone": "now()", "timestamp without time zone": "now()",
     "json": "'{}'", "jsonb": "'{}'",
 }
+# A column is protected when one of the words in its name is listed here (is_admin, user_role, paid ...).
+PROTECTED_WORDS = {"role", "roles", "admin", "paid", "balance", "credits", "permissions", "superuser"}
+# New values to try for a protected column, by type. {c} stands for the column itself.
+PROTECTED_VALUES = {
+    "text": ["'admin'", "'access-review'"], "character varying": ["'admin'", "'access-review'"],
+    "boolean": ["NOT {c}"],
+    "integer": ["{c} + 1"], "bigint": ["{c} + 1"], "smallint": ["{c} + 1"], "numeric": ["{c} + 1"],
+    "real": ["{c} + 1"], "double precision": ["{c} + 1"],
+}
 COLUMNS_QUERY = (
     "SELECT coalesce(json_agg(json_build_object('name', column_name, 'type', data_type, "
     "'required', is_nullable = 'NO' AND column_default IS NULL AND is_generated = 'NEVER' AND is_identity = 'NO') "
@@ -157,3 +166,36 @@ def user_deletes_rows(box, table, user_id):
         else:
             gone.append(row)
     return Evidence(probe, actor, query, "ok", gone)
+
+
+def user_writes_protected_columns(box, table, owner, user_id):
+    """Pairs of (column, Evidence), one per protected column of `table`: can signed-in `user_id` change it? Rolled back.
+
+    The test changes the column to a new value on every row the user may update. Only rows the change really altered
+    count, so rows_seen holds the rows that were changed, read back inside the same transaction.
+    """
+    actor, probe, target = f"user:{user_id}", "user_writes_protected_column", sql.Identifier("public", table)
+    columns = json.loads(box.run(sql.SQL(COLUMNS_QUERY).format(sql.Literal(table)).as_string()))
+    readback = sql.SQL(
+        "SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM {} t WHERE t.xmin = pg_current_xact_id()::xid").format(target)
+    found = []
+    for column in columns:
+        if column["name"] == owner or not PROTECTED_WORDS & set(column["name"].lower().split("_")):
+            continue
+        name = sql.Identifier(column["name"])
+        failure = Evidence(probe, actor, sql.SQL("UPDATE {} SET {}").format(target, name).as_string(), "error", [],
+                           f'cannot build a test change: column "{column["name"]}" has type {column["type"]}')
+        for value in PROTECTED_VALUES.get(column["type"], []):  # a check rule can refuse one value, so try the next
+            new = sql.SQL(value).format(c=name)
+            update = sql.SQL("UPDATE {} SET {} = {} WHERE {} IS DISTINCT FROM {}").format(target, name, new, name, new)
+            try:
+                query, lines = _change_run(box, probe, user_id, update, None, readback)
+            except subprocess.CalledProcessError as error:
+                failure = _failed(probe, actor, update.as_string(), error)
+                if failure.result == "permission_denied":
+                    break
+                continue
+            failure = Evidence(probe, actor, query, "ok", json.loads(lines[-1]))
+            break
+        found.append((column["name"], failure))
+    return found

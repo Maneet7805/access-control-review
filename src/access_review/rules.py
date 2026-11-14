@@ -77,6 +77,28 @@ def insert_accepted(table, owner, evidence: Evidence):
     return None
 
 
+def protected_column_changed(table, column, owner, evidence: Evidence):
+    """Finding when a signed-in user changed a protected column on their own row (C1), else None.
+
+    Only the actor's own rows count: changing someone else's row is R5. Which columns are protected is decided by
+    their names (see PROTECTED_WORDS in probes.py), so a hit is proved, not a guess.
+    """
+    if evidence.probe != "user_writes_protected_column" or evidence.result != "ok" or not owner:
+        return None
+    own_id = evidence.actor.removeprefix("user:")
+    if not any(str(row.get(owner)) == own_id for row in evidence.rows_seen):
+        return None
+    return Finding(
+        id=f"C1:{table}.{column}:{evidence.actor}", flaw_id="C1", actor=evidence.actor, proof=[evidence],
+        table=table, column=column,
+        explanation=f'A signed-in user can change the protected column "{column}" on their own row in the table '
+                    f'"{table}".',
+        fix=f'Stop users from updating "{column}" on "{table}": take update permission on that column away from '
+            f'the signed-in role (revoke update, then grant update only on the columns users may change), '
+            "or move it to a table users cannot write.",
+        status="proved")
+
+
 CHANGES = {
     "user_updates_rows": ("R5", "change", "update"),
     "user_deletes_rows": ("R6", "delete", "delete"),

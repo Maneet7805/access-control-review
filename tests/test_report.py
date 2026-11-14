@@ -66,6 +66,18 @@ def _change_finding(flaw_id):
         fix=f'Add a row security policy on "notes" so a user can only {verb} their own rows.', status="proved")
 
 
+def _column_finding():
+    statement = "UPDATE \"public\".\"members\" SET \"role\" = 'admin' WHERE \"role\" IS DISTINCT FROM 'admin'"
+    rows = [{"id": "cccccccc-0000-0000-0000-000000000001", "user_id": USER_A, "display_name": "Member A",
+             "role": "admin"}]
+    evidence = Evidence("user_writes_protected_column", f"user:{USER_A}", statement, "ok", rows)
+    return Finding(
+        id=f"C1:members.role:user:{USER_A}", flaw_id="C1", actor=f"user:{USER_A}", proof=[evidence], table="members",
+        column="role",
+        explanation='A signed-in user can change the protected column "role" on their own row in the table "members".',
+        fix='Stop users from updating "role" on "members": revoke update on that column.', status="proved")
+
+
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
@@ -78,6 +90,7 @@ CASES = {
     "writes-02-spoofed-owner-vulnerable": [_insert_finding("R4")],
     "writes-03-update-others-vulnerable": [_change_finding("R5")],
     "writes-04-delete-others-vulnerable": [_change_finding("R6")],
+    "columns-01-self-admin-vulnerable": [_column_finding()],
 }
 
 
