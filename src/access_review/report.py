@@ -14,6 +14,8 @@ STATUS_TEXT = {
     "proved": "Proved. We carried out the attack on a test copy of your database and it worked.",
     "needs_decision": "Needs your decision. Anyone could read this data. That may be on purpose, so only you can say.",
 }
+NEEDS_DECISION_FUNCTION = ("Needs your decision. Anyone could run this function. That may be on purpose, "
+                           "so only you can say.")
 MAX_ROWS_SHOWN = 3
 
 
@@ -53,6 +55,13 @@ def _proof(evidence):
                 "including rows that belong to other users. We undid it, so your data is unchanged.",
                 f"- The {'row' if len(shown) == 1 else 'rows'} it {past} (name: value):"
                 ] + [f"  - `{_code(_row_text(row))}`" for row in shown]
+    if evidence.probe.endswith("_calls_function"):
+        return [f"- What we did: acted as {_actor_name(evidence.actor)} and called the function "
+                f"with `{_code(evidence.statement)}`, using made-up values.",
+                "- What happened: the database ran the function. We undid everything it did, so your data is "
+                "unchanged.",
+                f"- What it returned (name: value): `{_code(_row_text(rows[0]))}`" if rows else
+                "- It returned no rows."]
     if evidence.probe == "user_changes_row_owner":
         shown = rows[:MAX_ROWS_SHOWN]
         return [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to give every row in the table "
@@ -98,8 +107,10 @@ def render_report(app_name, findings, notes=()):
     lines += [f"We attacked a test copy of your app's database. {proved} problem(s) proved, "
               f"{len(ordered) - proved} need your decision.", ""]
     for number, finding in enumerate(ordered, 1):
-        lines += [f"## {number}. {_plain(finding.explanation)}", "",
-                  f"**Status:** {STATUS_TEXT[finding.status]}", "",
+        status = STATUS_TEXT[finding.status]
+        if finding.function and finding.status == "needs_decision":
+            status = NEEDS_DECISION_FUNCTION
+        lines += [f"## {number}. {_plain(finding.explanation)}", "", f"**Status:** {status}", "",
                   f"**Who can do it:** {_who(finding.actor)}", "", "**What we saw:**", ""]
         for evidence in finding.proof:
             lines += _proof(evidence)
