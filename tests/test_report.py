@@ -75,6 +75,27 @@ def _view_finding():
         explanation='The view "all_notes" shows a signed-in user rows of the table "notes" that the table itself '
                     "hides from that user.",
         fix='Make the view "all_notes" use the rights of the person who reads it.', status="proved")
+def _function_finding(status="proved"):
+    evidence = Evidence("user_calls_function", f"user:{USER_A}",
+                        "SELECT \"public\".\"set_note_body\"(gen_random_uuid()::uuid, 'access-review'::text) AS result",
+                        "ok", [{"result": ""}])
+    return Finding(
+        id=f"U1:set_note_body:user:{USER_A}", flaw_id="U1", actor=f"user:{USER_A}", proof=[evidence],
+        function="set_note_body", status=status,
+        explanation='A signed-in user can call the function "set_note_body", which runs with more rights than the '
+                    "caller.",
+        fix='Make "set_note_body" check who is calling and raise an error if the caller may not do this.')
+
+
+def _owner_finding():
+    rows = [{"id": "cccccccc-0000-0000-0000-000000000001", "owner_id": USER_B, "body": "note of A"}]
+    statement = f'UPDATE "public"."notes" SET "owner_id" = \'{USER_B}\''
+    evidence = Evidence("user_changes_row_owner", f"user:{USER_A}", statement, "ok", rows)
+    return Finding(
+        id=f"R7:notes:user:{USER_A}", flaw_id="R7", actor=f"user:{USER_A}", proof=[evidence], table="notes",
+        explanation='A signed-in user can change who owns a row in the table "notes", handing it to another user.',
+        fix='Add a check to the update policy on "notes" so a changed row must still have "owner_id" equal to '
+            "the user's own user id (auth.uid()).", status="proved")
 
 
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
@@ -90,12 +111,21 @@ CASES = {
     "writes-03-update-others-vulnerable": [_change_finding("R5")],
     "writes-04-delete-others-vulnerable": [_change_finding("R6")],
     "views-01-bypass-vulnerable": [_view_finding()],
+    "functions-02-security-definer-no-check-vulnerable": [_function_finding()],
+
+
+    "writes-05-owner-change-vulnerable": [_owner_finding()],
 }
 
 
 @pytest.mark.parametrize("name", CASES)
 def test_report_matches_its_golden_file(name):
     assert render_report(name, CASES[name]) == (GOLDEN / f"{name}.md").read_text(encoding="utf-8")
+
+
+def test_a_function_that_needs_a_decision_is_not_said_to_expose_data():
+    report = render_report("fn", [_function_finding("needs_decision")])
+    assert "Anyone could run this function" in report and "read this data" not in report and "Proved" not in report
 
 
 def test_different_findings_give_different_reports():

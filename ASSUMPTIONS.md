@@ -34,3 +34,19 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Limits: only views over exactly one table in public; computed columns are ignored; a view sharing no column with its table is not compared; only the first test user is tested, not visitors; views in other schemas are not listed.
   - Key: action `read_view` (not `read`) so the table-read tests in test_planted.py skip this app. The planted view revokes access from anon so the finding is for user-a.
   - rows-01 and other existing apps have no views, so their CLI counts do not change.
+
+- 2026-11-14, M3.7 functions. Options and picks:
+  - What to call: every function in public (not trigger functions, not extension members) once as a visitor and once as the first test user, with one harmless value per argument type, in a savepoint inside a transaction that is rolled back, with a 10 second limit. An argument type we cannot fill gives an `error` result (listed in the report note), never a finding.
+  - Proved only when the call ran. A refusal is `permission_denied`: no execute permission, or an error the function raises on purpose (SQLSTATE P0001). Limit: a P0001 raised because our dummy values were wrong looks like a refusal.
+  - Flaw ids: visitor ran it, U3; user ran a function with "admin" in its name, U2; user ran any other function that runs with its owner's rights (security definer), U1. A function that runs with the caller's rights is limited by row security, so a user calling it is no finding, and a visitor calling it is `needs_decision` (it may be public on purpose).
+  - One finding per function; the visitor is tried first, so U3 hides the U1 or U2 for the same function.
+  - Known limit (false alarms): a security definer function that checks the caller by filtering (for example `where owner_id = auth.uid()`) runs without error and is still reported as U1. The roadmap rule "proved when the call ran" accepts this. The fixed twins here raise an error instead. Revisit in M3.8 if the clean apps trigger it.
+  - Side effects that a rollback cannot undo (sequences, notifications) stay inside the throwaway container.
+  - Key: new entries only for the three new apps. The allowed list names the call that must keep working; the service role is not a probe actor, so its check is in test_functions.py.
+
+- 2026-11-14, M3.3 owner change (R7). Options and picks:
+  - Deviation from the roadmap wording ("the row belongs to the attacker"): the probe sets the owner to the second test user, so the row ends up owned by someone other than the actor. The actor hands a row away. Options: change the victim's row to the actor (needs R5 first, so it hides the missing-check flaw behind another one), or hand own rows away. Picked the second: it isolates the missing `WITH CHECK` on new values. The assert is that after the update a row's owner is not the actor.
+  - What to run: `UPDATE t SET owner = '<second user>'` with a literal value and no WHERE, as the first test user, rolled back. A literal needs no select policy. Rows already owned by the second user are left out, because nothing about them changed.
+  - Planted flaw is `using (owner_id = auth.uid()) with check (true)`, not "no check". In Postgres an update policy with no `WITH CHECK` reuses its `USING` condition for the new row, so the owner change would be refused and nothing would be planted.
+  - Side effects on other apps, expected: `rows-01` vulnerable (row security off) now shows R7 (CLI count 5 to 6), and `writes-03` vulnerable (`using (true)`, no check) shows R7 next to its planted R5. Tests updated to say so. The answer key is not changed for either (rule 12.3); both R7 entries are for a follow-up key PR.
+  - Needs 2 users and an owner column, like R4. Only the first test user acts.
