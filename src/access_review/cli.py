@@ -15,6 +15,7 @@ from access_review.probes import (
     user_reads_rows,
     user_reads_view,
     user_updates_rows,
+    user_writes_protected_columns,
     visitor_calls_function,
     visitor_inserts_row,
     visitor_reads_rows,
@@ -27,6 +28,7 @@ from access_review.rules import (
     others_rows_changed,
     owner_changed,
     owner_column,
+    protected_column_changed,
     view_shows_hidden_rows,
 )
 from access_review.sandbox import NotCheckable, sandbox
@@ -77,13 +79,17 @@ def review(box):
         table_reads.update({(table, item.actor): item for item in evidence if item.probe == "user_reads_rows"})
         if owner and len(users) == 2:
             evidence.append(user_changes_row_owner(box, table, owner, users[0], users[1]))
-        for item in evidence:
+        checks = [(item, None) for item in evidence]
+        if owner and users:
+            checks += [(item, column) for column, item in user_writes_protected_columns(box, table, owner, users[0])]
+        for item, column in checks:
             if item.result == "error":
                 not_run.add(f'{item.probe.replace("_", " ")} on "{table}"')
             finding = (another_users_rows(table, owner, item) or insert_accepted(table, owner, item)
-                       or others_rows_changed(table, owner, item) or owner_changed(table, owner, item))
-            if finding and (finding.flaw_id, table) not in seen:
-                seen.add((finding.flaw_id, table))
+                       or others_rows_changed(table, owner, item) or owner_changed(table, owner, item)
+                       or protected_column_changed(table, column, owner, item))
+            if finding and (finding.flaw_id, table, column) not in seen:
+                seen.add((finding.flaw_id, table, column))
                 findings.append(finding)
     for function in json.loads(box.run(FUNCTIONS_QUERY)):
         name = function["name"]

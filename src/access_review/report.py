@@ -70,6 +70,14 @@ def _proof(evidence):
                 "We undid it, so your data is unchanged.",
                 f"- The {'row' if len(shown) == 1 else 'rows'} it changed, with the new owner (name: value):"
                 ] + [f"  - `{_code(_row_text(row))}`" for row in shown]
+    if evidence.probe == "user_writes_protected_column":
+        shown = rows[:MAX_ROWS_SHOWN]
+        return [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to change a protected column "
+                f"with `{_code(evidence.statement)}`. Users should not be able to set this value themselves.",
+                f"- What happened: the database allowed it for {len(rows)} {'row' if len(rows) == 1 else 'rows'}. "
+                "We undid it, so your data is unchanged.",
+                f"- The {'row' if len(shown) == 1 else 'rows'} it changed (name: value):"
+                ] + [f"  - `{_code(_row_text(row))}`" for row in shown]
     if "inserts_row" in evidence.probe:
         lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to add a new row "
                  f"with `{_code(evidence.statement)}`.",
