@@ -28,3 +28,9 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - A finding is proved when any touched row is owned by someone other than the actor. Limits: a delete blocked by a foreign key, or a table with no settable column, gives an `error` result and no finding.
   - Only the first test user acts. Visitors are not tested for update or delete; R5 and R6 are about users.
 - 2026-11-14, M3.2 review hardening: the update probe tries each settable column in turn; the delete diff counts identical rows one by one; a probe that ends in an error is listed in a report note, so a result is never silently clean. Ownership takeover (change the owner column) stays M3.3.
+- 2026-11-14, M3.6 view that bypasses row security (V1). Options and picks:
+  - Source: Supabase pages "Row Level Security" (sections "Views and RLS", "Expose a view safely") and "Views" ("View security"), read in full. They say a view runs with its owner's rights, so it skips the table's row security; the fix is `security_invoker = true` (Postgres 15 and above), or on older versions revoke anon and authenticated or use an unexposed schema.
+  - What proves V1: as the first test user, read the view and read the table under it. Proved when a view row matches no row of the table read. Picked over "view owner bypasses row security" (a guess from catalog flags) because execution decides.
+  - Limits: only views over exactly one table in public; computed columns are ignored; a view sharing no column with its table is not compared; only the first test user is tested, not visitors; views in other schemas are not listed.
+  - Key: action `read_view` (not `read`) so the table-read tests in test_planted.py skip this app. The planted view revokes access from anon so the finding is for user-a.
+  - rows-01 and other existing apps have no views, so their CLI counts do not change.

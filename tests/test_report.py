@@ -66,6 +66,17 @@ def _change_finding(flaw_id):
         fix=f'Add a row security policy on "notes" so a user can only {verb} their own rows.', status="proved")
 
 
+def _view_finding():
+    rows = [{"id": "cccccccc-0000-0000-0000-000000000001", "owner_id": USER_A, "body": "note of A"},
+            {"id": "cccccccc-0000-0000-0000-000000000002", "owner_id": USER_B, "body": "note of B"}]
+    evidence = Evidence("user_reads_view", f"user:{USER_A}", 'SELECT * FROM "public"."all_notes"', "ok", rows)
+    return Finding(
+        id=f"V1:all_notes:user:{USER_A}", flaw_id="V1", actor=f"user:{USER_A}", proof=[evidence], table="all_notes",
+        explanation='The view "all_notes" shows a signed-in user rows of the table "notes" that the table itself '
+                    "hides from that user.",
+        fix='Make the view "all_notes" use the rights of the person who reads it.', status="proved")
+
+
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
@@ -78,6 +89,7 @@ CASES = {
     "writes-02-spoofed-owner-vulnerable": [_insert_finding("R4")],
     "writes-03-update-others-vulnerable": [_change_finding("R5")],
     "writes-04-delete-others-vulnerable": [_change_finding("R6")],
+    "views-01-bypass-vulnerable": [_view_finding()],
 }
 
 

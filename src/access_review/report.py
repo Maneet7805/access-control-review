@@ -58,7 +58,8 @@ def _proof(evidence):
                  f"with `{_code(evidence.statement)}`.",
                  "- What happened: the database accepted the new row. We removed it again, so your data is unchanged."]
         return lines + ["- The row it accepted (name: value):"] + [f"  - `{_code(_row_text(row))}`" for row in rows]
-    lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and asked the database for the table's rows "
+    thing = "view" if evidence.probe.endswith("_view") else "table"
+    lines = [f"- What we did: acted as {_actor_name(evidence.actor)} and asked the database for the {thing}'s rows "
              f"with `{_code(evidence.statement)}`.",
              f"- What we got back: {len(rows)} {'row' if len(rows) == 1 else 'rows'} of data."]
     if rows:

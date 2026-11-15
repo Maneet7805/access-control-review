@@ -79,5 +79,15 @@
       {"actor": "user-a", "action": "delete", "table": "notes", "expect": "own_row_deleted"}
     ],
     "decoy": false
+  },
+  "views-01-bypass": {
+    "flaws_vulnerable": [
+      {"flaw_id": "V1", "table": "all_notes", "actor": "user-a", "action": "read_view"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read_view", "table": "all_notes", "expect": "own_row_visible"}
+    ],
+    "decoy": false
   }
 }

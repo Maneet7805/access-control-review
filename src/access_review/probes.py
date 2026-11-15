@@ -53,6 +53,11 @@ def user_reads_rows(box, table, user_id):
     return _read_table(box, "user_reads_rows", f"user:{user_id}", as_user(user_id), table)
 
 
+def user_reads_view(box, view, user_id):
+    """Evidence of the rows a signed-in user can read from `view` (same read as for a table)."""
+    return _read_table(box, "user_reads_view", f"user:{user_id}", as_user(user_id), view)
+
+
 def _insert_row(box, probe, actor, identity, table, owner, owner_id):
     """Try to add one row as `identity`, naming `owner_id` as its owner. The write is rolled back.
 

@@ -77,6 +77,35 @@ def insert_accepted(table, owner, evidence: Evidence):
     return None
 
 
+def _shown_by(row, base_rows):
+    """True when some row of the table has the same value in every column the view row shares with it."""
+    return any(all(base[key] == value for key, value in row.items() if key in base) for base in base_rows)
+
+
+def view_shows_hidden_rows(view, base, evidence: Evidence, base_evidence: Evidence):
+    """Finding (V1) when a user reads, through `view`, a row of its table `base` that the table hides from that user.
+
+    `base_evidence` is the same user reading `base` directly. Proved when a view row matches no row of that read.
+    Limits: only views over exactly one table; columns the view computes are ignored; a view that shares no column
+    with the table cannot be compared, so it gives no finding.
+    """
+    if evidence.probe != "user_reads_view" or evidence.result != "ok" or base_evidence.result != "ok":
+        return None
+    base_rows = base_evidence.rows_seen
+    comparable = [row for row in evidence.rows_seen if not base_rows or set(row) & set(base_rows[0])]
+    if not any(not _shown_by(row, base_rows) for row in comparable):
+        return None
+    return Finding(
+        id=f"V1:{view}:{evidence.actor}", flaw_id="V1", actor=evidence.actor, proof=[evidence], table=view,
+        explanation=f'The view "{view}" shows a signed-in user rows of the table "{base}" '
+                    "that the table itself hides from that user.",
+        fix=f'Make the view "{view}" use the rights of the person who reads it, so the row security on "{base}" '
+            f'still applies: ALTER VIEW public."{view}" SET (security_invoker = true); (Postgres 15 and above). '
+            "On older versions, remove access to the view for anon and authenticated, or move it to a schema "
+            "that is not exposed.",
+        status="proved")
+
+
 CHANGES = {
     "user_updates_rows": ("R5", "change", "update"),
     "user_deletes_rows": ("R6", "delete", "delete"),
