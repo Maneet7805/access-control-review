@@ -121,5 +121,25 @@
       {"actor": "user-a", "action": "update", "table": "notes", "expect": "own_row_changed"}
     ],
     "decoy": false
+  },
+  "columns-01-self-admin": {
+    "flaws_vulnerable": [
+      {"flaw_id": "C1", "table": "members", "actor": "user-a", "action": "update", "column": "role"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "update", "table": "members", "expect": "own_row_changed"}
+    ],
+    "decoy": false
+  },
+  "columns-02-self-paid": {
+    "flaws_vulnerable": [
+      {"flaw_id": "C1", "table": "accounts", "actor": "user-a", "action": "update", "column": "paid"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "update", "table": "accounts", "expect": "own_row_changed"}
+    ],
+    "decoy": false
   }
 }

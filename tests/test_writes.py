@@ -10,9 +10,10 @@ from access_review.probes import (
     user_deletes_rows,
     user_inserts_row_for_other,
     user_updates_rows,
+    user_writes_protected_columns,
     visitor_inserts_row,
 )
-from access_review.rules import insert_accepted, others_rows_changed, owner_changed
+from access_review.rules import insert_accepted, others_rows_changed, owner_changed, protected_column_changed
 from access_review.sandbox import sandbox
 
 ANSWER_KEY = json.loads((PLANTED / "answer_key.json").read_text())
@@ -324,3 +325,102 @@ def test_the_key_lists_the_owner_change_flaw_the_probe_finds_in_the_update_and_d
     with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
         evidence = user_changes_row_owner(box, "notes", "owner_id", USER_A, USER_B)
     assert bool(evidence.rows_seen) == _planted(app, variant, "R7")
+
+
+# M3.4: a protected column (role, paid ...) that the user can set on their own row.
+COLUMN_APPS = {"columns-01-self-admin": ("members", "role"), "columns-02-self-paid": ("accounts", "paid")}
+COLUMN_VARIANTS = [(app, variant) for app in COLUMN_APPS for variant in ("vulnerable", "fixed")]
+
+
+def _own_protected(box, app):
+    table, column = COLUMN_APPS[app]
+    return dict(user_writes_protected_columns(box, table, "user_id", USER_A))[column]
+
+
+@pytest.mark.parametrize("app,variant", COLUMN_VARIANTS)
+def test_protected_column_probe_matches_answer_key(app, variant):
+    table, column = COLUMN_APPS[app]
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        evidence = _own_protected(box, app)
+    planted = any(f["flaw_id"] == "C1" and f["column"] == column and f["table"] == table
+                  for f in ANSWER_KEY[app][f"flaws_{variant}"])
+    assert bool(evidence.rows_seen) == planted
+    assert [row["user_id"] for row in evidence.rows_seen] == ([USER_A] if planted else [])
+    assert evidence.result == ("ok" if planted else "permission_denied")
+
+
+@pytest.mark.parametrize("app,variant", COLUMN_VARIANTS)
+def test_protected_column_test_is_rolled_back(app, variant):
+    table = COLUMN_APPS[app][0]
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        before = box.run(f"select jsonb_agg(t order by id) from public.{table} t")
+        _own_protected(box, app)
+        assert box.run(f"select jsonb_agg(t order by id) from public.{table} t") == before
+
+
+@pytest.mark.parametrize("app", COLUMN_APPS)
+def test_the_user_can_still_change_their_ordinary_column_in_the_fixed_twin(app):
+    # Allowed access: the fix must not lock the user out of their own row.
+    table = COLUMN_APPS[app][0]
+    with sandbox(PLANTED / app / "fixed" / "migrations", baseline=True) as box:
+        update = user_updates_rows(box, table, "user_id", USER_A)
+    assert update.result == "ok" and [row["user_id"] for row in update.rows_seen] == [USER_A]
+
+
+def test_a_table_with_no_protected_column_gives_nothing_to_test():
+    # Negative control: notes has no column named like role, paid or admin.
+    with sandbox(PLANTED / "writes-03-update-others" / "vulnerable" / "migrations", baseline=True) as box:
+        assert user_writes_protected_columns(box, "notes", "owner_id", USER_A) == []
+
+
+def _members_app(tmp_path, extra):
+    (tmp_path / "001.sql").write_text(
+        "insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@example.test');"
+        "create table public.members (id uuid primary key default gen_random_uuid(),"
+        f" user_id uuid not null references auth.users (id), role text not null default 'member' {extra});"
+        "insert into public.members (user_id) values ('11111111-1111-1111-1111-111111111111');"
+        "alter table public.members enable row level security;"
+        "create policy s on public.members for select to authenticated using (user_id = auth.uid());")
+
+
+def test_a_user_who_may_not_update_at_all_changes_no_protected_column(tmp_path):
+    # Negative control: a role column exists, but no update policy lets anyone touch it.
+    _members_app(tmp_path, "")
+    with sandbox(tmp_path, baseline=True) as box:
+        evidence = dict(user_writes_protected_columns(box, "members", "user_id", USER_A))["role"]
+    assert evidence.rows_seen == []
+    assert protected_column_changed("members", "role", "user_id", evidence) is None
+
+
+def test_a_protected_column_with_a_check_rule_is_tried_with_the_next_value(tmp_path):
+    _members_app(tmp_path, "check (role in ('member', 'access-review'))")
+    (tmp_path / "002.sql").write_text(
+        "create policy u on public.members for update to authenticated using (user_id = auth.uid());")
+    with sandbox(tmp_path, baseline=True) as box:
+        evidence = dict(user_writes_protected_columns(box, "members", "user_id", USER_A))["role"]
+    assert evidence.result == "ok" and "access-review" in evidence.statement and len(evidence.rows_seen) == 1
+
+
+def _column(rows, result="ok"):
+    return Evidence("user_writes_protected_column", f"user:{USER_A}", "UPDATE", result, rows)
+
+
+def test_changing_a_protected_column_on_ones_own_row_is_proved_c1():
+    finding = protected_column_changed("members", "role", "user_id", _column([{"user_id": USER_A}]))
+    assert (finding.flaw_id, finding.status, finding.table, finding.column) == ("C1", "proved", "members", "role")
+
+
+def test_no_c1_for_nothing_changed_someone_elses_row_a_refusal_or_no_owner():
+    assert protected_column_changed("members", "role", "user_id", _column([])) is None
+    assert protected_column_changed("members", "role", "user_id", _column([{"user_id": USER_B}])) is None
+    assert protected_column_changed("members", "role", "user_id", _column([], "permission_denied")) is None
+    assert protected_column_changed("members", "role", None, _column([{"user_id": USER_A}])) is None
+
+
+@pytest.mark.parametrize("app", COLUMN_APPS)
+def test_review_finds_exactly_the_planted_column_flaw_and_the_fixed_twin_is_clean(app, tmp_path):
+    out = tmp_path / "report.md"
+    assert main(["review", str(PLANTED / app / "vulnerable" / "migrations"), "--out", str(out)]) == 1
+    report = out.read_text(encoding="utf-8")
+    assert report.count("\n## ") == 1 and "can change the protected column" in report and "We undid it" in report
+    assert main(["review", str(PLANTED / app / "fixed" / "migrations"), "--out", str(out)]) == 0
