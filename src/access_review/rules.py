@@ -91,9 +91,11 @@ def view_shows_hidden_rows(view, base, evidence: Evidence, base_evidence: Eviden
     Limits: only views over exactly one table; columns the view computes are ignored; a view that shares no column
     with the table cannot be compared, so it gives no finding.
     """
-    if evidence.probe != "user_reads_view" or evidence.result != "ok" or base_evidence.result != "ok":
+    if evidence.probe != "user_reads_view" or evidence.result != "ok":
         return None
-    base_rows = base_evidence.rows_seen
+    if base_evidence.result not in ("ok", "permission_denied"):
+        return None
+    base_rows = base_evidence.rows_seen  # a refused table read shows this user no rows
     comparable = [row for row in evidence.rows_seen if not base_rows or set(row) & set(base_rows[0])]
     if not any(not _shown_by(row, base_rows) for row in comparable):
         return None

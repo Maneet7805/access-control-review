@@ -303,6 +303,11 @@ def test_view_rule_proves_only_rows_the_table_does_not_show():
     assert view_shows_hidden_rows("v", "notes", _view_read([{"total": 5}]), table) is None  # nothing to compare
 
 
+def test_a_view_over_a_table_the_user_may_not_read_at_all_is_a_bypass():
+    refused = Evidence("user_reads_rows", f"user:{USER_A}", "SELECT", "permission_denied", [], "permission denied")
+    assert view_shows_hidden_rows("v", "notes", _view_read([{"owner_id": USER_B}]), refused).flaw_id == "V1"
+
+
 def test_review_finds_exactly_the_view_bypass_and_the_fixed_twin_is_clean(tmp_path):
     out = tmp_path / "report.md"
     assert main(["review", str(PLANTED / "views-01-bypass" / "vulnerable" / "migrations"), "--out", str(out)]) == 1

@@ -31,7 +31,7 @@ This file records the defaults the agent chose when Maneet had no answer, one li
 - 2026-11-14, M3.6 view that bypasses row security (V1). Options and picks:
   - Source: Supabase pages "Row Level Security" (sections "Views and RLS", "Expose a view safely") and "Views" ("View security"), read in full. They say a view runs with its owner's rights, so it skips the table's row security; the fix is `security_invoker = true` (Postgres 15 and above), or on older versions revoke anon and authenticated or use an unexposed schema.
   - What proves V1: as the first test user, read the view and read the table under it. Proved when a view row matches no row of the table read. Picked over "view owner bypasses row security" (a guess from catalog flags) because execution decides.
-  - Limits: only views over exactly one table in public; computed columns are ignored; a view sharing no column with its table is not compared; only the first test user is tested, not visitors; views in other schemas are not listed.
+  - Limits: only views over exactly one table in public; computed columns are ignored; a view sharing no column with its table is not compared; only the first test user is tested, not visitors; views in other schemas are not listed; materialized views are not listed. A table read that was refused counts as "shows this user no rows".
   - Key: action `read_view` (not `read`) so the table-read tests in test_planted.py skip this app. The planted view revokes access from anon so the finding is for user-a.
   - rows-01 and other existing apps have no views, so their CLI counts do not change.
 
