@@ -76,4 +76,5 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Broken probes: "clean" reports a refusal and no rows; "leak" reports one row with a value in every column. The real probe still runs first so the sandbox and statement stay real. For the protected-column probe the leaked row is owned by the actor, as that rule needs.
   - Pass means exit code 1 and "1 failed" (a plain test failure), so a crash or import error cannot pass for a caught probe. A control run with no broken probe must pass.
   - Scope: the 13 public probe functions, 2 modes each, and the probes only; rules are not swapped. Only the answer-key tests are run per case, to keep Docker use down.
+  - CI: the tests job hit its 15 minute limit and was cancelled, because the teeth tests need about 15 minutes alone. Raised that one job's `timeout-minutes` to 45. Options: skip the teeth tests in CI (not allowed), or cut the cases (weaker). If 45 is not enough, the cases can be cut to one mode per probe.
   - Roadmap section 1 said last merged PR #44 and next task M3.9; set to #55 and "none until G3". Owner gate G3 is not ticked.
