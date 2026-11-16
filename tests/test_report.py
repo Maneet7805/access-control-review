@@ -110,6 +110,19 @@ def _column_finding():
         fix='Stop users from updating "role" on "members": revoke update on that column.', status="proved")
 
 
+def _private_finding():
+    rows = [{"phone": "+60 12-000 0001"}, {"phone": "+60 12-000 0002"}]
+    statement = 'SELECT "phone" FROM "public"."directory"'
+    evidence = Evidence("visitor_reads_private_column", "visitor", statement, "ok", rows)
+    return Finding(
+        id="C2:directory.phone:visitor", flaw_id="C2", actor="visitor", proof=[evidence], table="directory",
+        column="phone",
+        explanation='A visitor who is not signed in can read the private column "phone" of other people in the '
+                    'table "directory".',
+        fix='Stop visitors and signed-in users from reading "phone" on "directory": take away their read access '
+            "to the table, then give read access only on the columns that are public.", status="proved")
+
+
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
@@ -128,6 +141,7 @@ CASES = {
 
     "writes-05-owner-change-vulnerable": [_owner_finding()],
     "columns-01-self-admin-vulnerable": [_column_finding()],
+    "columns-03-phone-exposed-vulnerable": [_private_finding()],
 }
 
 

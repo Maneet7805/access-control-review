@@ -27,6 +27,8 @@ PROTECTED_VALUES = {
     "integer": ["{c} + 1"], "bigint": ["{c} + 1"], "smallint": ["{c} + 1"], "numeric": ["{c} + 1"],
     "real": ["{c} + 1"], "double precision": ["{c} + 1"],
 }
+# A column is private when one of the words in its name is listed here (phone, phone_number, home_address ...).
+PRIVATE_WORDS = {"phone", "mobile", "ssn", "passport", "dob", "birthdate", "salary", "password", "secret", "token"}
 COLUMNS_QUERY = (
     "SELECT coalesce(json_agg(json_build_object('name', column_name, 'type', data_type, "
     "'required', is_nullable = 'NO' AND column_default IS NULL AND is_generated = 'NEVER' AND is_identity = 'NO') "
@@ -265,3 +267,36 @@ def user_writes_protected_columns(box, table, owner, user_id):
             break
         found.append((column["name"], failure))
     return found
+
+
+def _read_private(box, probe, actor, identity, table, owner):
+    """Pairs of (column, Evidence), one per private column of `table`: what does this reader get from it?
+
+    The read asks for that column alone (plus the owner column, to tell the reader's own rows from other people's),
+    so a refusal of that one column is not hidden by the others. rows_seen holds every row returned.
+    """
+    columns = json.loads(box.run(sql.SQL(COLUMNS_QUERY).format(sql.Literal(table)).as_string()))
+    found = []
+    for column in columns:
+        if not PRIVATE_WORDS & set(column["name"].lower().split("_")):
+            continue
+        names = [column["name"]] + ([owner] if owner and owner != column["name"] else [])
+        select = sql.SQL("SELECT {} FROM {}").format(sql.SQL(", ").join(map(sql.Identifier, names)),
+                                                     sql.Identifier("public", table))
+        wrapped = sql.SQL("SELECT coalesce(json_agg(t), '[]'::json) FROM ({}) t").format(select).as_string()
+        try:
+            found.append((column["name"], Evidence(probe, actor, select.as_string(), "ok",
+                                                   json.loads(box.run(identity + wrapped)))))
+        except subprocess.CalledProcessError as error:
+            found.append((column["name"], _failed(probe, actor, select.as_string(), error)))
+    return found
+
+
+def visitor_reads_private_columns(box, table, owner):
+    """Pairs of (column, Evidence): what an unauthenticated visitor reads from each private column of `table`."""
+    return _read_private(box, "visitor_reads_private_column", "visitor", as_visitor(), table, owner)
+
+
+def user_reads_private_columns(box, table, owner, user_id):
+    """Pairs of (column, Evidence): what signed-in `user_id` reads from each private column of `table`."""
+    return _read_private(box, "user_reads_private_column", f"user:{user_id}", as_user(user_id), table, owner)

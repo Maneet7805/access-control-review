@@ -151,5 +151,15 @@
       {"actor": "user-a", "action": "read_view", "table": "all_notes", "expect": "own_row_visible"}
     ],
     "decoy": false
+  },
+  "columns-03-phone-exposed": {
+    "flaws_vulnerable": [
+      {"flaw_id": "C2", "table": "directory", "actor": "visitor", "action": "read_column", "column": "phone"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "visitor", "action": "read_column", "table": "directory", "expect": "public_columns_readable"}
+    ],
+    "decoy": false
   }
 }

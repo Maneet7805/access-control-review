@@ -12,12 +12,14 @@ from access_review.probes import (
     user_changes_row_owner,
     user_deletes_rows,
     user_inserts_row_for_other,
+    user_reads_private_columns,
     user_reads_rows,
     user_reads_view,
     user_updates_rows,
     user_writes_protected_columns,
     visitor_calls_function,
     visitor_inserts_row,
+    visitor_reads_private_columns,
     visitor_reads_rows,
 )
 from access_review.report import render_report
@@ -28,6 +30,7 @@ from access_review.rules import (
     others_rows_changed,
     owner_changed,
     owner_column,
+    private_column_read,
     protected_column_changed,
     view_shows_hidden_rows,
 )
@@ -82,12 +85,16 @@ def review(box):
         checks = [(item, None) for item in evidence]
         if owner and users:
             checks += [(item, column) for column, item in user_writes_protected_columns(box, table, owner, users[0])]
+        checks += [(item, column) for column, item in visitor_reads_private_columns(box, table, owner)]
+        checks += [(item, column) for user in users[:1]
+                   for column, item in user_reads_private_columns(box, table, owner, user)]
         for item, column in checks:
             if item.result == "error":
                 not_run.add(f'{item.probe.replace("_", " ")} on "{table}"')
             finding = (another_users_rows(table, owner, item) or insert_accepted(table, owner, item)
                        or others_rows_changed(table, owner, item) or owner_changed(table, owner, item)
-                       or protected_column_changed(table, column, owner, item))
+                       or protected_column_changed(table, column, owner, item)
+                       or private_column_read(table, column, owner, item))
             if finding and (finding.flaw_id, table, column) not in seen:
                 seen.add((finding.flaw_id, table, column))
                 findings.append(finding)

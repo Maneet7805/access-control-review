@@ -101,6 +101,30 @@ def protected_column_changed(table, column, owner, evidence: Evidence):
         status="proved")
 
 
+def private_column_read(table, column, owner, evidence: Evidence):
+    """Finding when a visitor or a signed-in user read a value of a private column that is not theirs (C2), else None.
+
+    Which columns are private is decided by their names (see PRIVATE_WORDS in probes.py). A visitor owns nothing, so
+    any value counts. A signed-in user's own rows do not count; with no owner column, any value counts. Empty (null)
+    values show nothing, so they do not count.
+    """
+    if not evidence.probe.endswith("_reads_private_column") or evidence.result != "ok":
+        return None
+    own_id = evidence.actor.removeprefix("user:") if evidence.actor.startswith("user:") and owner else None
+    if not any(row.get(column) is not None and (own_id is None or str(row.get(owner)) != own_id)
+               for row in evidence.rows_seen):
+        return None
+    return Finding(
+        id=f"C2:{table}.{column}:{evidence.actor}", flaw_id="C2", actor=evidence.actor, proof=[evidence],
+        table=table, column=column,
+        explanation=f'{"A visitor who is not signed in" if evidence.actor == "visitor" else "A signed-in user"} '
+                    f'can read the private column "{column}" of other people in the table "{table}".',
+        fix=f'Stop visitors and signed-in users from reading "{column}" on "{table}": take away their read access '
+            "to the table, then give read access only on the columns that are public. Or move the private column to a "
+            "separate table that has its own row security policy.",
+        status="proved")
+
+
 def _shown_by(row, base_rows):
     """True when some row of the table has the same value in every column the view row shares with it."""
     return any(all(base[key] == value for key, value in row.items() if key in base) for base in base_rows)
