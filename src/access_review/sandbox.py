@@ -99,7 +99,7 @@ def _wait_until_ready(name):
 
 
 def _remove(name):
-    result = subprocess.run(["docker", "rm", "-f", name], capture_output=True, text=True,
+    result = subprocess.run(["docker", "rm", "-fv", name], capture_output=True, text=True,
                             timeout=DOCKER_TIMEOUT_SECONDS)
     # "No such container" is fine: docker run may have failed before creating it.
     if result.returncode != 0 and "No such container" not in result.stderr:
