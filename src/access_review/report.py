@@ -70,6 +70,14 @@ def _proof(evidence):
                 "We undid it, so your data is unchanged.",
                 f"- The {'row' if len(shown) == 1 else 'rows'} it changed, with the new owner (name: value):"
                 ] + [f"  - `{_code(_row_text(row))}`" for row in shown]
+    if evidence.probe.endswith("_reads_private_column"):
+        shown = rows[:MAX_ROWS_SHOWN]
+        return [f"- What we did: acted as {_actor_name(evidence.actor)} and asked the database for a private column "
+                f"with `{_code(evidence.statement)}`. Only the people it belongs to should be able to read it.",
+                f"- What we got back: {len(rows)} {'row' if len(rows) == 1 else 'rows'} of data. "
+                "Nothing was changed.",
+                f"- {'The row' if len(shown) == 1 else f'The first {len(shown)} rows'} (name: value):"
+                ] + [f"  - `{_code(_row_text(row))}`" for row in shown]
     if evidence.probe == "user_writes_protected_column":
         shown = rows[:MAX_ROWS_SHOWN]
         return [f"- What we did: acted as {_actor_name(evidence.actor)} and tried to change a protected column "
