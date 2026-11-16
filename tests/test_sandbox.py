@@ -11,6 +11,20 @@ def _leftover_containers():
     return out.split()
 
 
+def _volumes():
+    out = subprocess.run(["docker", "volume", "ls", "-q"], capture_output=True, text=True, check=True).stdout
+    return set(out.split())
+
+
+def test_sandbox_leaves_no_docker_volume_behind(tmp_path):
+    # Plain postgres:16 declares an anonymous data volume; `docker rm` without -v leaves it behind.
+    (tmp_path / "001.sql").write_text("SELECT 1;")
+    before = _volumes()
+    with sandbox(tmp_path) as box:
+        assert box.run("SELECT 1") == "1"
+    assert _volumes() == before
+
+
 def test_sandbox_rebuilds_app_and_leaves_nothing_behind():
     before = _leftover_containers()
     for _ in range(2):
