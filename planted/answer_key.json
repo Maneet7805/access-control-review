@@ -161,5 +161,37 @@
       {"actor": "visitor", "action": "read_column", "table": "directory", "expect": "public_columns_readable"}
     ],
     "decoy": false
+  },
+  "decoy-02-public-profile-read": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "visitor", "action": "read", "table": "profiles_public", "expect": "public"}
+    ],
+    "decoy": true
+  },
+  "decoy-03-shared-team-table": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read", "table": "team_notes", "expect": "team_rows_visible"}
+    ],
+    "decoy": true
+  },
+  "clean-01-all-correct": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read", "table": "notes", "expect": "own_row_only"}
+    ],
+    "decoy": false
+  },
+  "clean-02-all-correct-different-style": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {"actor": "user-a", "action": "read", "table": "tasks", "expect": "own_row_only"}
+    ],
+    "decoy": false
   }
 }
