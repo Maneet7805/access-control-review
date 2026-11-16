@@ -13,6 +13,7 @@ from access_review.probes import (
     user_deletes_rows,
     user_inserts_row_for_other,
     user_reads_rows,
+    user_reads_view,
     user_updates_rows,
     user_writes_protected_columns,
     visitor_calls_function,
@@ -28,12 +29,21 @@ from access_review.rules import (
     owner_changed,
     owner_column,
     protected_column_changed,
+    view_shows_hidden_rows,
 )
 from access_review.sandbox import NotCheckable, sandbox
 
 # The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
 TABLES_QUERY = ("SELECT coalesce(json_agg(tablename ORDER BY tablename), '[]') "
                 "FROM pg_tables WHERE schemaname = 'public'")
+# Views in public that read from exactly one table in public: [{"view": ..., "table": ...}].
+VIEWS_QUERY = (
+    "SELECT coalesce(json_agg(json_build_object('view', view, 'table', tbl)), '[]') FROM ("
+    "SELECT v.relname AS view, min(t.relname) AS tbl FROM pg_class v "
+    "JOIN pg_rewrite r ON r.ev_class = v.oid JOIN pg_depend d ON d.objid = r.oid AND d.refobjid <> v.oid "
+    "JOIN pg_class t ON t.oid = d.refobjid AND t.relkind = 'r' AND t.relnamespace = 'public'::regnamespace "
+    "WHERE v.relkind = 'v' AND v.relnamespace = 'public'::regnamespace "
+    "GROUP BY v.relname HAVING count(DISTINCT t.oid) = 1) x")
 TEST_USERS_QUERY = "SELECT coalesce(json_agg(id), '[]') FROM (SELECT id FROM auth.users ORDER BY id LIMIT 2) u"
 # Functions written in public (not trigger functions, not part of an extension), with their argument types.
 FUNCTIONS_QUERY = (
@@ -56,7 +66,7 @@ def review(box):
     """
     tables = json.loads(box.run(TABLES_QUERY))
     users = json.loads(box.run(TEST_USERS_QUERY))
-    findings, seen, not_run = [], set(), set()
+    findings, seen, not_run, table_reads = [], set(), set(), {}
     for table in tables:
         owner = owner_column(box, table)
         evidence = [visitor_reads_rows(box, table)] + [user_reads_rows(box, table, user) for user in users]
@@ -66,6 +76,7 @@ def review(box):
             evidence.append(user_inserts_row_for_other(box, table, owner, users[0], users[1]))
         if owner and users:
             evidence += [user_updates_rows(box, table, owner, users[0]), user_deletes_rows(box, table, users[0])]
+        table_reads.update({(table, item.actor): item for item in evidence if item.probe == "user_reads_rows"})
         if owner and len(users) == 2:
             evidence.append(user_changes_row_owner(box, table, owner, users[0], users[1]))
         checks = [(item, None) for item in evidence]
@@ -89,6 +100,15 @@ def review(box):
             finding = function_callable(function, item)
             if finding and ("function", name) not in seen:  # one finding per function; the visitor is tried first
                 seen.add(("function", name))
+                findings.append(finding)
+    for view in json.loads(box.run(VIEWS_QUERY)):
+        for user in users[:1]:  # views are tested as the first test user, like the update and delete tests
+            item, base = user_reads_view(box, view["view"], user), table_reads[(view["table"], f"user:{user}")]
+            if item.result == "error":
+                not_run.add(f'user reads view on "{view["view"]}"')
+            finding = view_shows_hidden_rows(view["view"], view["table"], item, base)
+            if finding and (finding.flaw_id, view["view"]) not in seen:
+                seen.add((finding.flaw_id, view["view"]))
                 findings.append(finding)
     notes = [NOTE_FEW_USERS] if len(users) < 2 else []
     if not_run:

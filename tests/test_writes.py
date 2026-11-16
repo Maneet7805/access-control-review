@@ -9,11 +9,19 @@ from access_review.probes import (
     user_changes_row_owner,
     user_deletes_rows,
     user_inserts_row_for_other,
+    user_reads_rows,
+    user_reads_view,
     user_updates_rows,
     user_writes_protected_columns,
     visitor_inserts_row,
 )
-from access_review.rules import insert_accepted, others_rows_changed, owner_changed, protected_column_changed
+from access_review.rules import (
+    insert_accepted,
+    others_rows_changed,
+    owner_changed,
+    protected_column_changed,
+    view_shows_hidden_rows,
+)
 from access_review.sandbox import sandbox
 
 ANSWER_KEY = json.loads((PLANTED / "answer_key.json").read_text())
@@ -244,6 +252,75 @@ def test_the_key_lists_the_update_and_delete_flaws_the_probes_find_in_the_rows_a
     assert _touches_others(delete) == _planted(app, variant, "R6")
 
 
+# M3.6: a view that skips the row security of the table under it (V1).
+VIEW_VARIANTS = [("views-01-bypass", variant) for variant in ("vulnerable", "fixed")]
+
+
+def _view_finding(box):
+    view = user_reads_view(box, "all_notes", USER_A)
+    return view, view_shows_hidden_rows("all_notes", "notes", view, user_reads_rows(box, "notes", USER_A))
+
+
+@pytest.mark.parametrize("app,variant", VIEW_VARIANTS)
+def test_view_probe_matches_answer_key(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        _, finding = _view_finding(box)
+    assert (finding is not None) == _planted(app, variant, "V1")
+
+
+def test_the_vulnerable_view_shows_both_rows_and_the_table_shows_one():
+    with sandbox(PLANTED / "views-01-bypass" / "vulnerable" / "migrations", baseline=True) as box:
+        view, _ = _view_finding(box)
+        table = user_reads_rows(box, "notes", USER_A)
+    assert len(view.rows_seen) == 2 and [row["owner_id"] for row in table.rows_seen] == [USER_A]
+
+
+def test_the_owner_still_sees_their_own_row_through_the_fixed_view():
+    # Allowed access: the fix must not blank the view for its owner.
+    with sandbox(PLANTED / "views-01-bypass" / "fixed" / "migrations", baseline=True) as box:
+        view, _ = _view_finding(box)
+    assert [row["owner_id"] for row in view.rows_seen] == [USER_A]
+
+
+def test_a_view_over_an_open_table_is_not_a_bypass(tmp_path):
+    # Negative control: the table itself shows every row, so the view shows nothing the table hides.
+    (tmp_path / "001.sql").write_text(
+        "insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@example.test'),"
+        " ('22222222-2222-2222-2222-222222222222', 'b@example.test');"
+        "create table public.notes (id int primary key, owner_id uuid references auth.users (id), body text);"
+        "insert into public.notes values (1, '11111111-1111-1111-1111-111111111111', 'a'),"
+        " (2, '22222222-2222-2222-2222-222222222222', 'b');"
+        "create view public.all_notes as select * from public.notes;")
+    with sandbox(tmp_path, baseline=True) as box:
+        view, finding = _view_finding(box)
+    assert len(view.rows_seen) == 2 and finding is None
+
+
+def _view_read(rows, result="ok"):
+    return Evidence("user_reads_view", f"user:{USER_A}", "SELECT", result, rows)
+
+
+def test_view_rule_proves_only_rows_the_table_does_not_show():
+    mine, theirs = {"owner_id": USER_A, "body": "a"}, {"owner_id": USER_B, "body": "b"}
+    table = _view_read([mine])
+    assert view_shows_hidden_rows("v", "notes", _view_read([mine, theirs]), table).flaw_id == "V1"
+    assert view_shows_hidden_rows("v", "notes", _view_read([mine]), table) is None
+    assert view_shows_hidden_rows("v", "notes", _view_read([theirs]), _view_read([])) is not None
+    assert view_shows_hidden_rows("v", "notes", _view_read([mine, theirs], "error"), table) is None
+    assert view_shows_hidden_rows("v", "notes", _view_read([{"total": 5}]), table) is None  # nothing to compare
+
+
+def test_a_view_over_a_table_the_user_may_not_read_at_all_is_a_bypass():
+    refused = Evidence("user_reads_rows", f"user:{USER_A}", "SELECT", "permission_denied", [], "permission denied")
+    assert view_shows_hidden_rows("v", "notes", _view_read([{"owner_id": USER_B}]), refused).flaw_id == "V1"
+
+
+def test_review_finds_exactly_the_view_bypass_and_the_fixed_twin_is_clean(tmp_path):
+    out = tmp_path / "report.md"
+    assert main(["review", str(PLANTED / "views-01-bypass" / "vulnerable" / "migrations"), "--out", str(out)]) == 1
+    report = out.read_text(encoding="utf-8")
+    assert report.count("\n## ") == 1 and 'The view "all_notes" shows' in report and "the view's rows" in report
+    assert main(["review", str(PLANTED / "views-01-bypass" / "fixed" / "migrations"), "--out", str(out)]) == 0
 # M3.3: change a row's owner (R7). The probe hands every row it may touch to the second test user.
 OWNER_VARIANTS = [("writes-05-owner-change", variant) for variant in ("vulnerable", "fixed")]
 
