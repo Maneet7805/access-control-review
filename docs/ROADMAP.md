@@ -291,6 +291,10 @@ Why before scoring: if the answer key or the rules change after seeing results, 
 
 A second platform (Firebase or Postgres with another login system), storage buckets, edge functions, reading the app's TypeScript (read only, to see which tables and functions it calls), a hosted version.
 
+Follow-ups (found during a task, logged, not yet fixed; each needs its own task):
+
+- Materialized views are not covered by the visitor view test (V1). They skip row security and grants differently from plain views, so a leak through one would not be caught. Found in M3.6 (PR 51).
+
 ## Appendix A: Flaw catalogue (the key is written from this)
 
 | Id | Group | Plain description | OWASP |
