@@ -78,3 +78,9 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Scope: the 13 public probe functions, 2 modes each, and the probes only; rules are not swapped. Only the answer-key tests are run per case, to keep Docker use down.
   - CI: the tests job hit its 15 minute limit and was cancelled, because the teeth tests need about 15 minutes alone. Raised that one job's `timeout-minutes` to 45. Options: skip the teeth tests in CI (not allowed), or cut the cases (weaker). If 45 is not enough, the cases can be cut to one mode per probe.
   - Roadmap section 1 said last merged PR #44 and next task M3.9; set to #55 and "none until G3". Owner gate G3 is not ticked.
+- 2026-11-17, R1 for owned tables. Options and picks:
+  - Gap: the key lists R1 (visitor read) for rows-01-profiles, but the rule only reported a visitor read when the table had no owner column.
+  - Picked: a visitor read that returns rows from a table WITH an owner column is a proved R1. A visitor owns no rows. Appendix A says only "a visitor can read rows they should not".
+  - Kept: no owner column stays needs_decision, so decoy-01, decoy-02 and columns-03's directory are unchanged.
+  - Sweep of all 34 planted apps (vulnerable, fixed, single): only rows-01-profiles vulnerable gained a finding (R1). None lost one. The key already lists it, so no key change and no separate key PR is needed.
+  - Tests: rows-01 vulnerable count in test_cli goes from 6 to 7. New golden file rows-01-profiles-visitor-read.md. New negative control: fixed twins give no R1.

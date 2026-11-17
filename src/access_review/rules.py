@@ -23,6 +23,7 @@ def another_users_rows(table, owner, evidence: Evidence):
     """Finding when `evidence` shows a read that returned rows it should not have, else None.
 
     - A signed-in user sees rows owned by someone else, and the table has an owner column: proved (R2).
+    - A visitor reads rows of a table with an owner column: proved (R1). A visitor owns no rows.
     - A visitor reads a table with no owner column: needs_decision (R1). It may be public on purpose.
     """
     if not evidence.probe.endswith("_reads_rows") or evidence.result != "ok" or not evidence.rows_seen:
@@ -36,7 +37,15 @@ def another_users_rows(table, owner, evidence: Evidence):
                 fix=f'Add a row security policy on "{table}" so a user can only read rows where '
                     f'"{owner}" equals their own user id (auth.uid()).',
                 status="proved", table=table)
-    if evidence.actor == "visitor" and not owner:
+    if evidence.actor == "visitor" and owner:
+        return Finding(
+            id=f"R1:{table}:visitor", flaw_id="R1", actor="visitor", proof=[evidence],
+            explanation=f'A visitor who is not signed in can read rows in the table "{table}", '
+                        "which belong to signed-in users.",
+            fix=f'Add a row security policy on "{table}" so only signed-in users can read it, and only rows '
+                f'where "{owner}" equals their own user id (auth.uid()).',
+            status="proved", table=table)
+    if evidence.actor == "visitor":
         return Finding(
             id=f"R1:{table}:visitor", flaw_id="R1", actor="visitor", proof=[evidence],
             explanation=f'A visitor who is not signed in can read the table "{table}", which has no owner column. '
