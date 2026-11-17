@@ -501,3 +501,45 @@ def test_review_finds_exactly_the_planted_column_flaw_and_the_fixed_twin_is_clea
     report = out.read_text(encoding="utf-8")
     assert report.count("\n## ") == 1 and "can change the protected column" in report and "We undid it" in report
     assert main(["review", str(PLANTED / app / "fixed" / "migrations"), "--out", str(out)]) == 0
+
+
+# V1 follow-up: a materialized view skips row security and is limited by grants only.
+MATVIEW_VARIANTS = [("views-02-matview-leak", variant) for variant in ("vulnerable", "fixed")]
+
+
+@pytest.mark.parametrize("app,variant", MATVIEW_VARIANTS)
+def test_matview_probe_matches_answer_key(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        _, finding = _view_finding(box)
+    assert (finding is not None) == _planted(app, variant, "V1")
+
+
+def test_a_materialized_view_over_an_open_table_is_not_a_bypass(tmp_path):
+    # Negative control: the table itself shows every row, so the materialized view shows nothing the table hides.
+    (tmp_path / "001.sql").write_text(
+        "insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'a@example.test'),"
+        " ('22222222-2222-2222-2222-222222222222', 'b@example.test');"
+        "create table public.notes (id int primary key, owner_id uuid references auth.users (id), body text);"
+        "insert into public.notes values (1, '11111111-1111-1111-1111-111111111111', 'a'),"
+        " (2, '22222222-2222-2222-2222-222222222222', 'b');"
+        "create materialized view public.all_notes as select * from public.notes;")
+    with sandbox(tmp_path, baseline=True) as box:
+        view, finding = _view_finding(box)
+    assert len(view.rows_seen) == 2 and finding is None
+
+
+def test_review_finds_the_matview_leak_and_the_fixed_twin_is_clean(tmp_path):
+    out = tmp_path / "report.md"
+    vulnerable = PLANTED / "views-02-matview-leak" / "vulnerable" / "migrations"
+    assert main(["review", str(vulnerable), "--out", str(out)]) == 1
+    report = out.read_text(encoding="utf-8")
+    assert report.count("\n## ") == 1 and 'The materialized view "all_notes" shows' in report
+    assert "REVOKE ALL" in report and "security_invoker" in report
+    assert main(["review", str(PLANTED / "views-02-matview-leak" / "fixed" / "migrations"), "--out", str(out)]) == 0
+
+
+def test_the_plain_view_fix_text_is_unchanged():
+    row = {"owner_id": USER_B, "body": "b"}
+    finding = view_shows_hidden_rows("v", "notes", _view_read([row]), _view_read([]))
+    assert "security_invoker = true" in finding.fix and "materialized" not in finding.explanation
+    assert "REVOKE ALL" in view_shows_hidden_rows("v", "notes", _view_read([row]), _view_read([]), True).fix

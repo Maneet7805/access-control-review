@@ -139,7 +139,7 @@ def _shown_by(row, base_rows):
     return any(all(base[key] == value for key, value in row.items() if key in base) for base in base_rows)
 
 
-def view_shows_hidden_rows(view, base, evidence: Evidence, base_evidence: Evidence):
+def view_shows_hidden_rows(view, base, evidence: Evidence, base_evidence: Evidence, materialized=False):
     """Finding (V1) when a user reads, through `view`, a row of its table `base` that the table hides from that user.
 
     `base_evidence` is the same user reading `base` directly. Proved when a view row matches no row of that read.
@@ -154,6 +154,15 @@ def view_shows_hidden_rows(view, base, evidence: Evidence, base_evidence: Eviden
     comparable = [row for row in evidence.rows_seen if not base_rows or set(row) & set(base_rows[0])]
     if not any(not _shown_by(row, base_rows) for row in comparable):
         return None
+    if materialized:  # a materialized view stores its rows and never applies row security; only grants limit it
+        return Finding(
+            id=f"V1:{view}:{evidence.actor}", flaw_id="V1", actor=evidence.actor, proof=[evidence], table=view,
+            explanation=f'The materialized view "{view}" shows a signed-in user rows of the table "{base}" '
+                        "that the table itself hides from that user.",
+            fix=f'Remove access to the materialized view "{view}" for anon and authenticated: '
+                f'REVOKE ALL ON public."{view}" FROM anon, authenticated; Or move it to a schema that is not exposed. '
+                "A materialized view stores its rows and ignores row security, so security_invoker does not help.",
+            status="proved")
     return Finding(
         id=f"V1:{view}:{evidence.actor}", flaw_id="V1", actor=evidence.actor, proof=[evidence], table=view,
         explanation=f'The view "{view}" shows a signed-in user rows of the table "{base}" '

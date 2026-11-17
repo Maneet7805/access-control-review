@@ -86,6 +86,17 @@ def _view_finding():
         explanation='The view "all_notes" shows a signed-in user rows of the table "notes" that the table itself '
                     "hides from that user.",
         fix='Make the view "all_notes" use the rights of the person who reads it.', status="proved")
+def _matview_finding():
+    rows = [{"id": "cccccccc-0000-0000-0000-000000000001", "owner_id": USER_A, "body": "note of A"},
+            {"id": "cccccccc-0000-0000-0000-000000000002", "owner_id": USER_B, "body": "note of B"}]
+    evidence = Evidence("user_reads_view", f"user:{USER_A}", 'SELECT * FROM "public"."all_notes"', "ok", rows)
+    return Finding(
+        id=f"V1:all_notes:user:{USER_A}", flaw_id="V1", actor=f"user:{USER_A}", proof=[evidence], table="all_notes",
+        explanation='The materialized view "all_notes" shows a signed-in user rows of the table "notes" that the '
+                    "table itself hides from that user.",
+        fix='Remove access to the materialized view "all_notes" for anon and authenticated.', status="proved")
+
+
 def _function_finding(status="proved"):
     evidence = Evidence("user_calls_function", f"user:{USER_A}",
                         "SELECT \"public\".\"set_note_body\"(gen_random_uuid()::uuid, 'access-review'::text) AS result",
@@ -148,6 +159,7 @@ CASES = {
     "writes-03-update-others-vulnerable": [_change_finding("R5")],
     "writes-04-delete-others-vulnerable": [_change_finding("R6")],
     "views-01-bypass-vulnerable": [_view_finding()],
+    "views-02-matview-leak-vulnerable": [_matview_finding()],
     "functions-02-security-definer-no-check-vulnerable": [_function_finding()],
 
 
