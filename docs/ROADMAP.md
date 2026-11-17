@@ -293,7 +293,7 @@ A second platform (Firebase or Postgres with another login system), storage buck
 
 Follow-ups (found during a task, logged, not yet fixed; each needs its own task):
 
-- Materialized views are not covered by the visitor view test (V1). They skip row security and grants differently from plain views, so a leak through one would not be caught. Found in M3.6 (PR 51).
+- Done: materialized views are now covered by the view test (V1), with planted app `views-02-matview-leak`. Found in M3.6 (PR 51).
 
 ## Appendix A: Flaw catalogue (the key is written from this)
 

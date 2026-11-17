@@ -39,13 +39,13 @@ from access_review.sandbox import NotCheckable, sandbox
 # The user probes act as the first 2 users already in auth.users. Lists come back as JSON, never split on newlines.
 TABLES_QUERY = ("SELECT coalesce(json_agg(tablename ORDER BY tablename), '[]') "
                 "FROM pg_tables WHERE schemaname = 'public'")
-# Views in public that read from exactly one table in public: [{"view": ..., "table": ...}].
+# Views and materialized views (kind 'v' or 'm') in public that read from exactly one table in public.
 VIEWS_QUERY = (
-    "SELECT coalesce(json_agg(json_build_object('view', view, 'table', tbl)), '[]') FROM ("
-    "SELECT v.relname AS view, min(t.relname) AS tbl FROM pg_class v "
+    "SELECT coalesce(json_agg(json_build_object('view', view, 'table', tbl, 'kind', kind)), '[]') FROM ("
+    "SELECT v.relname AS view, min(t.relname) AS tbl, min(v.relkind::text) AS kind FROM pg_class v "
     "JOIN pg_rewrite r ON r.ev_class = v.oid JOIN pg_depend d ON d.objid = r.oid AND d.refobjid <> v.oid "
     "JOIN pg_class t ON t.oid = d.refobjid AND t.relkind = 'r' AND t.relnamespace = 'public'::regnamespace "
-    "WHERE v.relkind = 'v' AND v.relnamespace = 'public'::regnamespace "
+    "WHERE v.relkind IN ('v', 'm') AND v.relnamespace = 'public'::regnamespace "
     "GROUP BY v.relname HAVING count(DISTINCT t.oid) = 1) x")
 TEST_USERS_QUERY = "SELECT coalesce(json_agg(id), '[]') FROM (SELECT id FROM auth.users ORDER BY id LIMIT 2) u"
 # Functions written in public (not trigger functions, not part of an extension), with their argument types.
@@ -113,7 +113,7 @@ def review(box):
             item, base = user_reads_view(box, view["view"], user), table_reads[(view["table"], f"user:{user}")]
             if item.result == "error":
                 not_run.add(f'user reads view on "{view["view"]}"')
-            finding = view_shows_hidden_rows(view["view"], view["table"], item, base)
+            finding = view_shows_hidden_rows(view["view"], view["table"], item, base, view["kind"] == "m")
             if finding and (finding.flaw_id, view["view"]) not in seen:
                 seen.add((finding.flaw_id, view["view"]))
                 findings.append(finding)

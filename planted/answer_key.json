@@ -152,6 +152,14 @@
     ],
     "decoy": false
   },
+  "views-02-matview-leak": {
+    "flaws_vulnerable": [
+      {"flaw_id": "V1", "table": "all_notes", "actor": "user-a", "action": "read_view"}
+    ],
+    "flaws_fixed": [],
+    "allowed": [],
+    "decoy": false
+  },
   "columns-03-phone-exposed": {
     "flaws_vulnerable": [
       {"flaw_id": "C2", "table": "directory", "actor": "visitor", "action": "read_column", "column": "phone"}
