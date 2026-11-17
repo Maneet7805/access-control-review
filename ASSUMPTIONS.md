@@ -99,3 +99,9 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - A successful fix needs 4 things at once: it applies, the planted flaws are gone, allowed entries still pass, no proved finding appears that the vulnerable app lacked.
   - Open question: decoy-02 gave no finding in one run and an R1 needs_decision in a later run, cause unknown. Score unaffected (0 false alarms either way). M4.3 re-runs it; no Docker was used in M4.1.
   - Out-of-scope limit listed in the doc: materialized views over several tables, and views in other schemas, are not tested; such a held-out flaw is a miss, not an exclusion.
+- 2026-11-17, M4.2 scoring module (src/access_review/scoring.py). Options and picks (one line each):
+  - The CLI writes only Markdown today, so the scorer takes runs as dicts: app, side, not_checkable, probe_errors, and findings as Finding.to_dict() items. Folder-to-run wiring is M4.3.
+  - Side 'fixed' uses flaws_fixed; any other side ('vulnerable', 'migrations') uses flaws_vulnerable. Runs of apps absent from the key are skipped.
+  - Probe errors are a per-run flag (the CLI only reports them in report notes); counted, and they add no finding.
+  - Duplicates are removed only among proved findings; needs_decision items are all listed, not de-duplicated.
+  - Ratios print as 'k/n (0.xx)' with counts first; zero denominators print 'n/a'.
