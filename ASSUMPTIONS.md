@@ -90,3 +90,12 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Planted app `views-02-matview-leak`: vulnerable = materialized view over a locked table with default grants; fixed = grants revoked from anon and authenticated. Key: new entry only, no allowed entry (the fixed view is closed to everyone). Negative control: a materialized view over an open table gives no finding.
   - Limits stay as in M3.6: one table under the view, only the first test user acts. The earlier line "materialized views are not listed" no longer holds.
   - No existing planted app has a materialized view, so no older counts moved and no key PR is needed.
+- 2026-11-17, M4.1 evaluation protocol. Options and picks (one line each, see docs/EVALUATION.md):
+  - Match on the target fields the key entry names (table, column, function); actor and action are not compared, because the flaw id already fixes them.
+  - Duplicates (same flaw id and target, other actor) count once. Precision counts all proved findings, including those on fixed twins, decoys and clean apps.
+  - Unmatched proved findings on flawed apps are 'extra findings': they lower precision, are not false alarms, and the frozen key is not edited to absorb them.
+  - needs_decision is a separate tally only. One absent from the key (columns-03 directory R1) is ignored by the score; a planted flaw seen only as needs_decision is a miss.
+  - Ratios with a zero denominator print n/a. Not-checkable runs stay in the totals: flawed ones are misses, clean ones give no false alarm.
+  - A successful fix needs 4 things at once: it applies, the planted flaws are gone, allowed entries still pass, no proved finding appears that the vulnerable app lacked.
+  - Open question: decoy-02 gave no finding in one run and an R1 needs_decision in a later run, cause unknown. Score unaffected (0 false alarms either way). M4.3 re-runs it; no Docker was used in M4.1.
+  - Out-of-scope limit listed in the doc: materialized views over several tables, and views in other schemas, are not tested; such a held-out flaw is a miss, not an exclusion.
