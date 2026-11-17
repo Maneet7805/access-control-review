@@ -27,6 +27,17 @@ def _user_finding():
         status="proved")
 
 
+def _owned_visitor_finding():
+    evidence = Evidence("visitor_reads_rows", "visitor", 'SELECT * FROM "public"."profiles"', "ok", PROFILES)
+    return Finding(
+        id="R1:profiles:visitor", flaw_id="R1", actor="visitor", proof=[evidence], table="profiles",
+        explanation='A visitor who is not signed in can read rows in the table "profiles", '
+                    "which belong to signed-in users.",
+        fix='Add a row security policy on "profiles" so only signed-in users can read it, and only rows '
+            'where "owner_id" equals their own user id (auth.uid()).',
+        status="proved")
+
+
 def _decoy_finding():
     evidence = Evidence("visitor_reads_rows", "visitor", 'SELECT * FROM "public"."posts"', "ok", POSTS)
     return Finding(
@@ -126,6 +137,7 @@ def _private_finding():
 # What the rule produces for each planted app (see test_rules.py), with fixed rows so the report is repeatable.
 CASES = {
     "rows-01-profiles-vulnerable": [_user_finding()],
+    "rows-01-profiles-visitor-read": [_owned_visitor_finding()],
     "rows-01-profiles-fixed": [],
     "rows-02-profiles-all-authenticated-vulnerable": [_user_finding()],
     "rows-02-profiles-all-authenticated-fixed": [],

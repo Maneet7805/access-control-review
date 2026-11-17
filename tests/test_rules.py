@@ -42,6 +42,25 @@ def test_public_table_without_owner_is_needs_decision_not_proved():
     assert "secure" not in (finding.explanation + finding.fix).lower()
 
 
+def _visitor_finding(app, variant):
+    with sandbox(PLANTED / app / variant / "migrations", baseline=True) as box:
+        owner = owner_column(box, "profiles")
+        return owner, another_users_rows("profiles", owner, visitor_reads_rows(box, "profiles"))
+
+
+def test_visitor_reading_an_owned_table_is_proved_r1():
+    owner, finding = _visitor_finding("rows-01-profiles", "vulnerable")
+    assert owner == "owner_id"
+    assert (finding.flaw_id, finding.status, finding.table, finding.actor) == ("R1", "proved", "profiles", "visitor")
+    assert "secure" not in (finding.explanation + finding.fix).lower()
+
+
+@pytest.mark.parametrize("app", ["rows-01-profiles", "rows-02-profiles-all-authenticated"])
+def test_owned_table_that_blocks_the_visitor_gives_no_r1(app):
+    # Negative control: row security stops the visitor, so the visitor sees no rows.
+    assert _visitor_finding(app, "fixed")[1] is None
+
+
 def test_no_finding_when_the_read_was_refused_or_empty():
     refused = Evidence("visitor_reads_rows", "visitor", "SELECT 1", "permission_denied", [], "permission denied")
     empty = Evidence("visitor_reads_rows", "visitor", "SELECT 1", "ok", [])
