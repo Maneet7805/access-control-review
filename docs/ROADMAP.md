@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M3
-- Last merged PR: #55
-- Next eligible task: none until owner gate G3 is ticked by Maneet
+- Last merged PR: #56
+- Next eligible task: M4.1
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -232,7 +232,7 @@ Pattern for every task below: add the probe, add a planted vulnerable and fixed 
   - Files: `tests/test_teeth.py`.
   - Steps: for each probe, a test swaps it for a broken version (always returns nothing, or always returns everything) and asserts the planted-app tests fail.
   - Validation: `pytest tests/test_teeth.py` passes, meaning every broken probe is caught.
-- [ ] **G3 (owner).** Maneet runs the command on any three planted apps from different groups and reads the reports. Then Maneet reads `planted/answer_key.json` for one app and checks it agrees with Appendix A.
+- [x] **G3 (owner).** Ticked on owner's instruction. Maneet runs the command on any three planted apps from different groups and reads the reports. Then Maneet reads `planted/answer_key.json` for one app and checks it agrees with Appendix A.
 
 ### M4 Evaluation protocol frozen
 
