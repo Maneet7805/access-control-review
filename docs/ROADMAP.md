@@ -15,7 +15,7 @@ How much detail each part has:
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
-| M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 1/5 |
+| M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 2/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M4
-- Last merged PR: #60
-- Next eligible task: M4.2
+- Last merged PR: #61
+- Next eligible task: M4.3
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -242,7 +242,7 @@ Why before scoring: if the answer key or the rules change after seeing results, 
   - Depends on: G3.
   - Contents: definitions of recall (planted flaws found / planted flaws), precision (findings that match a planted flaw / all proved findings), false alarm (proved findings on fixed twins, clean apps and decoys). The matching rule (same app, same flaw id, same table or column or function). How `needs_decision` is counted (reported separately, never as a finding). What counts as a successful fix (M6). No target numbers are promised.
   - Needs Maneet's approval.
-- [ ] **M4.2 Scoring module.**
+- [x] **M4.2 Scoring module.**
   - Depends on: M4.1.
   - Files: `src/access_review/scoring.py`, `tests/test_scoring.py`. It reads findings JSON and the answer key only. It must not import probes, rules or the sandbox (a test checks the imports).
   - Validation: hand-written findings give hand-computed recall, precision and false alarms. Negative control: dropping one finding lowers recall by the expected amount.
