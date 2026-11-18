@@ -1,0 +1,40 @@
+{
+  "app": "columns-02-self-paid",
+  "findings": [
+    {
+      "actor": "user:11111111-1111-1111-1111-111111111111",
+      "column": "paid",
+      "explanation": "A signed-in user can change the protected column \"paid\" on their own row in the table \"accounts\".",
+      "fix": "Stop users from updating \"paid\" on \"accounts\": take update permission on that column away from the signed-in role (revoke update, then grant update only on the columns users may change), or move it to a table users cannot write.",
+      "flaw_id": "C1",
+      "id": "C1:accounts.paid:user:11111111-1111-1111-1111-111111111111",
+      "owasp": [
+        "API3"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-1111-1111-111111111111",
+          "error": null,
+          "probe": "user_writes_protected_column",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "id": "9b995d0c-286e-4696-8065-6f8b02302b2f",
+              "paid": true,
+              "plan_name": "Plan A",
+              "user_id": "11111111-1111-1111-1111-111111111111"
+            }
+          ],
+          "statement": "UPDATE \"public\".\"accounts\" SET \"paid\" = NOT \"paid\" WHERE \"paid\" IS DISTINCT FROM NOT \"paid\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "accounts"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

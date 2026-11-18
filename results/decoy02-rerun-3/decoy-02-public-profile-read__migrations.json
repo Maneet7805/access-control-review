@@ -1,0 +1,44 @@
+{
+  "app": "decoy-02-public-profile-read",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can read the table \"profiles_public\", which has no owner column. It may be public on purpose, so the tool cannot tell.",
+      "fix": "If \"profiles_public\" should not be public, turn on row security for it and allow reads only for the people who need them. If it is public on purpose, no change is needed.",
+      "flaw_id": "R1",
+      "id": "R1:profiles_public:visitor",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "bio": "bio of A",
+              "id": "f98655f6-d750-46a7-af1e-0a1607ac36ea",
+              "username": "member-a"
+            },
+            {
+              "bio": "bio of B",
+              "id": "6e17853b-68a8-4d9b-afe1-8aa9313669bb",
+              "username": "member-b"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"profiles_public\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "needs_decision",
+      "table": "profiles_public"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "migrations"
+}

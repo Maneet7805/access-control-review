@@ -1,0 +1,36 @@
+{
+  "app": "functions-03-default-execute",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can call the function \"note_count\", which runs with more rights than the caller.",
+      "fix": "Run REVOKE EXECUTE ON FUNCTION public.\"note_count\" FROM PUBLIC, anon; (Postgres lets everyone call a new function unless you remove that). Then allow only the roles that need it. If visitors must call it on purpose, no change is needed.",
+      "flaw_id": "U3",
+      "function": "note_count",
+      "id": "U3:note_count:visitor",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_calls_function",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "result": 2
+            }
+          ],
+          "statement": "SELECT \"public\".\"note_count\"() AS result"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

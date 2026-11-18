@@ -1,0 +1,8 @@
+{
+  "app": "decoy-03-shared-team-table",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "migrations"
+}

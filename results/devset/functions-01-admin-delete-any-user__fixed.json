@@ -1,0 +1,8 @@
+{
+  "app": "functions-01-admin-delete-any-user",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "fixed"
+}

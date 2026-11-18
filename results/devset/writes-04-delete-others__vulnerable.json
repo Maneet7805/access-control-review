@@ -1,0 +1,44 @@
+{
+  "app": "writes-04-delete-others",
+  "findings": [
+    {
+      "actor": "user:11111111-1111-1111-1111-111111111111",
+      "explanation": "A signed-in user can delete rows that belong to other users in the table \"notes\".",
+      "fix": "Add a row security policy on \"notes\" so a user can only delete rows where \"owner_id\" equals their own user id (auth.uid()). Check the delete policy for a condition that is always true.",
+      "flaw_id": "R6",
+      "id": "R6:notes:user:11111111-1111-1111-1111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-1111-1111-111111111111",
+          "error": null,
+          "probe": "user_deletes_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "body": "note of A",
+              "id": "d202f841-81b9-4898-a513-1611a16530cf",
+              "owner_id": "11111111-1111-1111-1111-111111111111"
+            },
+            {
+              "body": "note of B",
+              "id": "8acea08d-02f1-49fb-9302-1e55137c01d5",
+              "owner_id": "22222222-2222-2222-2222-222222222222"
+            }
+          ],
+          "statement": "DELETE FROM \"public\".\"notes\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "notes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

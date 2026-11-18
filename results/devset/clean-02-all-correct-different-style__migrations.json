@@ -1,0 +1,8 @@
+{
+  "app": "clean-02-all-correct-different-style",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "migrations"
+}

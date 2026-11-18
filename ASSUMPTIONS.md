@@ -105,3 +105,9 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Probe errors are a per-run flag (the CLI only reports them in report notes); counted, and they add no finding.
   - Duplicates are removed only among proved findings; needs_decision items are all listed, not de-duplicated.
   - Ratios print as 'k/n (0.xx)' with counts first; zero denominators print 'n/a'.
+- 2026-11-18, M4.3 dev-set run. Options and picks (one line each):
+  - Runner is scripts/run_devset.py (outside scoring.py); it saves one findings JSON per scored folder to results/devset/, labelled by folder.
+  - Raw outputs are committed under results/ (small, text), so the score is never quoted without them; scoring reads them with --runs (default results/devset).
+  - python -m access_review.scoring refuses to score (exit 2) if any scored folder has no saved run, so a run is never silently dropped.
+  - A probe error is flagged when the review notes say tests could not run; tests/test_scoring.py import allowlist gained "sys" for the scoring entry point.
+  - decoy-02 re-run 5 times (results/decoy02-rerun-N): all 5 gave the R1 needs_decision on profiles_public; the earlier no-finding run was not reproduced.
