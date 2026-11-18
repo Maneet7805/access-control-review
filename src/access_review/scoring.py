@@ -5,6 +5,7 @@ A run is a dict: {"app", "side", "not_checkable": bool, "probe_errors": bool, "f
 The app and side come from the folder the run was made on, never from a finding.
 """
 import json
+import sys
 from pathlib import Path
 
 TARGET_FIELDS = ("table", "column", "function")
@@ -98,3 +99,36 @@ def format_table(name, result):
 
 def load_key(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def expected_runs(planted):
+    """(app, side, migrations folder) for every scored run on disk. The label comes from the folder."""
+    planted = Path(planted)
+    key = load_key(planted / "answer_key.json")
+    found = []
+    for app in key:
+        for side in ("vulnerable", "fixed"):
+            if (planted / app / side / "migrations").is_dir():
+                found.append((app, side, planted / app / side / "migrations"))
+        if (planted / app / "migrations").is_dir():
+            found.append((app, "migrations", planted / app / "migrations"))
+    return found
+
+
+def main(argv):
+    """python -m access_review.scoring planted/ [--runs DIR]: score saved runs (default results/devset)."""
+    runs_dir = Path(argv[argv.index("--runs") + 1]) if "--runs" in argv else Path("results/devset")
+    planted = Path(argv[0])
+    saved = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(runs_dir.glob("*.json"))]
+    runs = {(r["app"], r["side"]): r for r in saved}
+    missing = [f"{app}/{side}" for app, side, _ in expected_runs(planted) if (app, side) not in runs]
+    if missing:
+        print("Not scored, saved run missing: " + ", ".join(missing), file=sys.stderr)
+        return 2
+    result = score(list(runs.values()), load_key(planted / "answer_key.json"))
+    print(format_table("dev set (self-check, not accuracy)", result))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

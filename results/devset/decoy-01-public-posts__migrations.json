@@ -1,0 +1,46 @@
+{
+  "app": "decoy-01-public-posts",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can read the table \"posts\", which has no owner column. It may be public on purpose, so the tool cannot tell.",
+      "fix": "If \"posts\" should not be public, turn on row security for it and allow reads only for the people who need them. If it is public on purpose, no change is needed.",
+      "flaw_id": "R1",
+      "id": "R1:posts:visitor",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "body": "First post",
+              "id": "223d4db2-2e6b-47f8-aefb-0b2c59278515",
+              "title": "Hello"
+            },
+            {
+              "body": "Second post",
+              "id": "524d0635-472a-410b-bccb-6c2e24e53358",
+              "title": "News"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"posts\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "needs_decision",
+      "table": "posts"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "The app has fewer than 2 users in its database, so the tests that need a signed-in user could only partly run. Do not read this result as a clean one."
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

@@ -1,0 +1,8 @@
+{
+  "app": "functions-02-security-definer-no-check",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "fixed"
+}

@@ -1,0 +1,40 @@
+{
+  "app": "columns-01-self-admin",
+  "findings": [
+    {
+      "actor": "user:11111111-1111-1111-1111-111111111111",
+      "column": "role",
+      "explanation": "A signed-in user can change the protected column \"role\" on their own row in the table \"members\".",
+      "fix": "Stop users from updating \"role\" on \"members\": take update permission on that column away from the signed-in role (revoke update, then grant update only on the columns users may change), or move it to a table users cannot write.",
+      "flaw_id": "C1",
+      "id": "C1:members.role:user:11111111-1111-1111-1111-111111111111",
+      "owasp": [
+        "API3"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-1111-1111-111111111111",
+          "error": null,
+          "probe": "user_writes_protected_column",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "display_name": "Member A",
+              "id": "fa6410da-cf21-4147-8071-d7fc4cdb26a7",
+              "role": "admin",
+              "user_id": "11111111-1111-1111-1111-111111111111"
+            }
+          ],
+          "statement": "UPDATE \"public\".\"members\" SET \"role\" = 'admin' WHERE \"role\" IS DISTINCT FROM 'admin'"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "members"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

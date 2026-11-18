@@ -1,0 +1,8 @@
+{
+  "app": "clean-01-all-correct",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "migrations"
+}

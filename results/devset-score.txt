@@ -1,0 +1,12 @@
+Score: dev set (self-check, not accuracy)
+  Recall:            22/22 (1.00)
+  Precision:         22/22 (1.00)
+  False alarms:      0
+  False-alarm rate:  0/21 (0.00)
+  Extra findings:    0
+  Not checkable:     0
+  Probe errors:      0
+  needs_decision:    3
+  needs_decision: columns-03-phone-exposed/vulnerable: R1 on table directory
+  needs_decision: decoy-01-public-posts/migrations: R1 on table posts
+  needs_decision: decoy-02-public-profile-read/migrations: R1 on table profiles_public

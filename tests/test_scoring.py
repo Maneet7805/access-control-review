@@ -1,5 +1,6 @@
 """Tests for the scoring module. Hand-written findings, hand-computed expected numbers. No Docker."""
 import ast
+import json
 from pathlib import Path
 
 from access_review import scoring
@@ -121,4 +122,30 @@ def test_scoring_imports_no_probes_rules_or_sandbox():
     tree = ast.parse(Path(scoring.__file__).read_text(encoding="utf-8"))
     names = {n.names[0].name if isinstance(n, ast.Import) else (n.module or "") for n in ast.walk(tree)
              if isinstance(n, (ast.Import, ast.ImportFrom))}
-    assert names <= {"json", "pathlib"}, names
+    assert names <= {"json", "pathlib", "sys"}, names
+
+PLANTED = Path(__file__).parent.parent / "planted"
+
+
+def _save_perfect_runs(folder):
+    """Saved runs that find exactly the key's flaws, one file per scored folder."""
+    key = load_key(PLANTED / "answer_key.json")
+    for app, side, _ in scoring.expected_runs(PLANTED):
+        flaws = key[app]["flaws_fixed" if side == "fixed" else "flaws_vulnerable"]
+        findings = [{**{k: v for k, v in x.items() if k in ("flaw_id", "table", "column", "function")},
+                     "status": "proved"} for x in flaws]
+        (folder / f"{app}__{side}.json").write_text(json.dumps(run(app, side, findings)), encoding="utf-8")
+
+
+def test_expected_runs_labels_come_from_folders():
+    runs = {(app, side) for app, side, _ in scoring.expected_runs(PLANTED)}
+    assert ("rows-01-profiles", "fixed") in runs and ("decoy-01-public-posts", "migrations") in runs
+    assert ("rows-03-locked-out", "vulnerable") not in runs and not any(a == "hostile-01-callout" for a, _ in runs)
+
+
+def test_main_scores_saved_runs_and_refuses_a_missing_one(tmp_path, capsys):
+    _save_perfect_runs(tmp_path)
+    assert scoring.main([str(PLANTED), "--runs", str(tmp_path)]) == 0
+    assert "Recall:            " in capsys.readouterr().out
+    (tmp_path / "rows-01-profiles__fixed.json").unlink()  # negative control
+    assert scoring.main([str(PLANTED), "--runs", str(tmp_path)]) == 2
