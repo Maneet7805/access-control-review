@@ -155,3 +155,7 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Baselines were run with the system Python (they do not import psycopg); each saved 29 of 29 runs, none not-checkable. Not repeated.
   - Held-out tables are saved as results/heldout/score.txt and results/baselines/heldout/score-NAME.txt, unedited scorer output including needs_decision.
   - Fixed-twin findings and the one needs_decision item are reported in the PR and not acted on (M5.4 step 9).
+- 2026-11-19, M5.5. Defaults, one line each:
+  - The script compares the RUN.txt commit with the working tree (not HEAD), so uncommitted edits to tracked frozen files also fail it. Untracked new files are not seen.
+  - Renames are treated as delete plus add, so a moved held-out result counts as deleted. A file changed in type also counts as modified.
+  - A missing RUN.txt or an unknown commit exits 2 (cannot check), not 1, so it is not mistaken for tuning.
