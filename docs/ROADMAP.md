@@ -15,7 +15,7 @@ How much detail each part has:
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
-| M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 3/5 |
+| M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 4/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
@@ -249,7 +249,7 @@ Why before scoring: if the answer key or the rules change after seeing results, 
 - [x] **M4.3 Dev-set run.**
   - Depends on: M4.2.
   - Goal: `python -m access_review.scoring planted/` prints a score table for our own tool on the dev set. Expected on the dev set: every planted flaw found and zero false alarms, since we built the dev set alongside the tool. This is a self-check, not a result. It is never quoted as accuracy.
-- [ ] **M4.4 DECISION D3 and the held-out set.**
+- [x] **M4.4 DECISION D3 and the held-out set.**
   - Goal: apps the tool's author never saw.
   - Process: a fresh session is given only Appendix A and the answer key shape, and writes pairs in a different style (other table names, other policy styles, other schema layouts), including decoys and clean apps. The files go in `heldout/`, which is not read by the coding agent until M5.4.
   - Validation: the held-out files validate against the key shape. Maneet reviews the key.
