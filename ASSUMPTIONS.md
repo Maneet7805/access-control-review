@@ -124,3 +124,15 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - The advisors are run as the splinter lint file through psql in the sandbox database. The Studio, MCP and Management API routes need a Supabase project and account, so they are not used.
   - Semgrep Rules License v1.0 forbids distributing the rules. M5.2 pins registry rules by id and version and does not commit rule files without Maneet's say-so.
   - All "Covers" cells are read from documentation, not run. pgrls was read to its verify section and searched, not read line by line, for network and account terms. The SupaShield website and npm page could not be opened.
+- 2026-11-19, M5.2 baseline commands and mapping rules (see docs/baselines.md sections 2 and 3). Defaults, one line each:
+  - Each tool runs in one Docker image (python:3.12-slim with semgrep 1.186.0, rlsautotest 0.7.1, pgrls 0.57.1), so the network can be shown to be off.
+  - Semgrep runs only the `generic/` folder of semgrep-rules at commit a5ad171; no published rule names SQL, so it reports nothing. Rule files are not committed.
+  - The advisors run splinter.sql (supabase/splinter commit cc529aa) as `postgres` in the sandbox with no setting changed, so API-exposure lints cover `public` only.
+  - rlsautotest runs against a copy of the sandbox database on a Docker `--internal` network with no published port. It connects as `postgres`, the migration role, so it needs no right beyond the sandbox's.
+  - A superuser role was tried for rlsautotest on one app and tested fewer cells, so `postgres` is used.
+  - pgrls runs offline on the SQL file; its 25 catalog-only rules are skipped and listed in every output.
+  - Mapping: where a tool gives no role or command for an always-true policy, the item is unmapped, not guessed (pgrls SEC008).
+  - Mapping: an advisors or rlsautotest definer-function hit for signed-in users maps to U1; U2 is never emitted because the output cannot tell it from U1.
+  - rlsautotest executed fields (idgrid, leak_cells, column_security) never failed on a dev run, so they have no rule and count as unmapped if they fire.
+  - Mapped baseline items on fixed or clean runs are reported as false alarms, not filtered.
+  - Fixture runs cover 36 dev runs per tool (31 vulnerable and fixed folders, 5 decoy and clean); `hostile-01-callout` is skipped because it has no key entry.

@@ -16,7 +16,7 @@ How much detail each part has:
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
-| M5 Compare | Run other tools on the same apps and score everyone | 1/6 |
+| M5 Compare | Run other tools on the same apps and score everyone | 2/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M5
-- Last merged PR: #66
-- Next eligible task: M5.2
+- Last merged PR: #67
+- Next eligible task: M5.3
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -286,7 +286,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `git diff --name-only origin/main` lists only `docs/baselines.md`, `ASSUMPTIONS.md` and `docs/ROADMAP.md`.
   - Done when: `docs/baselines.md` is merged, so the choice exists on `main` before the held-out run. After that run it cannot change (M5.5).
   - Stop and ask if: Semgrep or the Supabase advisors cannot meet the free, local, no-network rule (the D4 wording would then need to change); no execution-based database tool qualifies; a licence is unclear.
-- [ ] **M5.2 Exact commands per baseline, and the mapping rules.**
+- [x] **M5.2 Exact commands per baseline, and the mapping rules.**
   - Depends on: M5.1.
   - Goal: for every included baseline, the exact command that runs it on a rebuilt planted app with no network, and written rules that turn its output into a findings item with a flaw id and a table, column or function.
   - Files: `docs/baselines.md` (add sections "2. Commands" and "3. Mapping rules"); `tests/fixtures/baselines/<tool>/` (raw outputs from dev apps); `baselines/<tool>/` (pinned config or published rule files, only if a tool needs them); `ASSUMPTIONS.md`. Do not touch: `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. This task uses Docker.
