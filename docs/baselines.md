@@ -131,11 +131,10 @@ python baselines/rlsautotest/run_rlsautotest.py planted/<app>/<side>/migrations
 
 ```
 docker run --rm --network none -v "$W/planted:/work/planted:ro" -w /work acr-baselines:m52 \
-  pgrls lint --sql-file planted/<app>/<side>/migrations/<file>.sql --format json
+  pgrls lint --sql-file planted/<app>/<side>/migrations/<file>.sql [--sql-file <next file> ...] --format json
 ```
 
-- Version 0.57.1. Each dev app has exactly one migration file. Output: JSON on stdout, saved as `pgrls/<app>__<side>.json`.
-- An app with several migration files is run once per `.sql` file, in file name order (the order the sandbox applies them). The outputs are merged into one run: each mapped item names its file in its proof line, two items with the same flaw id and target are one finding (3.1), and the unmapped counts add up. Every file's raw output is kept, as `<app>__<side>__<file>.json`. If any file's command fails or its output cannot be read, the whole run is `not_checkable`, never a partial result. A folder with no `.sql` file is `not_checkable`. A one-file app is unchanged.
+- Version 0.57.1. Each dev app has exactly one migration file. An app with several `.sql` files is run once, with one `--sql-file` per file in file name order (the order the sandbox applies them). `pgrls lint --help` says repeated `--sql-file` are concatenated in order, so a table created in one file and given RLS or a policy in a later file is seen together; linting each file alone would flag it falsely. The table name is read from `location` as before (3.5). The run gives one output and one raw file. A folder with no `.sql` file is `not_checkable`. Output: JSON on stdout, saved as `pgrls/<app>__<side>.json`.
 - It reads the SQL only. 25 rules need live catalog state and are skipped in this mode: PERF003, PERF004, SEC013 to SEC017, SEC023, SEC029, SEC035, SEC041 to SEC044, SEC046 to SEC048, SEC051 to SEC054 and VIEW001 to VIEW004. They are listed in `skipped_rules` of every output. So pgrls cannot see views or definer functions, and an empty result from it is not a pass.
 - Network off: `--network none`.
 
