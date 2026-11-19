@@ -111,3 +111,9 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - python -m access_review.scoring refuses to score (exit 2) if any scored folder has no saved run, so a run is never silently dropped.
   - A probe error is flagged when the review notes say tests could not run; tests/test_scoring.py import allowlist gained "sys" for the scoring entry point.
   - decoy-02 re-run 5 times (results/decoy02-rerun-N): all 5 gave the R1 needs_decision on profiles_public; the earlier no-finding run was not reproduced.
+- 2026-11-19, M5 roadmap rewrite (docs only). Defaults chosen, one line each:
+  - Tasks M5.1 to M5.6 form one chain, each Depends-on naming its predecessor; M5.1 depends on G4.
+  - The runner script is built in M5.3 and first run on a full set in M5.4, dev set first, so bugs show before the held-out run.
+  - Baseline findings are emitted as `proved` and labelled "reported, not executed"; proposed, pending Maneet's answer in the PR. EVALUATION.md is unchanged.
+  - Crash rule for the held-out run: re-run only if the fix changes no counted finding; otherwise a not-checkable miss. Proposed, pending Maneet's answer.
+  - The no-tuning check (M5.5) is a local script with a test on a temporary git repo, not a CI test, because CI has no history.
