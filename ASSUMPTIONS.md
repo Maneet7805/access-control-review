@@ -150,3 +150,8 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - semgrep-rules was cloned to a folder outside the repository at the pinned commit a5ad1714 and passed with --rules (rules licence: not committed).
   - scoring.py main prints the table title "dev set (self-check, not accuracy)" only for a folder named planted; any other folder is titled "<folder> set". Title only, no rule changed, dev output byte-identical, one test added.
   - Dev runs gave no crash and no not-checkable run for any baseline, so no runner or adapter fix was needed.
+- 2026-11-19, M5.4 held-out run. Defaults, one line each:
+  - Our tool crashed once at the first held-out attempt: the shell used the system Python, which has no psycopg, so it failed on import before any run. Re-run once with the project .venv Python. No run object existed from the first attempt, no code, rule, mapping or option changed, so the crash rule allows it. results/heldout/score.txt from the failed attempt was overwritten by the real table.
+  - Baselines were run with the system Python (they do not import psycopg); each saved 29 of 29 runs, none not-checkable. Not repeated.
+  - Held-out tables are saved as results/heldout/score.txt and results/baselines/heldout/score-NAME.txt, unedited scorer output including needs_decision.
+  - Fixed-twin findings and the one needs_decision item are reported in the PR and not acted on (M5.4 step 9).

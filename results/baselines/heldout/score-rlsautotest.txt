@@ -1,0 +1,34 @@
+Score: heldout set
+  Recall:            6/15 (0.40)
+  Precision:         6/22 (0.27)
+  False alarms:      11
+  False-alarm rate:  11/17 (0.65)
+  Extra findings:    5
+  Not checkable:     0
+  Probe errors:      0
+  needs_decision:    0
+  Missed: circle-directory/vulnerable: C2 on table circle_members, column contact_phone
+  Missed: ferry-boarding/vulnerable: R2 on table boarding_passes
+  Missed: harbor-helpdesk/vulnerable: R3 on table support_requests
+  Missed: kiln-bookings/vulnerable: R5 on table kiln_bookings
+  Missed: library-fines/vulnerable: U1 on function fee_total
+  Missed: pantry-share/vulnerable: R6 on table pantry_items
+  Missed: plant-swaps/vulnerable: R7 on table swap_offers
+  Missed: trailhead-profiles/vulnerable: C1 on table member_profiles, column is_staff
+  Missed: ward-credits/vulnerable: U2 on function admin_grant_credits
+  Extra findings: circle-directory/vulnerable: R2 on table circle_members
+  Extra findings: kiln-bookings/vulnerable: R2 on table kiln_bookings
+  Extra findings: pantry-share/vulnerable: R1 on table pantry_items
+  Extra findings: plant-swaps/vulnerable: R2 on table swap_offers
+  Extra findings: ward-credits/vulnerable: U1 on function admin_grant_credits
+  False alarms: barn-rotas/migrations: U1 on function is_team_member
+  False alarms: circle-directory/fixed: R2 on table circle_members
+  False alarms: kiln-bookings/fixed: R2 on table kiln_bookings
+  False alarms: lantern-budgets/migrations: U1 on function rename_budget
+  False alarms: launch-waitlist/migrations: R3 on table waitlist_entries
+  False alarms: library-fines/fixed: U1 on function fee_total
+  False alarms: loyalty-punch/fixed: U1 on function spend_points
+  False alarms: orbit-tasks/migrations: U1 on function is_admin
+  False alarms: pantry-share/fixed: R1 on table pantry_items
+  False alarms: plant-swaps/fixed: R2 on table swap_offers
+  False alarms: ward-credits/fixed: U1 on function admin_grant_credits

@@ -1,0 +1,34 @@
+{
+  "app": "orbit-tasks",
+  "findings": [
+    {
+      "actor": "baseline:rlsautotest",
+      "explanation": "rlsautotest reported rule function, mapped to U1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "U1",
+      "function": "is_admin",
+      "id": "rlsautotest-U1-is_admin",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:rlsautotest",
+          "error": null,
+          "probe": "rlsautotest:function",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"object\": \"is_admin()\", \"severity\": \"HIGH\", \"type\": \"function\", \"why\": \"SECURITY DEFINER function is EXECUTE-able by authenticated; it runs as its owner and bypasses the caller's RLS; reads/writes RLS-protected staff.\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 4 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

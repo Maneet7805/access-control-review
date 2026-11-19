@@ -1,0 +1,44 @@
+{
+  "app": "ferry-boarding",
+  "findings": [
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC001, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "pgrls-R1-boarding_passes",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC001",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.boarding_passes\", \"message\": \"Table public.boarding_passes does not have row-level security enabled. Add ENABLE ROW LEVEL SECURITY or include the table in [lint.rules.SEC001].allowlist if it is a public reference table.\", \"rule_id\": \"SEC001\", \"severity\": \"error\", \"title\": \"RLS not enabled on table\"}"
+        },
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC049",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.boarding_passes\", \"message\": \"Table public.boarding_passes is in the PostgREST-exposed schema public, grants SELECT to anon, authenticated, and has no effective row filter (RLS is disabled) \\u2014 it is directly readable at GET /rest/v1/boarding_passes by an unauthenticated or any-authenticated request. Enable RLS with a row-scoping policy (or restrict/REVOKE the grant); if the table is intentionally public, allowlist 'public.boarding_passes' in [lint.rules.SEC049]. (SEC001/SEC003/SEC008 each flag a precondition of this in isolation; SEC049 is the conjunction.)\", \"rule_id\": \"SEC049\", \"severity\": \"warning\", \"title\": \"PostgREST-exposed table readable by a low-trust role\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "boarding_passes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 0 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

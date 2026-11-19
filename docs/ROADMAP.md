@@ -16,7 +16,7 @@ How much detail each part has:
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
-| M5 Compare | Run other tools on the same apps and score everyone | 3/6 |
+| M5 Compare | Run other tools on the same apps and score everyone | 4/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
@@ -25,7 +25,7 @@ How much detail each part has:
 
 - Current milestone: M5
 - Last merged PR: #68
-- Next eligible task: M5.4
+- Next eligible task: M5.5
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -326,7 +326,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `python scripts/check.py` prints ALL PASS. Run it once, alone: it uses Docker.
   - Done when: every included baseline has an adapter with a passing test and a negative control, and the runner exists.
   - Stop and ask if: a baseline's output cannot be mapped without guessing intent; the finding shape cannot hold the baseline's evidence without a change to `findings.py` or the schema.
-- [ ] **M5.4 Run every tool on the dev set, then once on the held-out set.**
+- [x] **M5.4 Run every tool on the dev set, then once on the held-out set.**
   - Depends on: M5.3.
   - Goal: raw outputs and score tables for our tool and every baseline, on the dev set and on the held-out set, with the held-out run done once.
   - Files: create `results/baselines/devset/<tool>/`, `results/baselines/heldout/<tool>/`, `results/heldout/` (our tool, same layout as `results/devset/`), `results/heldout/RUN.txt`, and the score tables. Bug fixes in `scripts/run_baselines.py` and `src/access_review/adapters/` found in the dev run only. `src/access_review/scoring.py` only if the check in step 5 needs a tiny change that alters no rule. Do not touch: `probes.py`, `rules.py`, `sandbox.py`, `baseline.sql`, `planted/`, `heldout/` files, `docs/baselines.md`, `docs/EVALUATION.md`. This task uses Docker.

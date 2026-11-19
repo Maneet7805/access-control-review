@@ -1,0 +1,101 @@
+{
+  "app": "pantry-share",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can read rows in the table \"pantry_items\", which belong to signed-in users.",
+      "fix": "Add a row security policy on \"pantry_items\" so only signed-in users can read it, and only rows where \"owner_id\" equals their own user id (auth.uid()).",
+      "flaw_id": "R1",
+      "id": "R1:pantry_items:visitor",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "best_before": "2027-01-31",
+              "id": "dc2a5248-792c-4a5c-b194-845db475595e",
+              "item": "Rice 1kg",
+              "owner_id": "11111111-1111-4111-8111-111111111111",
+              "qty": 2
+            },
+            {
+              "best_before": "2026-12-15",
+              "id": "e9af8760-da44-47ca-ba47-10b854cc7ca8",
+              "item": "Lentils",
+              "owner_id": "11111111-1111-4111-8111-111111111111",
+              "qty": 3
+            },
+            {
+              "best_before": "2027-03-01",
+              "id": "204fa8bf-ccea-46dd-bb10-f1cf9a8aadbe",
+              "item": "Tinned tomatoes",
+              "owner_id": "22222222-2222-4222-8222-222222222222",
+              "qty": 6
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"pantry_items\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "pantry_items"
+    },
+    {
+      "actor": "user:11111111-1111-4111-8111-111111111111",
+      "explanation": "A signed-in user can read rows that belong to other users in the table \"pantry_items\".",
+      "fix": "Add a row security policy on \"pantry_items\" so a user can only read rows where \"owner_id\" equals their own user id (auth.uid()).",
+      "flaw_id": "R2",
+      "id": "R2:pantry_items:user:11111111-1111-4111-8111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-4111-8111-111111111111",
+          "error": null,
+          "probe": "user_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "best_before": "2027-01-31",
+              "id": "dc2a5248-792c-4a5c-b194-845db475595e",
+              "item": "Rice 1kg",
+              "owner_id": "11111111-1111-4111-8111-111111111111",
+              "qty": 2
+            },
+            {
+              "best_before": "2026-12-15",
+              "id": "e9af8760-da44-47ca-ba47-10b854cc7ca8",
+              "item": "Lentils",
+              "owner_id": "11111111-1111-4111-8111-111111111111",
+              "qty": 3
+            },
+            {
+              "best_before": "2027-03-01",
+              "id": "204fa8bf-ccea-46dd-bb10-f1cf9a8aadbe",
+              "item": "Tinned tomatoes",
+              "owner_id": "22222222-2222-4222-8222-222222222222",
+              "qty": 6
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"pantry_items\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "pantry_items"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "fixed"
+}

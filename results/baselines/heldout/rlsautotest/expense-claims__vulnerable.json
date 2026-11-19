@@ -1,0 +1,34 @@
+{
+  "app": "expense-claims",
+  "findings": [
+    {
+      "actor": "baseline:rlsautotest",
+      "explanation": "rlsautotest reported rule view, mapped to V1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "V1",
+      "id": "rlsautotest-V1-claim_overview",
+      "owasp": [
+        "A01"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:rlsautotest",
+          "error": null,
+          "probe": "rlsautotest:view",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"object\": \"claim_overview\", \"severity\": \"HIGH\", \"type\": \"view\", \"why\": \"view runs with owner's rights (security_invoker off) and is readable by authenticated; it reads RLS-protected public.expense_claims, so their RLS is bypassable through this view. Set security_invoker=on, or revoke the authenticated grant.\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "claim_overview"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

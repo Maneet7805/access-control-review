@@ -1,0 +1,568 @@
+{
+  "tables": [
+    {
+      "table": "shift_notes",
+      "rls_enabled": true,
+      "policied": [
+        "DELETE",
+        "INSERT",
+        "SELECT",
+        "UPDATE"
+      ],
+      "cells": {
+        "SELECT": {
+          "grant": true,
+          "deny": true
+        },
+        "INSERT": {
+          "deny": true,
+          "grant": true
+        },
+        "UPDATE": {
+          "deny": true,
+          "grant": true
+        },
+        "DELETE": {
+          "grant": true,
+          "deny": true
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "INSERT": {
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "UPDATE": {
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        }
+      },
+      "footguns": [
+        "opaque policy function(s) were MOCKED to prove the policy delegates correctly (wiring) \u2014 the function's own logic is NOT verified here; test it separately",
+        "UNRELIABLE TEST(S) - the probe could not produce a trustworthy result for some identity/command, so the suite fails loudly here rather than asserting a possibly-wrong outcome. Each finding below names its cause and a `Fix:` for how to get ahead of it: INSERT: authenticated, authorized when is_team_member() [mocked; wiring] [probe observed error 42501]: mocking the policy function(s) TRUE did not grant this command -- the policy does not delegate solely to the mocked function (another gate or an unmet precondition applies), so the wiring cannot be isolated here; verify the function's own logic separately; UPDATE: authenticated, authorized when is_team_member() [mocked; wiring] [probe observed rows=0]: mocking the policy function(s) TRUE did not grant this command -- the policy does not delegate solely to the mocked function (another gate or an unmet precondition applies), so the wiring cannot be isolated here; verify the function's own logic separately"
+      ],
+      "coverage": [
+        2,
+        8
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [
+        "UNRELIABLE - INSERT: authenticated, authorized when is_team_member() [mocked; wiring] [probe observed error 42501]: mocking the policy function(s) TRUE did not grant this command -- the policy does not delegate solely to the mocked function (another gate or an unmet precondition applies), so the wiring cannot be isolated here; verify the function's own logic separately",
+        "UNRELIABLE - UPDATE: authenticated, authorized when is_team_member() [mocked; wiring] [probe observed rows=0]: mocking the policy function(s) TRUE did not grant this command -- the policy does not delegate solely to the mocked function (another gate or an unmet precondition applies), so the wiring cannot be isolated here; verify the function's own logic separately"
+      ],
+      "unreliable_cells": [
+        [
+          "INSERT",
+          "authorized"
+        ],
+        [
+          "UPDATE",
+          "authorized"
+        ]
+      ],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": true,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": true,
+        "authenticated:DELETE": true,
+        "anon:SELECT": true,
+        "anon:INSERT": true,
+        "anon:UPDATE": true,
+        "anon:DELETE": true,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "team_id",
+          "author_id",
+          "body",
+          "created_at"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "table": "team_members",
+      "rls_enabled": true,
+      "policied": [
+        "SELECT"
+      ],
+      "cells": {
+        "SELECT": {
+          "grant": true,
+          "deny": true
+        },
+        "INSERT": {
+          "deny": true
+        },
+        "DELETE": {
+          "deny": true
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "INSERT": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        }
+      },
+      "footguns": [],
+      "coverage": [
+        2,
+        2
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [],
+      "unreliable_cells": [],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": true,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": true,
+        "authenticated:DELETE": true,
+        "anon:SELECT": true,
+        "anon:INSERT": true,
+        "anon:UPDATE": true,
+        "anon:DELETE": true,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "team_id",
+          "user_id"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "table": "teams",
+      "rls_enabled": true,
+      "policied": [
+        "SELECT"
+      ],
+      "cells": {
+        "SELECT": {
+          "grant": true,
+          "deny": true
+        },
+        "UPDATE": {
+          "deny": true
+        },
+        "DELETE": {
+          "deny": true
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "service_role": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "UPDATE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        }
+      },
+      "footguns": [
+        "opaque policy function(s) were MOCKED to prove the policy delegates correctly (wiring) \u2014 the function's own logic is NOT verified here; test it separately"
+      ],
+      "coverage": [
+        0,
+        2
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [],
+      "unreliable_cells": [],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": true,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": true,
+        "authenticated:DELETE": true,
+        "anon:SELECT": true,
+        "anon:INSERT": true,
+        "anon:UPDATE": true,
+        "anon:DELETE": true,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "name"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "bypass_surfaces": [
+    {
+      "object": "is_team_member(t uuid)",
+      "type": "function",
+      "severity": "HIGH",
+      "why": "SECURITY DEFINER function is EXECUTE-able by authenticated; it runs as its owner and bypasses the caller's RLS; reads/writes RLS-protected team_members."
+    },
+    {
+      "object": "supabase_etl_admin",
+      "type": "role",
+      "severity": "CRITICAL",
+      "why": "role is BYPASSRLS and bypasses RLS but is not a sanctioned bypass role and is client-reachable (login / client role / SET ROLE-able by a client). Confirm it should have this, revoke it, or pass --allow-bypass-role."
+    },
+    {
+      "object": "shift_notes",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    },
+    {
+      "object": "team_members",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    },
+    {
+      "object": "teams",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    }
+  ]
+}

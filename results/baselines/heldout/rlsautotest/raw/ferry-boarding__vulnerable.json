@@ -1,0 +1,106 @@
+{
+  "tables": [
+    {
+      "table": "boarding_passes",
+      "rls_enabled": false,
+      "policied": [],
+      "cells": {},
+      "footguns": [],
+      "coverage": [
+        0,
+        0
+      ],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "service_role",
+        "claim_style": "flat"
+      },
+      "has_policy": false,
+      "exposed": true,
+      "grants": {
+        "authenticated:SELECT": true,
+        "authenticated:INSERT": false,
+        "authenticated:UPDATE": false,
+        "authenticated:DELETE": false,
+        "anon:SELECT": true,
+        "anon:INSERT": false,
+        "anon:UPDATE": false,
+        "anon:DELETE": false,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "passenger_id",
+          "route",
+          "seat",
+          "departs_at",
+          "created_at"
+        ],
+        "cells": {
+          "service_role": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "bypass_surfaces": []
+}

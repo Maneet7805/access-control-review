@@ -1,0 +1,123 @@
+{
+  "app": "ferry-boarding",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can read rows in the table \"boarding_passes\", which belong to signed-in users.",
+      "fix": "Add a row security policy on \"boarding_passes\" so only signed-in users can read it, and only rows where \"passenger_id\" equals their own user id (auth.uid()).",
+      "flaw_id": "R1",
+      "id": "R1:boarding_passes:visitor",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-01T08:00:00+00:00",
+              "id": "3fd56306-b8c6-4b55-9858-39c3d6f21653",
+              "passenger_id": "11111111-1111-4111-8111-111111111111",
+              "route": "Harbour - North Isle",
+              "seat": "12A"
+            },
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-03T17:30:00+00:00",
+              "id": "dcf05772-00ed-4c0e-8984-689e6b0ab044",
+              "passenger_id": "11111111-1111-4111-8111-111111111111",
+              "route": "North Isle - Harbour",
+              "seat": "12B"
+            },
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-02T09:15:00+00:00",
+              "id": "47b592d2-1d7f-405f-b5a1-7f46d29bb5f6",
+              "passenger_id": "22222222-2222-4222-8222-222222222222",
+              "route": "Harbour - South Isle",
+              "seat": "4C"
+            },
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-04T16:00:00+00:00",
+              "id": "047b3b30-fede-4fac-8d40-1a138885cceb",
+              "passenger_id": "22222222-2222-4222-8222-222222222222",
+              "route": "South Isle - Harbour",
+              "seat": "4D"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"boarding_passes\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "boarding_passes"
+    },
+    {
+      "actor": "user:11111111-1111-4111-8111-111111111111",
+      "explanation": "A signed-in user can read rows that belong to other users in the table \"boarding_passes\".",
+      "fix": "Add a row security policy on \"boarding_passes\" so a user can only read rows where \"passenger_id\" equals their own user id (auth.uid()).",
+      "flaw_id": "R2",
+      "id": "R2:boarding_passes:user:11111111-1111-4111-8111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-4111-8111-111111111111",
+          "error": null,
+          "probe": "user_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-01T08:00:00+00:00",
+              "id": "3fd56306-b8c6-4b55-9858-39c3d6f21653",
+              "passenger_id": "11111111-1111-4111-8111-111111111111",
+              "route": "Harbour - North Isle",
+              "seat": "12A"
+            },
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-03T17:30:00+00:00",
+              "id": "dcf05772-00ed-4c0e-8984-689e6b0ab044",
+              "passenger_id": "11111111-1111-4111-8111-111111111111",
+              "route": "North Isle - Harbour",
+              "seat": "12B"
+            },
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-02T09:15:00+00:00",
+              "id": "47b592d2-1d7f-405f-b5a1-7f46d29bb5f6",
+              "passenger_id": "22222222-2222-4222-8222-222222222222",
+              "route": "Harbour - South Isle",
+              "seat": "4C"
+            },
+            {
+              "created_at": "2026-11-19T13:06:26.057608+00:00",
+              "departs_at": "2026-07-04T16:00:00+00:00",
+              "id": "047b3b30-fede-4fac-8d40-1a138885cceb",
+              "passenger_id": "22222222-2222-4222-8222-222222222222",
+              "route": "South Isle - Harbour",
+              "seat": "4D"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"boarding_passes\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "boarding_passes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

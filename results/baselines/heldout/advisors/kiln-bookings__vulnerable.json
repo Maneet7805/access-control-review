@@ -1,0 +1,59 @@
+{
+  "app": "kiln-bookings",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule rls_policy_always_true, mapped to R5 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R5",
+      "id": "advisors-R5-kiln_bookings",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:rls_policy_always_true",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "rls_policy_always_true,RLS Policy Always True,WARN,EXTERNAL,{SECURITY},\"Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.\",Table `public.kiln_bookings` has an RLS policy `edit bookings` for `UPDATE` that allows unrestricted access (both USING and WITH CHECK are always true). This effectively bypasses row-level security for authenticated.,https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy,\"{\"\"name\"\": \"\"kiln_bookings\"\", \"\"qual\"\": \"\"true\"\", \"\"type\"\": \"\"table\"\", \"\"roles\"\": [\"\"authenticated\"\"], \"\"schema\"\": \"\"public\"\", \"\"command\"\": \"\"UPDATE\"\", \"\"with_check\"\": \"\"true\"\", \"\"policy_name\"\": \"\"edit bookings\"\", \"\"permissive_using\"\": true, \"\"permissive_with_check\"\": true}\",rls_policy_always_true_public_kiln_bookings_edit bookings"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    },
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule rls_policy_always_true, mapped to R7 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R7",
+      "id": "advisors-R7-kiln_bookings",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:rls_policy_always_true",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "rls_policy_always_true,RLS Policy Always True,WARN,EXTERNAL,{SECURITY},\"Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.\",Table `public.kiln_bookings` has an RLS policy `edit bookings` for `UPDATE` that allows unrestricted access (both USING and WITH CHECK are always true). This effectively bypasses row-level security for authenticated.,https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy,\"{\"\"name\"\": \"\"kiln_bookings\"\", \"\"qual\"\": \"\"true\"\", \"\"type\"\": \"\"table\"\", \"\"roles\"\": [\"\"authenticated\"\"], \"\"schema\"\": \"\"public\"\", \"\"command\"\": \"\"UPDATE\"\", \"\"with_check\"\": \"\"true\"\", \"\"policy_name\"\": \"\"edit bookings\"\", \"\"permissive_using\"\": true, \"\"permissive_with_check\"\": true}\",rls_policy_always_true_public_kiln_bookings_edit bookings"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 3 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

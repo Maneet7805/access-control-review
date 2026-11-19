@@ -1,0 +1,31 @@
+Score: heldout set
+  Recall:            12/15 (0.80)
+  Precision:         12/30 (0.40)
+  False alarms:      11
+  False-alarm rate:  6/17 (0.35)
+  Extra findings:    7
+  Not checkable:     0
+  Probe errors:      6
+  needs_decision:    1
+  Missed: library-fines/vulnerable: U1 on function fee_total
+  Missed: plant-swaps/vulnerable: R7 on table swap_offers
+  Missed: trailhead-profiles/vulnerable: C1 on table member_profiles, column is_staff
+  Extra findings: circle-directory/vulnerable: R1 on table circle_members
+  Extra findings: circle-directory/vulnerable: R2 on table circle_members
+  Extra findings: kiln-bookings/vulnerable: R2 on table kiln_bookings
+  Extra findings: pantry-share/vulnerable: R1 on table pantry_items
+  Extra findings: pantry-share/vulnerable: R2 on table pantry_items
+  Extra findings: plant-swaps/vulnerable: R1 on table swap_offers
+  Extra findings: plant-swaps/vulnerable: R2 on table swap_offers
+  False alarms: barn-rotas/migrations: R2 on table shift_notes
+  False alarms: barn-rotas/migrations: U1 on function is_team_member
+  False alarms: kiln-bookings/fixed: R2 on table kiln_bookings
+  False alarms: orbit-tasks/migrations: R2 on table tasks
+  False alarms: orbit-tasks/migrations: U2 on function is_admin
+  False alarms: pantry-share/fixed: R1 on table pantry_items
+  False alarms: pantry-share/fixed: R2 on table pantry_items
+  False alarms: plant-swaps/fixed: R1 on table swap_offers
+  False alarms: plant-swaps/fixed: R2 on table swap_offers
+  False alarms: rind-recipes/migrations: R1 on table recipes
+  False alarms: rind-recipes/migrations: R2 on table recipes
+  needs_decision: launch-waitlist/migrations: R3 on table waitlist_entries

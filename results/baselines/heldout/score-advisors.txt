@@ -1,0 +1,25 @@
+Score: heldout set
+  Recall:            8/15 (0.53)
+  Precision:         8/17 (0.47)
+  False alarms:      7
+  False-alarm rate:  7/17 (0.41)
+  Extra findings:    2
+  Not checkable:     0
+  Probe errors:      0
+  needs_decision:    0
+  Missed: circle-directory/vulnerable: C2 on table circle_members, column contact_phone
+  Missed: ferry-boarding/vulnerable: R2 on table boarding_passes
+  Missed: harbor-helpdesk/vulnerable: R3 on table support_requests
+  Missed: plant-swaps/vulnerable: R7 on table swap_offers
+  Missed: quill-journal/vulnerable: R2 on table journal_entries
+  Missed: trailhead-profiles/vulnerable: C1 on table member_profiles, column is_staff
+  Missed: ward-credits/vulnerable: U2 on function admin_grant_credits
+  Extra findings: kiln-bookings/vulnerable: R7 on table kiln_bookings
+  Extra findings: ward-credits/vulnerable: U1 on function admin_grant_credits
+  False alarms: barn-rotas/migrations: U1 on function is_team_member
+  False alarms: lantern-budgets/migrations: U1 on function rename_budget
+  False alarms: launch-waitlist/migrations: R3 on table waitlist_entries
+  False alarms: library-fines/fixed: U1 on function fee_total
+  False alarms: loyalty-punch/fixed: U1 on function spend_points
+  False alarms: orbit-tasks/migrations: U1 on function is_admin
+  False alarms: ward-credits/fixed: U1 on function admin_grant_credits

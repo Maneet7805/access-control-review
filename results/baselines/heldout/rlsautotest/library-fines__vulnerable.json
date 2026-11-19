@@ -1,0 +1,34 @@
+{
+  "app": "library-fines",
+  "findings": [
+    {
+      "actor": "baseline:rlsautotest",
+      "explanation": "rlsautotest reported rule function, mapped to U3 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "U3",
+      "function": "fee_total",
+      "id": "rlsautotest-U3-fee_total",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:rlsautotest",
+          "error": null,
+          "probe": "rlsautotest:function",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"object\": \"fee_total(p_user uuid)\", \"severity\": \"CRITICAL\", \"type\": \"function\", \"why\": \"SECURITY DEFINER function is EXECUTE-able by anon; it runs as its owner and bypasses the caller's RLS; reads/writes RLS-protected loan_records.\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

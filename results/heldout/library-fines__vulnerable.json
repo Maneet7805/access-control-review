@@ -1,0 +1,36 @@
+{
+  "app": "library-fines",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can call the function \"fee_total\", which runs with more rights than the caller.",
+      "fix": "Run REVOKE EXECUTE ON FUNCTION public.\"fee_total\" FROM PUBLIC, anon; (Postgres lets everyone call a new function unless you remove that). Then allow only the roles that need it. If visitors must call it on purpose, no change is needed.",
+      "flaw_id": "U3",
+      "function": "fee_total",
+      "id": "U3:fee_total:visitor",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_calls_function",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "result": 0
+            }
+          ],
+          "statement": "SELECT \"public\".\"fee_total\"(gen_random_uuid()::uuid) AS result"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

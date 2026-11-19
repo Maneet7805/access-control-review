@@ -1,0 +1,35 @@
+{
+  "app": "ferry-boarding",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule rls_disabled_in_public, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "advisors-R1-boarding_passes",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:rls_disabled_in_public",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "rls_disabled_in_public,RLS Disabled in Public,ERROR,EXTERNAL,{SECURITY},Detects cases where row level security (RLS) has not been enabled on tables in schemas exposed to PostgREST,\"Table \\`public.boarding_passes\\` is public, but RLS has not been enabled.\",https://supabase.com/docs/guides/database/database-linter?lint=0013_rls_disabled_in_public,\"{\"\"name\"\": \"\"boarding_passes\"\", \"\"type\"\": \"\"table\"\", \"\"schema\"\": \"\"public\"\"}\",rls_disabled_in_public_public_boarding_passes"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "boarding_passes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 1 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

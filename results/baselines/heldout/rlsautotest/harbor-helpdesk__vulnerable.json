@@ -1,0 +1,35 @@
+{
+  "app": "harbor-helpdesk",
+  "findings": [
+    {
+      "actor": "baseline:rlsautotest",
+      "explanation": "rlsautotest reported rule footgun, mapped to R4 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R4",
+      "id": "rlsautotest-R4-support_requests",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:rlsautotest",
+          "error": null,
+          "probe": "rlsautotest:footgun",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "policy open a ticket: INSERT WITH CHECK (true) -> any ['public'] may write any row (review)"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "support_requests"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

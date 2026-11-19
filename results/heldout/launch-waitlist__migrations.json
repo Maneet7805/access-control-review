@@ -1,0 +1,39 @@
+{
+  "app": "launch-waitlist",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can add rows to the table \"waitlist_entries\".",
+      "fix": "If \"waitlist_entries\" should not accept rows from visitors, turn on row security for it and allow inserts only for signed-in users. If it is a public form on purpose, no change is needed.",
+      "flaw_id": "R3",
+      "id": "R3:waitlist_entries:visitor",
+      "owasp": [
+        "A01"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_inserts_row",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "created_at": "2026-11-19T13:07:55.144518+00:00",
+              "email": "access-review",
+              "id": "a44150a6-584d-4e15-8ac1-81e1a1164cec",
+              "source": null
+            }
+          ],
+          "statement": "INSERT INTO \"public\".\"waitlist_entries\" (\"email\") VALUES ('access-review')"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "needs_decision",
+      "table": "waitlist_entries"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "migrations"
+}

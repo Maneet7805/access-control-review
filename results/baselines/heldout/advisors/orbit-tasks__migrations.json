@@ -1,0 +1,34 @@
+{
+  "app": "orbit-tasks",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule authenticated_security_definer_function_executable, mapped to U1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "U1",
+      "function": "is_admin",
+      "id": "advisors-U1-is_admin",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:authenticated_security_definer_function_executable",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "authenticated_security_definer_function_executable,Signed-In Users Can Execute SECURITY DEFINER Function,WARN,EXTERNAL,{SECURITY},\"Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.\",Function `public.is_admin()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/is_admin`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.,https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable,\"{\"\"name\"\": \"\"is_admin\"\", \"\"schema\"\": \"\"public\"\", \"\"language\"\": \"\"sql\"\", \"\"arguments\"\": \"\"\"\", \"\"security_definer\"\": true}\",authenticated_security_definer_function_executable_public_is_admin_"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 4 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

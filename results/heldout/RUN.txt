@@ -1,0 +1,10 @@
+commit: 66ccffd219ef24e585173c0e821c3376efb45fa5
+eval-freeze-1: 1080063
+our tool: this commit (python scripts/run_devset.py), Python 3.13.1, image supabase/postgres:15.19.0.019
+semgrep: 1.186.0, rules semgrep-rules a5ad1714f00c9f7fde980cab0ea1d6dc6d414fd2 (generic/)
+advisors: splinter cc529aa9d3eeffd2e64576c7591e60b22abd205c, sha256 e652eb2be316eaf44ad523e8b0e6e76bb4952942be86692811064d0b72402b46
+rlsautotest: 0.7.1
+pgrls: 0.57.1
+baseline image: acr-baselines:m52
+docker: 29.9.3
+our tool python: .venv Python 3.13.1, psycopg 3.3.8 (first attempt with the system Python crashed on import before any run; re-run changed no code or option)

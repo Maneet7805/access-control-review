@@ -1,0 +1,375 @@
+{
+  "tables": [
+    {
+      "table": "early_access_codes",
+      "rls_enabled": true,
+      "policied": [
+        "SELECT"
+      ],
+      "cells": {
+        "SELECT": {
+          "grant": true,
+          "deny": true
+        },
+        "INSERT": {
+          "deny": true
+        },
+        "UPDATE": {
+          "deny": true
+        },
+        "DELETE": {
+          "deny": true
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "INSERT": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "UPDATE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        }
+      },
+      "footguns": [],
+      "coverage": [
+        2,
+        2
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [],
+      "unreliable_cells": [],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": true,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": true,
+        "authenticated:DELETE": true,
+        "anon:SELECT": true,
+        "anon:INSERT": true,
+        "anon:UPDATE": true,
+        "anon:DELETE": true,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "issued_to",
+          "code",
+          "redeemed"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "table": "waitlist_entries",
+      "rls_enabled": true,
+      "policied": [
+        "INSERT"
+      ],
+      "cells": {
+        "SELECT": {
+          "deny": true
+        },
+        "UPDATE": {
+          "deny": true
+        },
+        "DELETE": {
+          "deny": true
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "UPDATE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        }
+      },
+      "footguns": [
+        "policy join the waitlist: INSERT WITH CHECK (true) -> any ['anon', 'authenticated'] may write any row (review)",
+        "UNRELIABLE TEST(S) - the probe could not produce a trustworthy result for some identity/command, so the suite fails loudly here rather than asserting a possibly-wrong outcome. Each finding below names its cause and a `Fix:` for how to get ahead of it: INSERT: anon [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy; INSERT: authenticated, authorized (branch 0) [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy; INSERT: authenticated, not authorized [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy; INSERT: postgres [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy"
+      ],
+      "coverage": [
+        2,
+        2
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [
+        "UNRELIABLE - INSERT: anon [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy",
+        "UNRELIABLE - INSERT: authenticated, authorized (branch 0) [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy",
+        "UNRELIABLE - INSERT: authenticated, not authorized [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy",
+        "UNRELIABLE - INSERT: postgres [probe observed error 23505]: the test action raised 23505, a constraint/validity error (not the RLS denial 42501) -- the probe's own synthesized value, not a policy result. Fix: the write value tripped a table CHECK/constraint before RLS was reached -- give the column a CHECK-satisfying value (rlsautotest infers many automatically) or add a policy-neutral column so the write can reach the policy"
+      ],
+      "unreliable_cells": [
+        [
+          "INSERT",
+          "anon"
+        ],
+        [
+          "INSERT",
+          "authorized"
+        ],
+        [
+          "INSERT",
+          "other"
+        ],
+        [
+          "INSERT",
+          "service_role"
+        ]
+      ],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": false,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": false,
+        "authenticated:DELETE": false,
+        "anon:SELECT": false,
+        "anon:INSERT": true,
+        "anon:UPDATE": false,
+        "anon:DELETE": false,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "email",
+          "source",
+          "created_at"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "bypass_surfaces": [
+    {
+      "object": "supabase_etl_admin",
+      "type": "role",
+      "severity": "CRITICAL",
+      "why": "role is BYPASSRLS and bypasses RLS but is not a sanctioned bypass role and is client-reachable (login / client role / SET ROLE-able by a client). Confirm it should have this, revoke it, or pass --allow-bypass-role."
+    },
+    {
+      "object": "early_access_codes",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    },
+    {
+      "object": "waitlist_entries",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.circle_members has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.circle_members FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.circle_members"
+    },
+    {
+      "rule_id": "SEC003",
+      "severity": "error",
+      "title": "Permissive policy grants access to PUBLIC",
+      "message": "Permissive policy 'directory is public' on public.circle_members grants access to PUBLIC, so anonymous connections are governed by this policy's own clause — its USING for reads, its WITH CHECK for writes (a FOR INSERT policy has no USING at all). Restrict to a specific role (e.g. TO authenticated).",
+      "location": "public.circle_members.directory is public"
+    },
+    {
+      "rule_id": "SEC005",
+      "severity": "warning",
+      "title": "Policy expression does not reference any column of the table",
+      "message": "Policy 'directory is public' on public.circle_members does not reference any column of the table. The predicate is purely session-state — every row is admitted or denied based on configuration alone. Add a row-level condition (e.g. tenant_id = current_setting('app.tenant')).",
+      "location": "public.circle_members.directory is public"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.circle_members is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.circle_members"
+    },
+    {
+      "rule_id": "SEC008",
+      "severity": "warning",
+      "title": "Permissive policy USING clause is constant true",
+      "message": "Policy 'directory is public' on public.circle_members has USING (true), which admits every row to every caller in the role list. Replace with a real predicate or remove the policy.",
+      "location": "public.circle_members.directory is public"
+    },
+    {
+      "rule_id": "SEC022",
+      "severity": "info",
+      "title": "RLS-enabled table has no write-side policy",
+      "message": "Table public.circle_members has RLS enabled and 1 policy, but every policy is FOR SELECT — no policy covers INSERT, UPDATE, or DELETE. With RLS enforced and no write-side policy, writes by non-owner roles are denied: INSERT raises a row-violates-policy error, while UPDATE and DELETE silently affect zero rows. If the table is meant to be read-only for these roles (writes done by a table-owning or BYPASSRLS role), allowlist it as 'public.circle_members' in [lint.rules.SEC022]. Otherwise add a policy covering the write commands — a FOR ALL policy, or a FOR INSERT / UPDATE / DELETE policy.",
+      "location": "public.circle_members"
+    },
+    {
+      "rule_id": "SEC027",
+      "severity": "info",
+      "title": "RLS table has a principal column no policy scopes by",
+      "message": "Table public.circle_members has RLS enabled and a policy, but no policy references the principal column(s) 'user_id'. Rows are scoped by whatever the policies do key on (often tenant), so users that share that scope can see each other's rows. If this table holds per-user-private data, add a predicate keying on 'user_id'; if it is intentionally shared (a catalogue, a tenant-wide settings table), add it to [lint.rules.SEC027].allowlist.",
+      "location": "public.circle_members"
+    },
+    {
+      "rule_id": "SEC038",
+      "severity": "error",
+      "title": "Anonymous read leak (USING is unconditionally true for an unauthenticated session)",
+      "message": "Policy 'directory is public' on public.circle_members leaks every row to an anonymous session. Under an unauthenticated connection every auth function (auth.uid(), auth.role(), current_setting(), …) returns NULL, and Z3 proves the USING predicate is then unconditionally TRUE for every row (three-valued / Kleene logic) — so the policy reads all rows. Every row is visible unconditionally (the predicate is constant-true under anon — it pins no row column). Gate the policy on a non-null auth check (e.g. `auth.uid() IS NOT NULL AND <tenant/owner check>`) or remove the inverting disjunct that admits anonymous. This is the semantic form of the SEC004 inverted-auth hole — see SEC004 for the syntactic variant.",
+      "location": "public.circle_members.directory is public"
+    },
+    {
+      "rule_id": "SEC049",
+      "severity": "warning",
+      "title": "PostgREST-exposed table readable by a low-trust role",
+      "message": "Table public.circle_members is in the PostgREST-exposed schema public, grants SELECT to anon, authenticated, and has no effective row filter (RLS is enabled but only a permissive USING (true) policy, which admits every row) — it is directly readable at GET /rest/v1/circle_members by an unauthenticated or any-authenticated request. Enable RLS with a row-scoping policy (or restrict/REVOKE the grant); if the table is intentionally public, allowlist 'public.circle_members' in [lint.rules.SEC049]. (SEC001/SEC003/SEC008 each flag a precondition of this in isolation; SEC049 is the conjunction.)",
+      "location": "public.circle_members"
+    }
+  ],
+  "summary": {
+    "errors": 3,
+    "warnings": 3,
+    "infos": 3,
+    "others": 0,
+    "total": 9
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

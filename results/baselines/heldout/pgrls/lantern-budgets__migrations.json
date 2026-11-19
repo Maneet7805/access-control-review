@@ -1,0 +1,11 @@
+{
+  "app": "lantern-budgets",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 4 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

@@ -1,0 +1,10 @@
+{
+  "app": "library-fines",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "These tests could not run, so this result does not cover them: user calls function \"fee_total\". Do not read this result as a clean one."
+  ],
+  "probe_errors": true,
+  "side": "fixed"
+}
