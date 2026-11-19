@@ -255,7 +255,7 @@ Why before scoring: if the answer key or the rules change after seeing results, 
   - Validation: the held-out files validate against the key shape. Maneet reviews the key.
 - [x] **M4.5 Freeze.**
   - Goal: tag the repo `eval-freeze-1` once G4 is signed. After the tag: no changes to probes, rules or the key without a DECISION, and any such change means the held-out set must be rewritten and rerun.
-- [ ] **G4 (owner).** Maneet reads `docs/EVALUATION.md`, confirms it, and creates the tag.
+- [x] **G4 (owner).** Ticked on owner's instruction. Maneet reads `docs/EVALUATION.md`, confirms it, and creates the tag.
 
 ### M5 Compare with other tools (outline, rewritten in full at G4)
 
