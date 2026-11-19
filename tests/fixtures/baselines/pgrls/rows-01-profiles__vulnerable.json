@@ -1,0 +1,46 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC001",
+      "severity": "error",
+      "title": "RLS not enabled on table",
+      "message": "Table public.profiles does not have row-level security enabled. Add ENABLE ROW LEVEL SECURITY or include the table in [lint.rules.SEC001].allowlist if it is a public reference table.",
+      "location": "public.profiles"
+    }
+  ],
+  "summary": {
+    "errors": 1,
+    "warnings": 0,
+    "infos": 0,
+    "others": 0,
+    "total": 1
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

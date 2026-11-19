@@ -1,0 +1,74 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.notes has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.notes FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.notes"
+    },
+    {
+      "rule_id": "SEC005",
+      "severity": "warning",
+      "title": "Policy expression does not reference any column of the table",
+      "message": "Policy 'any insert' on public.notes does not reference any column of the table. The predicate is purely session-state — every row is admitted or denied based on configuration alone. Add a row-level condition (e.g. tenant_id = current_setting('app.tenant')).",
+      "location": "public.notes.any insert"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.notes is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.notes"
+    },
+    {
+      "rule_id": "SEC028",
+      "severity": "warning",
+      "title": "Write-side policy WITH CHECK is constant true (open write)",
+      "message": "Policy 'any insert' on public.notes covers INSERT with WITH CHECK (true), so it accepts every write the command allows — this policy constrains nothing about the row written, so unless another policy closes the write side a caller it applies to can stamp any tenant id, owner, or value. The TO clause limits who may write, not what. Replace WITH CHECK (true) with a predicate that validates the written row (e.g. the tenant/ownership key), or allowlist the policy in [lint.rules.SEC028] if an open write side is intentional (an append-only audit or event table).",
+      "location": "public.notes.any insert"
+    },
+    {
+      "rule_id": "PERF001",
+      "severity": "warning",
+      "title": "Auth function called per-row in policy USING/WITH CHECK",
+      "message": "Policy 'own notes' on public.notes calls an auth function in USING without wrapping it in a subquery. Postgres re-evaluates the call per row. Wrap as e.g. (SELECT auth.uid()) so the planner caches the result for the whole statement.",
+      "location": "public.notes.own notes"
+    }
+  ],
+  "summary": {
+    "errors": 1,
+    "warnings": 3,
+    "infos": 1,
+    "others": 0,
+    "total": 5
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}
