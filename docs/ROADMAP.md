@@ -16,7 +16,7 @@ How much detail each part has:
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
-| M5 Compare | Run other tools on the same apps and score everyone | 2/6 |
+| M5 Compare | Run other tools on the same apps and score everyone | 3/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M5
-- Last merged PR: #67
-- Next eligible task: M5.3
+- Last merged PR: #68
+- Next eligible task: M5.4
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -307,7 +307,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `git diff --name-only origin/main` lists only the files named above.
   - Done when: every included tool has a command that was run, saved sample outputs and a mapping table, and the mapping rules state the `proved` rule.
   - Stop and ask if: a tool needs a network or an account at run time; the mapping can only work by changing `docs/EVALUATION.md` or the key; Maneet later withdraws the `proved` rule (a different rule is a change to `docs/EVALUATION.md`, in its own PR).
-- [ ] **M5.3 One adapter per baseline, and the runner.**
+- [x] **M5.3 One adapter per baseline, and the runner.**
   - Depends on: M5.2.
   - Goal: each baseline's raw output becomes the run object the scorer reads, and one script runs a baseline over a folder of apps.
   - Files: create `src/access_review/adapters/` (one module per included baseline), `scripts/run_baselines.py`, `tests/test_adapters.py`, more samples under `tests/fixtures/baselines/`. `docs/baselines.md` only to correct a mapping rule the adapter shows to be ambiguous; say so in the PR. Do not touch: `scoring.py`, `probes.py`, `rules.py`, `sandbox.py`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`.
