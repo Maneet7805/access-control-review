@@ -16,7 +16,7 @@ How much detail each part has:
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
-| M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
+| M5 Compare | Run other tools on the same apps and score everyone | 1/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M5
-- Last merged PR: #65
-- Next eligible task: M5.1
+- Last merged PR: #66
+- Next eligible task: M5.2
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -267,7 +267,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
 - No tool is tuned to the dev set or to the held-out set. No baseline rule or option is written or edited to fit one planted app. If a baseline has nothing for a kind of flaw, it finds nothing there, and that is the result.
 - Files for M5 live in these places: `docs/baselines.md` (choice, commands, mapping rules), `src/access_review/adapters/` (one module per baseline), `scripts/run_baselines.py`, `tests/fixtures/baselines/` (sample outputs), `results/` (raw outputs and score tables), `docs/results.md` (the table for the report).
 
-- [ ] **M5.1 DECISION D4: choose the baselines.**
+- [x] **M5.1 DECISION D4: choose the baselines.**
   - Depends on: G4.
   - Goal: a written choice of baseline tools, with the reason for each one, committed before any baseline is run.
   - Files: create `docs/baselines.md` (section "1. Choice"); add one entry to `ASSUMPTIONS.md`. Do not touch: `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `results/`. Never open `heldout/`.
