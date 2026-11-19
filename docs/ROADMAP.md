@@ -296,7 +296,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     3. Write the exact command per tool: working folder, flags, tool version, how it is pointed at the migration files or at the rebuilt database, how the network is off (for example a container with no network), output format and where the output goes. Run it. Save the raw output of both sides under `tests/fixtures/baselines/<tool>/`.
     4. Use published rules and built-in checks only. No rule or option is written or edited to fit a planted app. Pin the rule source and version.
     5. Write the mapping rules. For each tool, a table: tool rule or check id, flaw id (Appendix A), where the table, column or function name is read in the output, and any condition. An item the rules cannot place in a flaw id and a target is not emitted; it is counted as unmapped and stays in the raw output. The rules come from the tool's own documentation and from `planted/` only. They are written before M5.4 and are never derived from `heldout/`.
-    6. Decision proposed, pending Maneet's confirmation in the PR: every mapped baseline finding is emitted with status `proved`, because the scorer counts only `proved`. The results table labels baselines "reported, not executed" and our tool "executed". `docs/EVALUATION.md` is not changed. Put the question in the PR under Confirm next.
+    6. Decision, confirmed by Maneet in PR 66: every mapped baseline finding is emitted with status `proved`, because the scorer counts only `proved`. The results table labels baselines "reported, not executed" and our tool "executed". `docs/EVALUATION.md` is not changed.
     7. Log the choices in `ASSUMPTIONS.md`, then tick M5.2 and update section 1.
   - Validation:
     - `ruff check .` passes.
@@ -305,8 +305,8 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `docker ps -a` shows no leftover sandbox container.
     - `grep -rn heldout docs/baselines.md baselines tests/fixtures/baselines` prints nothing.
     - `git diff --name-only origin/main` lists only the files named above.
-  - Done when: every included tool has a command that was run, saved sample outputs and a mapping table, and the PR shows Maneet's answer on the `proved` rule.
-  - Stop and ask if: a tool needs a network or an account at run time; the mapping can only work by changing `docs/EVALUATION.md` or the key; Maneet rejects the `proved` rule (a different rule is a change to `docs/EVALUATION.md`, in its own PR).
+  - Done when: every included tool has a command that was run, saved sample outputs and a mapping table, and the mapping rules state the `proved` rule.
+  - Stop and ask if: a tool needs a network or an account at run time; the mapping can only work by changing `docs/EVALUATION.md` or the key; Maneet later withdraws the `proved` rule (a different rule is a change to `docs/EVALUATION.md`, in its own PR).
 - [ ] **M5.3 One adapter per baseline, and the runner.**
   - Depends on: M5.2.
   - Goal: each baseline's raw output becomes the run object the scorer reads, and one script runs a baseline over a folder of apps.
@@ -338,7 +338,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     4. Check that the scorer accepts the held-out set. Read `expected_runs` and `load_key` in `scoring.py` (they take a folder that holds `answer_key.json`). Then run `python -m access_review.scoring heldout/ --runs <empty folder>`: it must list missing runs and exit 2, with no error about the folder or the key. This is the first time `heldout/` is opened and no tool has run on it. Any change to scoring code must be tiny, change no rule, and keep `scoring.py` importing nothing from probes, rules or the sandbox.
     5. Freeze: commit everything, make `git status --short` print nothing, then write `results/heldout/RUN.txt` with `git rev-parse HEAD` and every tool's version. No file under `results/heldout/` or `results/baselines/heldout/` exists before this point.
     6. Held-out run, once, every tool, one at a time: `python scripts/run_devset.py heldout/ --out results/heldout` for our tool, and `python scripts/run_baselines.py heldout/ --tool NAME --out results/baselines/heldout/NAME` for each baseline. Save each raw output as soon as it is made.
-    7. Crash rule, proposed, pending Maneet's confirmation in the PR: a tool crash or an adapter bug in the held-out run may be fixed and that run repeated only if the fix does not change which findings count, shown by an empty diff of the saved run objects of every run that did not crash, and no change to a mapping rule or a tool option. Otherwise the run stays as a not-checkable miss (`not_checkable: true`, no findings) and is not repeated. A sandbox build failure of our own tool is a not-checkable miss and is not repeated.
+    7. Crash rule, confirmed by Maneet in PR 66: a tool crash or an adapter bug in the held-out run may be fixed and that run repeated only if the fix does not change which findings count, shown by an empty diff of the saved run objects of every run that did not crash, and no change to a mapping rule or a tool option. Otherwise the run stays as a not-checkable miss (`not_checkable: true`, no findings) and is not repeated. A sandbox build failure of our own tool is a not-checkable miss and is not repeated.
     8. Score every tool with `python -m access_review.scoring heldout/ --runs <dir>` and save each table next to its raw outputs. The `needs_decision` count is printed by the scorer; do not cut it from any saved table.
     9. Do not tune after step 6. If a fixed twin gives a finding, or a result looks like an author error in the held-out set, report it in the PR and change nothing. Replacing the held-out set is Maneet's decision.
     10. Log in `ASSUMPTIONS.md`, then tick M5.4 and update section 1.
@@ -352,7 +352,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `python scripts/check.py` prints ALL PASS, run once and alone after the Docker runs finish.
     - `docker ps -a` shows no leftover sandbox container.
   - Done when: every tool has saved raw outputs and a score table for both sets, `RUN.txt` records the commit used, and the PR names every not-checkable run and every crash.
-  - Stop and ask if: the held-out key or folder layout is not accepted by the scorer and the fix is more than tiny; the held-out run would need a rule, probe, key or mapping change; Docker does not start; a tool needs a network at run time; Maneet's answer on the crash rule is missing.
+  - Stop and ask if: the held-out key or folder layout is not accepted by the scorer and the fix is more than tiny; the held-out run would need a rule, probe, key or mapping change; Docker does not start; a tool needs a network at run time.
 - [ ] **M5.5 Check that nothing was tuned after the held-out run.**
   - Depends on: M5.4.
   - Goal: a command that fails if any frozen file changed after the held-out run, so the no-tuning rule can be checked and not only stated. If it must fail for a real reason, the held-out set is replaced (Maneet decides, by D3 and a new freeze tag).

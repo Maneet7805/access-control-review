@@ -114,6 +114,6 @@ This file records the defaults the agent chose when Maneet had no answer, one li
 - 2026-11-19, M5 roadmap rewrite (docs only). Defaults chosen, one line each:
   - Tasks M5.1 to M5.6 form one chain, each Depends-on naming its predecessor; M5.1 depends on G4.
   - The runner script is built in M5.3 and first run on a full set in M5.4, dev set first, so bugs show before the held-out run.
-  - Baseline findings are emitted as `proved` and labelled "reported, not executed"; proposed, pending Maneet's answer in the PR. EVALUATION.md is unchanged.
-  - Crash rule for the held-out run: re-run only if the fix changes no counted finding; otherwise a not-checkable miss. Proposed, pending Maneet's answer.
+  - Baseline findings are emitted as `proved` and labelled "reported, not executed"; confirmed by Maneet in PR 66. EVALUATION.md is unchanged.
+  - Crash rule for the held-out run: re-run only if the fix changes no counted finding; otherwise a not-checkable miss. Confirmed by Maneet in PR 66.
   - The no-tuning check (M5.5) is a local script with a test on a temporary git repo, not a CI test, because CI has no history.
