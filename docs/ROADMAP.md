@@ -4,7 +4,7 @@ Put this file at `docs/ROADMAP.md`. Claude Code reads it, picks the next eligibl
 
 How much detail each part has:
 - M0 to M4 are written in full. They are the current work and the next work.
-- M5 to M7 are medium detail. They are rewritten in full when their turn comes.
+- M5 is written in full. M6 and M7 are medium detail. They are rewritten in full when their turn comes.
 - M8 to M10 are goals and decision points only. Details written months early go stale, and they depend on what M1 and M2 teach us.
 
 ## 1. Where we are (the agent updates this after every PR)
@@ -24,7 +24,7 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M5
-- Last merged PR: #64
+- Last merged PR: #65
 - Next eligible task: M5.1
 - Open decisions waiting for Maneet: see section 6
 
@@ -257,15 +257,137 @@ Why before scoring: if the answer key or the rules change after seeing results, 
   - Goal: tag the repo `eval-freeze-1` once G4 is signed. After the tag: no changes to probes, rules or the key without a DECISION, and any such change means the held-out set must be rewritten and rerun.
 - [x] **G4 (owner).** Ticked on owner's instruction. Maneet reads `docs/EVALUATION.md`, confirms it, and creates the tag.
 
-### M5 Compare with other tools (outline, rewritten in full at G4)
+### M5 Compare with other tools
 
-- [ ] M5.1 Decision D4: choose baselines. Candidates: Semgrep, Supabase advisors, rlsautotest, pgrls, rlsgrid, SupaShield. Check each tool's licence and how it runs without a network.
-- [ ] M5.2 Record the exact commands to run each baseline on a rebuilt planted app in `docs/baselines.md`, after reading each tool's page in full.
-- [ ] M5.3 An adapter per baseline that turns its output into the same shape the scorer reads. Each adapter has a test with a sample output.
-- [ ] M5.4 Run all tools on the dev set. Then, once, on the held-out set. Save the raw outputs and the score table.
-- [ ] M5.5 Rule: nothing is tuned after the held-out run. If it must be, the held-out set is replaced.
-- [ ] M5.6 Write the results table for the report.
-- [ ] **G5 (owner).** Maneet checks the table against the raw outputs for two apps by hand.
+M5 runs other tools on the same apps and scores every tool with the frozen rules in `docs/EVALUATION.md`. Rules for the whole milestone:
+
+- Tasks run in order, one PR each. M5.1, M5.2 and M5.3 must never open `heldout/`: no reading, listing, copying or searching inside it, by hand or by script. Only the held-out run in M5.4 may open it.
+- Only one task at a time uses Docker. M5.2 and M5.4 use it, and so does any run of the full test suite. Run `docker ps -a` first; it must show no sandbox container.
+- Baselines are scored with the same rules as our tool, through adapters. `docs/EVALUATION.md`, `planted/answer_key.json` and `heldout/` are not changed. A change to any of them is its own PR and needs Maneet's approval (rule 12).
+- No tool is tuned to the dev set or to the held-out set. No baseline rule or option is written or edited to fit one planted app. If a baseline has nothing for a kind of flaw, it finds nothing there, and that is the result.
+- Files for M5 live in these places: `docs/baselines.md` (choice, commands, mapping rules), `src/access_review/adapters/` (one module per baseline), `scripts/run_baselines.py`, `tests/fixtures/baselines/` (sample outputs), `results/` (raw outputs and score tables), `docs/results.md` (the table for the report).
+
+- [ ] **M5.1 DECISION D4: choose the baselines.**
+  - Depends on: G4.
+  - Goal: a written choice of baseline tools, with the reason for each one, committed before any baseline is run.
+  - Files: create `docs/baselines.md` (section "1. Choice"); add one entry to `ASSUMPTIONS.md`. Do not touch: `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `results/`. Never open `heldout/`.
+  - Steps:
+    1. Read each candidate's pages in full (rule 11): Semgrep, the Supabase advisors, rlsautotest, pgrls, rlsgrid, SupaShield. At least the project page, the licence, the install page and the page on how to run it. Quote at most one line per page.
+    2. For each tool record: version, licence, install route, whether a run needs a network or an account once installed, whether it runs locally, which flaw ids from Appendix A it could report, and whether it runs statements against a database (execution-based) or only reads files (static).
+    3. Drop any tool that needs a network or an account to run, or that costs money. Say why in the file and name the page that says so.
+    4. The set must include Semgrep, the Supabase advisors and at least one execution-based database tool. Add other tools only if they pass step 3.
+    5. Write one table row per candidate: tool, version, licence, how it runs, offline (yes or no), covers, kind, decision (`Included` or `Dropped`), reason.
+    6. Log the decision in `ASSUMPTIONS.md` (date, options seen, picks, why), then tick M5.1 and update section 1.
+  - Validation:
+    - `ruff check .` passes.
+    - `grep -c -i -E "^\| *(Semgrep|Supabase advisors|rlsautotest|pgrls|rlsgrid|SupaShield) *\|" docs/baselines.md` prints 6. Assertion: every candidate has one row with a decision and a reason.
+    - `grep -c -E "\| *Included *\|" docs/baselines.md` prints 3 or more, and the Semgrep and Supabase advisors rows say `Included`. Assertion: the required set is present.
+    - `git ls-files results | grep -c heldout` prints 0. Assertion: no held-out run exists yet.
+    - `git diff --name-only origin/main` lists only `docs/baselines.md`, `ASSUMPTIONS.md` and `docs/ROADMAP.md`.
+  - Done when: `docs/baselines.md` is merged, so the choice exists on `main` before the held-out run. After that run it cannot change (M5.5).
+  - Stop and ask if: Semgrep or the Supabase advisors cannot meet the free, local, no-network rule (the D4 wording would then need to change); no execution-based database tool qualifies; a licence is unclear.
+- [ ] **M5.2 Exact commands per baseline, and the mapping rules.**
+  - Depends on: M5.1.
+  - Goal: for every included baseline, the exact command that runs it on a rebuilt planted app with no network, and written rules that turn its output into a findings item with a flaw id and a table, column or function.
+  - Files: `docs/baselines.md` (add sections "2. Commands" and "3. Mapping rules"); `tests/fixtures/baselines/<tool>/` (raw outputs from dev apps); `baselines/<tool>/` (pinned config or published rule files, only if a tool needs them); `ASSUMPTIONS.md`. Do not touch: `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. This task uses Docker.
+  - Steps:
+    1. Read each included tool's run page again in full (rule 11).
+    2. For each tool, pick dev apps from `planted/` that cover the flaw groups the tool can report, and use both the vulnerable and the fixed side. Rebuild each with the sandbox (`python -m access_review.demo_sandbox` shows how) so execution-based tools have a database to attack.
+    3. Write the exact command per tool: working folder, flags, tool version, how it is pointed at the migration files or at the rebuilt database, how the network is off (for example a container with no network), output format and where the output goes. Run it. Save the raw output of both sides under `tests/fixtures/baselines/<tool>/`.
+    4. Use published rules and built-in checks only. No rule or option is written or edited to fit a planted app. Pin the rule source and version.
+    5. Write the mapping rules. For each tool, a table: tool rule or check id, flaw id (Appendix A), where the table, column or function name is read in the output, and any condition. An item the rules cannot place in a flaw id and a target is not emitted; it is counted as unmapped and stays in the raw output. The rules come from the tool's own documentation and from `planted/` only. They are written before M5.4 and are never derived from `heldout/`.
+    6. Decision, confirmed by Maneet in PR 66: every mapped baseline finding is emitted with status `proved`, because the scorer counts only `proved`. The results table labels baselines "reported, not executed" and our tool "executed". `docs/EVALUATION.md` is not changed.
+    7. Log the choices in `ASSUMPTIONS.md`, then tick M5.2 and update section 1.
+  - Validation:
+    - `ruff check .` passes.
+    - For each included tool, run the command from `docs/baselines.md` word for word on the vulnerable and the fixed side of the chosen dev app. Assertion: the findings equal the saved fixture, and the command works with the network off (say how this was checked).
+    - Negative control: the tool reports at least one item on the vulnerable side and none on the fixed side. If a tool reports nothing on either side, the file says so in plain words and the reason.
+    - `docker ps -a` shows no leftover sandbox container.
+    - `grep -rn heldout docs/baselines.md baselines tests/fixtures/baselines` prints nothing.
+    - `git diff --name-only origin/main` lists only the files named above.
+  - Done when: every included tool has a command that was run, saved sample outputs and a mapping table, and the mapping rules state the `proved` rule.
+  - Stop and ask if: a tool needs a network or an account at run time; the mapping can only work by changing `docs/EVALUATION.md` or the key; Maneet later withdraws the `proved` rule (a different rule is a change to `docs/EVALUATION.md`, in its own PR).
+- [ ] **M5.3 One adapter per baseline, and the runner.**
+  - Depends on: M5.2.
+  - Goal: each baseline's raw output becomes the run object the scorer reads, and one script runs a baseline over a folder of apps.
+  - Files: create `src/access_review/adapters/` (one module per included baseline), `scripts/run_baselines.py`, `tests/test_adapters.py`, more samples under `tests/fixtures/baselines/`. `docs/baselines.md` only to correct a mapping rule the adapter shows to be ambiguous; say so in the PR. Do not touch: `scoring.py`, `probes.py`, `rules.py`, `sandbox.py`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`.
+  - Steps:
+    1. Read `scripts/run_devset.py`, `src/access_review/findings.py` and `schemas/finding.schema.json`. An adapter takes the raw output text plus the app and side, and returns the same run object `run_devset.py` writes: `app`, `side`, `not_checkable`, `probe_errors`, `findings`, `notes`.
+    2. Each finding follows the mapping rules in `docs/baselines.md`, has status `proved` (M5.2), and keeps the raw output line as its proof. Unmapped items are not emitted; their count goes in `notes`.
+    3. Output that cannot be read (tool crash, non-zero exit, unparseable text) gives `not_checkable: true` with the reason in `notes`. It never gives an empty result that looks clean.
+    4. `scripts/run_baselines.py <folder> --tool NAME --out DIR` runs the command from `docs/baselines.md` on each scored folder (use `expected_runs` from `scoring.py`), saves the raw output in `DIR/raw/` and the run object in `DIR/<app>__<side>.json`. It is not run on a full set in this task.
+    5. Tests use only the saved samples and hand-written ones. No test opens `heldout/`.
+    6. Tick M5.3 and update section 1.
+  - Validation:
+    - `pytest tests/test_adapters.py -v` passes. Assertions: the vulnerable sample gives exactly the hand-written expected findings (flaw id and target); a schema check accepts every finding; an unmapped item emits nothing and is counted; garbage input gives `not_checkable`; adapter output scored with `access_review.scoring.score` gives the hand-computed recall.
+    - Negative control: the fixed-side sample (or an empty output) gives no findings, and dropping the one finding lowers recall from 1 of 1 to 0 of 1.
+    - `grep -rn heldout src/access_review/adapters scripts/run_baselines.py tests/test_adapters.py` prints nothing.
+    - `pytest tests/test_scoring.py -v` still passes (scoring still imports nothing from probes, rules or the sandbox).
+    - `python scripts/check.py` prints ALL PASS. Run it once, alone: it uses Docker.
+  - Done when: every included baseline has an adapter with a passing test and a negative control, and the runner exists.
+  - Stop and ask if: a baseline's output cannot be mapped without guessing intent; the finding shape cannot hold the baseline's evidence without a change to `findings.py` or the schema.
+- [ ] **M5.4 Run every tool on the dev set, then once on the held-out set.**
+  - Depends on: M5.3.
+  - Goal: raw outputs and score tables for our tool and every baseline, on the dev set and on the held-out set, with the held-out run done once.
+  - Files: create `results/baselines/devset/<tool>/`, `results/baselines/heldout/<tool>/`, `results/heldout/` (our tool, same layout as `results/devset/`), `results/heldout/RUN.txt`, and the score tables. Bug fixes in `scripts/run_baselines.py` and `src/access_review/adapters/` found in the dev run only. `src/access_review/scoring.py` only if the check in step 5 needs a tiny change that alters no rule. Do not touch: `probes.py`, `rules.py`, `sandbox.py`, `baseline.sql`, `planted/`, `heldout/` files, `docs/baselines.md`, `docs/EVALUATION.md`. This task uses Docker.
+  - Rule: nothing is tuned after the held-out run (see M5.5). If a mistake in a command or a mapping rule shows up in the dev run, fix it in its own docs PR, merged before the held-out run.
+  - Steps:
+    1. Run `docker ps -a`; no sandbox container may be listed. Check the tag: `git rev-parse eval-freeze-1` prints `1080063...`.
+    2. Dev set, our tool: reuse `results/devset/` if no frozen file changed since the tag (the check is in Validation). Do not re-tune.
+    3. Dev set, each baseline: `python scripts/run_baselines.py planted/ --tool NAME --out results/baselines/devset/NAME`, then `python -m access_review.scoring planted/ --runs results/baselines/devset/NAME` and save the table to `results/baselines/devset/score-NAME.txt`. Fix adapter or runner bugs found here.
+    4. Check that the scorer accepts the held-out set. Read `expected_runs` and `load_key` in `scoring.py` (they take a folder that holds `answer_key.json`). Then run `python -m access_review.scoring heldout/ --runs <empty folder>`: it must list missing runs and exit 2, with no error about the folder or the key. This is the first time `heldout/` is opened and no tool has run on it. Any change to scoring code must be tiny, change no rule, and keep `scoring.py` importing nothing from probes, rules or the sandbox.
+    5. Freeze: commit everything, make `git status --short` print nothing, then write `results/heldout/RUN.txt` with `git rev-parse HEAD` and every tool's version. No file under `results/heldout/` or `results/baselines/heldout/` exists before this point.
+    6. Held-out run, once, every tool, one at a time: `python scripts/run_devset.py heldout/ --out results/heldout` for our tool, and `python scripts/run_baselines.py heldout/ --tool NAME --out results/baselines/heldout/NAME` for each baseline. Save each raw output as soon as it is made.
+    7. Crash rule, confirmed by Maneet in PR 66: a tool crash or an adapter bug in the held-out run may be fixed and that run repeated only if the fix does not change which findings count, shown by an empty diff of the saved run objects of every run that did not crash, and no change to a mapping rule or a tool option. Otherwise the run stays as a not-checkable miss (`not_checkable: true`, no findings) and is not repeated. A sandbox build failure of our own tool is a not-checkable miss and is not repeated.
+    8. Score every tool with `python -m access_review.scoring heldout/ --runs <dir>` and save each table next to its raw outputs. The `needs_decision` count is printed by the scorer; do not cut it from any saved table.
+    9. Do not tune after step 6. If a fixed twin gives a finding, or a result looks like an author error in the held-out set, report it in the PR and change nothing. Replacing the held-out set is Maneet's decision.
+    10. Log in `ASSUMPTIONS.md`, then tick M5.4 and update section 1.
+  - Validation:
+    - `git diff --name-only eval-freeze-1 -- src/access_review/probes.py src/access_review/rules.py src/access_review/sandbox.py src/access_review/baseline.sql planted heldout docs/EVALUATION.md` prints nothing. Assertion: nothing frozen changed.
+    - `python -m access_review.scoring planted/` output equals `results/devset-score.txt` (ignore line endings). Assertion: our dev self-check is unchanged.
+    - Negative control: `python -m access_review.scoring planted/ --runs <empty folder>` exits 2.
+    - `pytest tests/test_scoring.py -v` passes.
+    - For each tool, the number of run files under its held-out folder equals the number under `results/heldout/`. Assertion: no run was dropped.
+    - `git merge-base --is-ancestor <hash in RUN.txt> HEAD` exits 0.
+    - `python scripts/check.py` prints ALL PASS, run once and alone after the Docker runs finish.
+    - `docker ps -a` shows no leftover sandbox container.
+  - Done when: every tool has saved raw outputs and a score table for both sets, `RUN.txt` records the commit used, and the PR names every not-checkable run and every crash.
+  - Stop and ask if: the held-out key or folder layout is not accepted by the scorer and the fix is more than tiny; the held-out run would need a rule, probe, key or mapping change; Docker does not start; a tool needs a network at run time.
+- [ ] **M5.5 Check that nothing was tuned after the held-out run.**
+  - Depends on: M5.4.
+  - Goal: a command that fails if any frozen file changed after the held-out run, so the no-tuning rule can be checked and not only stated. If it must fail for a real reason, the held-out set is replaced (Maneet decides, by D3 and a new freeze tag).
+  - Files: create `scripts/check_no_tuning.py`, `tests/test_check_no_tuning.py`. Do not touch: `results/`, `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/baselines.md`.
+  - Steps:
+    1. The script reads the commit in `results/heldout/RUN.txt` and runs git against it. It fails if any of these changed after that commit: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/baselines.md`, `scripts/run_devset.py`, `scripts/run_baselines.py`, `tests/test_adapters.py`, `tests/fixtures/baselines/`. It also fails if a file under `results/heldout/` or `results/baselines/heldout/` was modified or deleted (added files are allowed). It prints each offending path.
+    2. The test builds a small temporary git repo, so it needs no Docker and no network. Negative control: edit one frozen file after the recorded commit and the script exits 1; with no edit it exits 0.
+    3. Tick M5.5 and update section 1. The script is not added to CI (a shallow clone has no history).
+  - Validation:
+    - `pytest tests/test_check_no_tuning.py -v` passes, including the negative control.
+    - `python scripts/check_no_tuning.py` exits 0 on the real repo and prints the commit it checked against.
+    - `ruff check .` passes.
+  - Done when: the script passes on `main` after the PR, and the rule is written in M5.4 and here.
+  - Stop and ask if: the script fails on the real repo (do not change the frozen file back by hand: report which path changed and why).
+- [ ] **M5.6 Results table for the report.**
+  - Depends on: M5.5.
+  - Goal: one results page where every score has its `needs_decision` count beside it, and the dev set and the held-out set are never merged.
+  - Files: create `docs/results.md`, `tests/test_results_table.py`. Do not touch: `scoring.py`, `results/` raw files, `docs/EVALUATION.md`, `planted/answer_key.json`.
+  - Steps:
+    1. Two separate tables: held-out set first, dev set second. No total, no average, no pooled row across the two.
+    2. One row per tool. Columns: tool, kind ("executed" for our tool, "reported, not executed" for baselines), recall as counts then ratio, precision as counts then ratio, false alarms (count and rate), extra findings (named), not checkable, probe errors, `needs_decision` count. Counts first, ratio second; a zero denominator prints `n/a`.
+    3. A line under the dev table: it is a self-check, never quoted as accuracy. A line under both: the limits in `docs/EVALUATION.md` section 8, and the `proved` rule for baselines (M5.2).
+    4. Wording: "No violation found under this test." Never "secure". No target numbers.
+    5. A short "How to check by hand" section: for any app, the paths of the raw output, the run object and the key entry, so G5 can be done.
+    6. Tick M5.6 and update section 1.
+  - Validation:
+    - `pytest tests/test_results_table.py -v` passes. It re-scores the saved runs with `access_review.scoring.score` and asserts every number in the tables equals the re-scored value, and that every table row has a `needs_decision` count.
+    - Negative control: the test, run on a copy of the page with one number changed, fails.
+    - `grep -n -i secure docs/results.md` prints nothing.
+    - `ruff check .` passes.
+  - Done when: `docs/results.md` is merged and its test passes in CI.
+  - Stop and ask if: a number cannot be reproduced from the saved raw outputs; a table would need the two sets combined.
+- [ ] **G5 (owner).**
+  - Depends on: M5.6.
+  - Maneet checks the table against the raw outputs for two apps by hand: pick two apps, and for each tool open the raw output, the run object and the key entry named in the "How to check by hand" section of `docs/results.md`. Each reported finding traces to a raw output line and to a mapping rule, and each count in the table follows. Maneet signs off or lists what to fix.
 
 ### M6 Fix check (outline)
 
