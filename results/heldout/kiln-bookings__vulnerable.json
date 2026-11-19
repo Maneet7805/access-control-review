@@ -1,0 +1,107 @@
+{
+  "app": "kiln-bookings",
+  "findings": [
+    {
+      "actor": "user:11111111-1111-4111-8111-111111111111",
+      "explanation": "A signed-in user can read rows that belong to other users in the table \"kiln_bookings\".",
+      "fix": "Add a row security policy on \"kiln_bookings\" so a user can only read rows where \"booked_by\" equals their own user id (auth.uid()).",
+      "flaw_id": "R2",
+      "id": "R2:kiln_bookings:user:11111111-1111-4111-8111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-4111-8111-111111111111",
+          "error": null,
+          "probe": "user_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "booked_by": "11111111-1111-4111-8111-111111111111",
+              "id": "c50f434d-d133-4d5d-8a32-44eebf2b9d9d",
+              "kiln": "Large electric",
+              "note": "Bisque firing",
+              "starts_at": "2026-08-10T09:00:00+00:00",
+              "status": "held"
+            },
+            {
+              "booked_by": "11111111-1111-4111-8111-111111111111",
+              "id": "ec0225df-1ec0-40ae-88c8-c679eb797a42",
+              "kiln": "Large electric",
+              "note": "Glaze firing",
+              "starts_at": "2026-08-12T09:00:00+00:00",
+              "status": "held"
+            },
+            {
+              "booked_by": "22222222-2222-4222-8222-222222222222",
+              "id": "d6bd16cc-c904-433b-b383-adf8e1259bf5",
+              "kiln": "Raku kiln",
+              "note": "Raku demo",
+              "starts_at": "2026-08-11T14:00:00+00:00",
+              "status": "held"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"kiln_bookings\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    },
+    {
+      "actor": "user:11111111-1111-4111-8111-111111111111",
+      "explanation": "A signed-in user can change rows that belong to other users in the table \"kiln_bookings\".",
+      "fix": "Add a row security policy on \"kiln_bookings\" so a user can only change rows where \"booked_by\" equals their own user id (auth.uid()). Check the update policy for a condition that is always true.",
+      "flaw_id": "R5",
+      "id": "R5:kiln_bookings:user:11111111-1111-4111-8111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-4111-8111-111111111111",
+          "error": null,
+          "probe": "user_updates_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "booked_by": "11111111-1111-4111-8111-111111111111",
+              "id": "c50f434d-d133-4d5d-8a32-44eebf2b9d9d",
+              "kiln": "access-review",
+              "note": "Bisque firing",
+              "starts_at": "2026-08-10T09:00:00+00:00",
+              "status": "held"
+            },
+            {
+              "booked_by": "11111111-1111-4111-8111-111111111111",
+              "id": "ec0225df-1ec0-40ae-88c8-c679eb797a42",
+              "kiln": "access-review",
+              "note": "Glaze firing",
+              "starts_at": "2026-08-12T09:00:00+00:00",
+              "status": "held"
+            },
+            {
+              "booked_by": "22222222-2222-4222-8222-222222222222",
+              "id": "d6bd16cc-c904-433b-b383-adf8e1259bf5",
+              "kiln": "access-review",
+              "note": "Raku demo",
+              "starts_at": "2026-08-11T14:00:00+00:00",
+              "status": "held"
+            }
+          ],
+          "statement": "UPDATE \"public\".\"kiln_bookings\" SET \"kiln\" = 'access-review'"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

@@ -1,0 +1,60 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.recipes has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.recipes FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.recipes"
+    },
+    {
+      "rule_id": "SEC003",
+      "severity": "error",
+      "title": "Permissive policy grants access to PUBLIC",
+      "message": "Permissive policy 'published or mine' on public.recipes grants access to PUBLIC, so anonymous connections are governed by this policy's own clause — its USING for reads, its WITH CHECK for writes (a FOR INSERT policy has no USING at all). Restrict to a specific role (e.g. TO authenticated).",
+      "location": "public.recipes.published or mine"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.recipes is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.recipes"
+    }
+  ],
+  "summary": {
+    "errors": 2,
+    "warnings": 0,
+    "infos": 1,
+    "others": 0,
+    "total": 3
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

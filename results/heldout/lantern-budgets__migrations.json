@@ -1,0 +1,10 @@
+{
+  "app": "lantern-budgets",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "These tests could not run, so this result does not cover them: user calls function \"rename_budget\". Do not read this result as a clean one."
+  ],
+  "probe_errors": true,
+  "side": "migrations"
+}

@@ -1,0 +1,34 @@
+{
+  "app": "writes-01-visitor-insert",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule rls_policy_always_true, mapped to R3 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R3",
+      "id": "advisors-R3-notes",
+      "owasp": [
+        "A01"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:rls_policy_always_true",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "rls_policy_always_true,RLS Policy Always True,WARN,EXTERNAL,{SECURITY},\"Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.\",Table `public.notes` has an RLS policy `anyone adds` for `INSERT` that allows unrestricted access (WITH CHECK clause is always true). This effectively bypasses row-level security for anon.,https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy,\"{\"\"name\"\": \"\"notes\"\", \"\"qual\"\": null, \"\"type\"\": \"\"table\"\", \"\"roles\"\": [\"\"anon\"\"], \"\"schema\"\": \"\"public\"\", \"\"command\"\": \"\"INSERT\"\", \"\"with_check\"\": \"\"true\"\", \"\"policy_name\"\": \"\"anyone adds\"\", \"\"permissive_using\"\": false, \"\"permissive_with_check\"\": true}\",rls_policy_always_true_public_notes_anyone adds"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "notes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

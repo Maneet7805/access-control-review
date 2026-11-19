@@ -1,0 +1,81 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.profiles has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.profiles FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.profiles"
+    },
+    {
+      "rule_id": "SEC005",
+      "severity": "warning",
+      "title": "Policy expression does not reference any column of the table",
+      "message": "Policy 'nobody' on public.profiles does not reference any column of the table. The predicate is purely session-state — every row is admitted or denied based on configuration alone. Add a row-level condition (e.g. tenant_id = current_setting('app.tenant')).",
+      "location": "public.profiles.nobody"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.profiles is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.profiles"
+    },
+    {
+      "rule_id": "SEC010",
+      "severity": "warning",
+      "title": "Policy clause is constant false",
+      "message": "Policy 'nobody' on public.profiles has USING (false), which denies every row. Express denial at the GRANT layer instead — `REVOKE ALL ON TABLE public.profiles FROM <role>` is clearer than a deny-all policy that makes the table look RLS-protected when it's actually denying every row.",
+      "location": "public.profiles.nobody"
+    },
+    {
+      "rule_id": "SEC022",
+      "severity": "info",
+      "title": "RLS-enabled table has no write-side policy",
+      "message": "Table public.profiles has RLS enabled and 1 policy, but every policy is FOR SELECT — no policy covers INSERT, UPDATE, or DELETE. With RLS enforced and no write-side policy, writes by non-owner roles are denied: INSERT raises a row-violates-policy error, while UPDATE and DELETE silently affect zero rows. If the table is meant to be read-only for these roles (writes done by a table-owning or BYPASSRLS role), allowlist it as 'public.profiles' in [lint.rules.SEC022]. Otherwise add a policy covering the write commands — a FOR ALL policy, or a FOR INSERT / UPDATE / DELETE policy.",
+      "location": "public.profiles"
+    },
+    {
+      "rule_id": "SEC027",
+      "severity": "info",
+      "title": "RLS table has a principal column no policy scopes by",
+      "message": "Table public.profiles has RLS enabled and a policy, but no policy references the principal column(s) 'owner_id'. Rows are scoped by whatever the policies do key on (often tenant), so users that share that scope can see each other's rows. If this table holds per-user-private data, add a predicate keying on 'owner_id'; if it is intentionally shared (a catalogue, a tenant-wide settings table), add it to [lint.rules.SEC027].allowlist.",
+      "location": "public.profiles"
+    }
+  ],
+  "summary": {
+    "errors": 1,
+    "warnings": 2,
+    "infos": 3,
+    "others": 0,
+    "total": 6
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

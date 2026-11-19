@@ -1,0 +1,218 @@
+{
+  "tables": [
+    {
+      "table": "kiln_bookings",
+      "rls_enabled": true,
+      "policied": [
+        "INSERT",
+        "SELECT",
+        "UPDATE"
+      ],
+      "cells": {
+        "SELECT": {
+          "grant": true
+        },
+        "INSERT": {
+          "grant": true,
+          "deny": true
+        },
+        "UPDATE": {
+          "grant": true,
+          "deny": true
+        },
+        "DELETE": {
+          "deny": false
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": true,
+            "pass": true
+          }
+        },
+        "INSERT": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "UPDATE": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "authorized": {
+            "exp": false,
+            "pass": false
+          }
+        }
+      },
+      "footguns": [
+        "policy calendar is shared: SELECT USING (true) -> every ['authenticated'] sees ALL rows (review)",
+        "UNRELIABLE TEST(S) - the probe could not produce a trustworthy result for some identity/command, so the suite fails loudly here rather than asserting a possibly-wrong outcome. Each finding below names its cause and a `Fix:` for how to get ahead of it: SELECT: service_role [probe observed count=2]: probing as 'service_role' bypasses RLS: the role carries BYPASSRLS, so it sees every row regardless of policy -- a passing observation here cannot distinguish a correct policy from a broken one. Fix: ALTER ROLE service_role NOBYPASSRLS so the policy actually applies (or, if the bypass is intentional, do not probe it as a constrained user -- it is a sanctioned bypass, reported separately as the L014 finding); UPDATE: service_role [probe observed rows=2]: probing as 'service_role' bypasses RLS: the role carries BYPASSRLS, so it sees every row regardless of policy -- a passing observation here cannot distinguish a correct policy from a broken one. Fix: ALTER ROLE service_role NOBYPASSRLS so the policy actually applies (or, if the bypass is intentional, do not probe it as a constrained user -- it is a sanctioned bypass, reported separately as the L014 finding)",
+        "the 'anon, anonymous-(unauthenticated)' row is the Postgres role service_role -- this schema has no 'anon' role, so service_role (its discovered unauthenticated client role) stands in as the anonymous identity."
+      ],
+      "coverage": [
+        6,
+        6
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [
+        "UNRELIABLE - SELECT: service_role [probe observed count=2]: probing as 'service_role' bypasses RLS: the role carries BYPASSRLS, so it sees every row regardless of policy -- a passing observation here cannot distinguish a correct policy from a broken one. Fix: ALTER ROLE service_role NOBYPASSRLS so the policy actually applies (or, if the bypass is intentional, do not probe it as a constrained user -- it is a sanctioned bypass, reported separately as the L014 finding)",
+        "UNRELIABLE - UPDATE: service_role [probe observed rows=2]: probing as 'service_role' bypasses RLS: the role carries BYPASSRLS, so it sees every row regardless of policy -- a passing observation here cannot distinguish a correct policy from a broken one. Fix: ALTER ROLE service_role NOBYPASSRLS so the policy actually applies (or, if the bypass is intentional, do not probe it as a constrained user -- it is a sanctioned bypass, reported separately as the L014 finding)"
+      ],
+      "unreliable_cells": [
+        [
+          "SELECT",
+          "anon"
+        ],
+        [
+          "UPDATE",
+          "anon"
+        ]
+      ],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "service_role",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": true,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": false,
+        "authenticated:DELETE": false,
+        "anon:SELECT": false,
+        "anon:INSERT": false,
+        "anon:UPDATE": false,
+        "anon:DELETE": false,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "booked_by",
+          "kiln",
+          "starts_at",
+          "note",
+          "status"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "scoped",
+              "granted": [
+                "kiln",
+                "starts_at",
+                "note",
+                "status"
+              ],
+              "leaked": []
+            }
+          },
+          "service_role": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "bypass_surfaces": [
+    {
+      "object": "supabase_etl_admin",
+      "type": "role",
+      "severity": "CRITICAL",
+      "why": "role is BYPASSRLS and bypasses RLS but is not a sanctioned bypass role and is client-reachable (login / client role / SET ROLE-able by a client). Confirm it should have this, revoke it, or pass --allow-bypass-role."
+    },
+    {
+      "object": "kiln_bookings",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "app": "harbor-helpdesk",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule rls_policy_always_true, mapped to R4 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R4",
+      "id": "advisors-R4-support_requests",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:rls_policy_always_true",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "rls_policy_always_true,RLS Policy Always True,WARN,EXTERNAL,{SECURITY},\"Detects RLS policies that use overly permissive expressions like \\`USING (true)\\` or \\`WITH CHECK (true)\\` for UPDATE, DELETE, or INSERT operations. SELECT policies with \\`USING (true)\\` are intentionally excluded as this pattern is often used deliberately for public read access.\",Table `public.support_requests` has an RLS policy `open a ticket` for `INSERT` that allows unrestricted access (WITH CHECK clause is always true). This effectively bypasses row-level security for -.,https://supabase.com/docs/guides/database/database-linter?lint=0024_permissive_rls_policy,\"{\"\"name\"\": \"\"support_requests\"\", \"\"qual\"\": null, \"\"type\"\": \"\"table\"\", \"\"roles\"\": [\"\"-\"\"], \"\"schema\"\": \"\"public\"\", \"\"command\"\": \"\"INSERT\"\", \"\"with_check\"\": \"\"true\"\", \"\"policy_name\"\": \"\"open a ticket\"\", \"\"permissive_using\"\": false, \"\"permissive_with_check\"\": true}\",rls_policy_always_true_public_support_requests_open a ticket"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "support_requests"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

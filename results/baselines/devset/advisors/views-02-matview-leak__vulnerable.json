@@ -1,0 +1,34 @@
+{
+  "app": "views-02-matview-leak",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule materialized_view_in_api, mapped to V1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "V1",
+      "id": "advisors-V1-all_notes",
+      "owasp": [
+        "A01"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:materialized_view_in_api",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "materialized_view_in_api,Materialized View in API,WARN,EXTERNAL,{SECURITY},Detects materialized views that are accessible over the Data APIs.,Materialized view \\`public.all_notes\\` is selectable by anon or authenticated roles,https://supabase.com/docs/guides/database/database-linter?lint=0016_materialized_view_in_api,\"{\"\"name\"\": \"\"all_notes\"\", \"\"type\"\": \"\"materialized view\"\", \"\"schema\"\": \"\"public\"\"}\",materialized_view_in_api_public_all_notes"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "all_notes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

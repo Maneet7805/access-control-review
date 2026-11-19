@@ -1,0 +1,2 @@
+name,title,level,facing,categories,description,detail,remediation,metadata,cache_key
+unused_index,Unused Index,INFO,EXTERNAL,{PERFORMANCE},Detects if an index has never been used and may be a candidate for removal.,Index \`journal_entries_author_id_created_at_idx\` on table \`public.journal_entries\` has not been used,https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index,"{""name"": ""journal_entries"", ""type"": ""table"", ""schema"": ""public""}",unused_index_public_journal_entries_journal_entries_author_id_created_at_idx

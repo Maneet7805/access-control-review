@@ -1,0 +1,102 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.waitlist_entries has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.waitlist_entries FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.waitlist_entries"
+    },
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.early_access_codes has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.early_access_codes FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.early_access_codes"
+    },
+    {
+      "rule_id": "SEC005",
+      "severity": "warning",
+      "title": "Policy expression does not reference any column of the table",
+      "message": "Policy 'join the waitlist' on public.waitlist_entries does not reference any column of the table. The predicate is purely session-state — every row is admitted or denied based on configuration alone. Add a row-level condition (e.g. tenant_id = current_setting('app.tenant')).",
+      "location": "public.waitlist_entries.join the waitlist"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.waitlist_entries is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.waitlist_entries"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.early_access_codes is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.early_access_codes"
+    },
+    {
+      "rule_id": "SEC022",
+      "severity": "info",
+      "title": "RLS-enabled table has no write-side policy",
+      "message": "Table public.early_access_codes has RLS enabled and 1 policy, but every policy is FOR SELECT — no policy covers INSERT, UPDATE, or DELETE. With RLS enforced and no write-side policy, writes by non-owner roles are denied: INSERT raises a row-violates-policy error, while UPDATE and DELETE silently affect zero rows. If the table is meant to be read-only for these roles (writes done by a table-owning or BYPASSRLS role), allowlist it as 'public.early_access_codes' in [lint.rules.SEC022]. Otherwise add a policy covering the write commands — a FOR ALL policy, or a FOR INSERT / UPDATE / DELETE policy.",
+      "location": "public.early_access_codes"
+    },
+    {
+      "rule_id": "SEC028",
+      "severity": "warning",
+      "title": "Write-side policy WITH CHECK is constant true (open write)",
+      "message": "Policy 'join the waitlist' on public.waitlist_entries covers INSERT with WITH CHECK (true), so it accepts every write the command allows — this policy constrains nothing about the row written, so unless another policy closes the write side a caller it applies to can stamp any tenant id, owner, or value. The TO clause limits who may write, not what. Replace WITH CHECK (true) with a predicate that validates the written row (e.g. the tenant/ownership key), or allowlist the policy in [lint.rules.SEC028] if an open write side is intentional (an append-only audit or event table).",
+      "location": "public.waitlist_entries.join the waitlist"
+    },
+    {
+      "rule_id": "SEC039",
+      "severity": "error",
+      "title": "Permissive write policy grants access to the anonymous role",
+      "message": "Permissive INSERT policy 'join the waitlist' on public.waitlist_entries lets the unauthenticated 'anon' role insert rows, gated by this policy's clause AND by the table grant. Restrict it TO authenticated (or a privileged role) and revoke anon's write grant on the table.",
+      "location": "public.waitlist_entries.join the waitlist"
+    },
+    {
+      "rule_id": "PERF001",
+      "severity": "warning",
+      "title": "Auth function called per-row in policy USING/WITH CHECK",
+      "message": "Policy 'see own codes' on public.early_access_codes calls an auth function in USING without wrapping it in a subquery. Postgres re-evaluates the call per row. Wrap as e.g. (SELECT auth.uid()) so the planner caches the result for the whole statement.",
+      "location": "public.early_access_codes.see own codes"
+    }
+  ],
+  "summary": {
+    "errors": 3,
+    "warnings": 3,
+    "infos": 3,
+    "others": 0,
+    "total": 9
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

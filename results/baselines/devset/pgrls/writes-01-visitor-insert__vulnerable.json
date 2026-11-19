@@ -1,0 +1,59 @@
+{
+  "app": "writes-01-visitor-insert",
+  "findings": [
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC028, mapped to R4 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R4",
+      "id": "pgrls-R4-notes",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC028",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.notes.anyone adds\", \"message\": \"Policy 'anyone adds' on public.notes covers INSERT with WITH CHECK (true), so it accepts every write the command allows \\u2014 this policy constrains nothing about the row written, so unless another policy closes the write side a caller it applies to can stamp any tenant id, owner, or value. The TO clause limits who may write, not what. Replace WITH CHECK (true) with a predicate that validates the written row (e.g. the tenant/ownership key), or allowlist the policy in [lint.rules.SEC028] if an open write side is intentional (an append-only audit or event table).\", \"rule_id\": \"SEC028\", \"severity\": \"warning\", \"title\": \"Write-side policy WITH CHECK is constant true (open write)\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "notes"
+    },
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC039, mapped to R3 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R3",
+      "id": "pgrls-R3-notes",
+      "owasp": [
+        "A01"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC039",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.notes.anyone adds\", \"message\": \"Permissive INSERT policy 'anyone adds' on public.notes lets the unauthenticated 'anon' role insert rows, gated by this policy's clause AND by the table grant. Restrict it TO authenticated (or a privileged role) and revoke anon's write grant on the table.\", \"rule_id\": \"SEC039\", \"severity\": \"error\", \"title\": \"Permissive write policy grants access to the anonymous role\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "notes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 4 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

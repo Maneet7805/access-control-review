@@ -1,0 +1,10 @@
+{
+  "app": "views-02-matview-leak",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

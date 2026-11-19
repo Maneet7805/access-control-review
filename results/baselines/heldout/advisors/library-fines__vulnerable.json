@@ -1,0 +1,57 @@
+{
+  "app": "library-fines",
+  "findings": [
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule anon_security_definer_function_executable, mapped to U3 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "U3",
+      "function": "fee_total",
+      "id": "advisors-U3-fee_total",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:anon_security_definer_function_executable",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "anon_security_definer_function_executable,Public Can Execute SECURITY DEFINER Function,WARN,EXTERNAL,{SECURITY},\"Detects `SECURITY DEFINER` functions that are callable without signing in. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if it is not meant to be public.\",Function `public.fee_total(p_user uuid)` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/fee_total`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.,https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable,\"{\"\"name\"\": \"\"fee_total\"\", \"\"schema\"\": \"\"public\"\", \"\"language\"\": \"\"sql\"\", \"\"arguments\"\": \"\"p_user uuid\"\", \"\"security_definer\"\": true}\",anon_security_definer_function_executable_public_fee_total_p_user uuid"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    },
+    {
+      "actor": "baseline:advisors",
+      "explanation": "advisors reported rule authenticated_security_definer_function_executable, mapped to U1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "U1",
+      "function": "fee_total",
+      "id": "advisors-U1-fee_total",
+      "owasp": [
+        "API5"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:advisors",
+          "error": null,
+          "probe": "advisors:authenticated_security_definer_function_executable",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "authenticated_security_definer_function_executable,Signed-In Users Can Execute SECURITY DEFINER Function,WARN,EXTERNAL,{SECURITY},\"Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.\",Function `public.fee_total(p_user uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/fee_total`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.,https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable,\"{\"\"name\"\": \"\"fee_total\"\", \"\"schema\"\": \"\"public\"\", \"\"language\"\": \"\"sql\"\", \"\"arguments\"\": \"\"p_user uuid\"\", \"\"security_definer\"\": true}\",authenticated_security_definer_function_executable_public_fee_total_p_user uuid"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

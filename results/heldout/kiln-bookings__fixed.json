@@ -1,0 +1,58 @@
+{
+  "app": "kiln-bookings",
+  "findings": [
+    {
+      "actor": "user:11111111-1111-4111-8111-111111111111",
+      "explanation": "A signed-in user can read rows that belong to other users in the table \"kiln_bookings\".",
+      "fix": "Add a row security policy on \"kiln_bookings\" so a user can only read rows where \"booked_by\" equals their own user id (auth.uid()).",
+      "flaw_id": "R2",
+      "id": "R2:kiln_bookings:user:11111111-1111-4111-8111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-4111-8111-111111111111",
+          "error": null,
+          "probe": "user_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "booked_by": "11111111-1111-4111-8111-111111111111",
+              "id": "d51f9ba8-8820-4bd3-8a5d-f3fac85a48af",
+              "kiln": "Large electric",
+              "note": "Bisque firing",
+              "starts_at": "2026-08-10T09:00:00+00:00",
+              "status": "held"
+            },
+            {
+              "booked_by": "11111111-1111-4111-8111-111111111111",
+              "id": "5e60d5a2-a050-417c-9d0e-c196813cb096",
+              "kiln": "Large electric",
+              "note": "Glaze firing",
+              "starts_at": "2026-08-12T09:00:00+00:00",
+              "status": "held"
+            },
+            {
+              "booked_by": "22222222-2222-4222-8222-222222222222",
+              "id": "2188f65a-c64f-4198-b124-fda4175dd031",
+              "kiln": "Raku kiln",
+              "note": "Raku demo",
+              "starts_at": "2026-08-11T14:00:00+00:00",
+              "status": "held"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"kiln_bookings\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "fixed"
+}

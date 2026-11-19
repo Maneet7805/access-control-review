@@ -1,0 +1,35 @@
+{
+  "app": "pantry-share",
+  "findings": [
+    {
+      "actor": "baseline:rlsautotest",
+      "explanation": "rlsautotest reported rule footgun, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "rlsautotest-R1-pantry_items",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:rlsautotest",
+          "error": null,
+          "probe": "rlsautotest:footgun",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "policy browse shelf: SELECT USING (true) -> every ['anon', 'authenticated'] sees ALL rows (review)"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "pantry_items"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

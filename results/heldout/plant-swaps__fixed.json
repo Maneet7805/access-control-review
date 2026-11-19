@@ -1,0 +1,101 @@
+{
+  "app": "plant-swaps",
+  "findings": [
+    {
+      "actor": "visitor",
+      "explanation": "A visitor who is not signed in can read rows in the table \"swap_offers\", which belong to signed-in users.",
+      "fix": "Add a row security policy on \"swap_offers\" so only signed-in users can read it, and only rows where \"offered_by\" equals their own user id (auth.uid()).",
+      "flaw_id": "R1",
+      "id": "R1:swap_offers:visitor",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "visitor",
+          "error": null,
+          "probe": "visitor_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "created_at": "2026-11-19T13:09:39.268695+00:00",
+              "id": "3c2df60b-4e94-4ba1-923e-ca4ecf356537",
+              "offered_by": "11111111-1111-4111-8111-111111111111",
+              "plant": "Monstera cutting",
+              "wanted": "Any fern"
+            },
+            {
+              "created_at": "2026-11-19T13:09:39.268695+00:00",
+              "id": "da74026b-863c-47ee-846e-a656cdad7ca6",
+              "offered_by": "11111111-1111-4111-8111-111111111111",
+              "plant": "Spider plant babies",
+              "wanted": null
+            },
+            {
+              "created_at": "2026-11-19T13:09:39.268695+00:00",
+              "id": "bd6b88d7-bcc0-4be6-bc8b-617a032cd906",
+              "offered_by": "22222222-2222-4222-8222-222222222222",
+              "plant": "Basil seedlings",
+              "wanted": "Mint"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"swap_offers\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "swap_offers"
+    },
+    {
+      "actor": "user:11111111-1111-4111-8111-111111111111",
+      "explanation": "A signed-in user can read rows that belong to other users in the table \"swap_offers\".",
+      "fix": "Add a row security policy on \"swap_offers\" so a user can only read rows where \"offered_by\" equals their own user id (auth.uid()).",
+      "flaw_id": "R2",
+      "id": "R2:swap_offers:user:11111111-1111-4111-8111-111111111111",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "user:11111111-1111-4111-8111-111111111111",
+          "error": null,
+          "probe": "user_reads_rows",
+          "result": "ok",
+          "rows_seen": [
+            {
+              "created_at": "2026-11-19T13:09:39.268695+00:00",
+              "id": "3c2df60b-4e94-4ba1-923e-ca4ecf356537",
+              "offered_by": "11111111-1111-4111-8111-111111111111",
+              "plant": "Monstera cutting",
+              "wanted": "Any fern"
+            },
+            {
+              "created_at": "2026-11-19T13:09:39.268695+00:00",
+              "id": "da74026b-863c-47ee-846e-a656cdad7ca6",
+              "offered_by": "11111111-1111-4111-8111-111111111111",
+              "plant": "Spider plant babies",
+              "wanted": null
+            },
+            {
+              "created_at": "2026-11-19T13:09:39.268695+00:00",
+              "id": "bd6b88d7-bcc0-4be6-bc8b-617a032cd906",
+              "offered_by": "22222222-2222-4222-8222-222222222222",
+              "plant": "Basil seedlings",
+              "wanted": "Mint"
+            }
+          ],
+          "statement": "SELECT * FROM \"public\".\"swap_offers\""
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "swap_offers"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [],
+  "probe_errors": false,
+  "side": "fixed"
+}

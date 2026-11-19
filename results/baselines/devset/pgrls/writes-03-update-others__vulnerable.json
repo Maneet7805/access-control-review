@@ -1,0 +1,36 @@
+{
+  "app": "writes-03-update-others",
+  "findings": [
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC006, mapped to R7 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R7",
+      "id": "pgrls-R7-notes",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC006",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.notes.any update\", \"message\": \"Policy 'any update' on public.notes covers UPDATE but has no WITH CHECK clause. If its USING is constant-true, every written row is accepted; with no usable predicate at all the policy grants no write whatsoever (a missing WITH CHECK does NOT default to true \\u2014 an INSERT raises, an UPDATE reports 0 rows). Either way it is not doing what it looks like it is doing: add WITH CHECK matching USING (or a write-specific predicate).\", \"rule_id\": \"SEC006\", \"severity\": \"error\", \"title\": \"Write-side policy missing WITH CHECK\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "notes"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 6 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

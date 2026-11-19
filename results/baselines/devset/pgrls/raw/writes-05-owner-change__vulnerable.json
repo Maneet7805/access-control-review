@@ -1,0 +1,81 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC002",
+      "severity": "error",
+      "title": "FORCE ROW LEVEL SECURITY missing",
+      "message": "Table public.notes has RLS enabled but not FORCE ROW LEVEL SECURITY. The table owner role still bypasses RLS, which often masks broken policies in development and CI. Run `ALTER TABLE public.notes FORCE ROW LEVEL SECURITY;`.",
+      "location": "public.notes"
+    },
+    {
+      "rule_id": "SEC007",
+      "severity": "info",
+      "title": "All policies on table are permissive",
+      "message": "Every policy on public.notes is permissive. Permissive policies combine with OR — adding one RESTRICTIVE policy gives a floor (e.g. tenant scoping) that no OR branch can bypass, for the roles in its own TO list. Use TO PUBLIC to bind every role: measured, a restrictive TO authenticated left authenticated at 1 row and another role at 3.",
+      "location": "public.notes"
+    },
+    {
+      "rule_id": "SEC020",
+      "severity": "warning",
+      "title": "Policy WITH CHECK is constant true but USING is not",
+      "message": "Policy 'own update' on public.notes pairs a scoped USING clause with WITH CHECK (true). The USING clause limits which rows the caller can read, but WITH CHECK (true) accepts every row this policy governs — so THIS policy imposes no constraint on what the caller writes, and unless another policy closes the write side a row can be stamped for any tenant (rows its USING clause would never surface). Mirror the USING predicate in WITH CHECK (ALTER POLICY has no clause-removal syntax, so 'dropping' the check means DROP POLICY + CREATE POLICY). If an intentionally open write side is the design, allowlist this policy as 'public.notes.own update' in [lint.rules.SEC020].",
+      "location": "public.notes.own update"
+    },
+    {
+      "rule_id": "PERF001",
+      "severity": "warning",
+      "title": "Auth function called per-row in policy USING/WITH CHECK",
+      "message": "Policy 'own notes' on public.notes calls an auth function in USING without wrapping it in a subquery. Postgres re-evaluates the call per row. Wrap as e.g. (SELECT auth.uid()) so the planner caches the result for the whole statement.",
+      "location": "public.notes.own notes"
+    },
+    {
+      "rule_id": "PERF001",
+      "severity": "warning",
+      "title": "Auth function called per-row in policy USING/WITH CHECK",
+      "message": "Policy 'own insert' on public.notes calls an auth function in WITH CHECK without wrapping it in a subquery. Postgres re-evaluates the call per row. Wrap as e.g. (SELECT auth.uid()) so the planner caches the result for the whole statement.",
+      "location": "public.notes.own insert"
+    },
+    {
+      "rule_id": "PERF001",
+      "severity": "warning",
+      "title": "Auth function called per-row in policy USING/WITH CHECK",
+      "message": "Policy 'own update' on public.notes calls an auth function in USING without wrapping it in a subquery. Postgres re-evaluates the call per row. Wrap as e.g. (SELECT auth.uid()) so the planner caches the result for the whole statement.",
+      "location": "public.notes.own update"
+    }
+  ],
+  "summary": {
+    "errors": 1,
+    "warnings": 4,
+    "infos": 1,
+    "others": 0,
+    "total": 6
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

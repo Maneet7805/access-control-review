@@ -1,0 +1,11 @@
+{
+  "tables": [],
+  "bypass_surfaces": [
+    {
+      "object": "admin_delete_user(target uuid)",
+      "type": "function",
+      "severity": "MEDIUM",
+      "why": "SECURITY DEFINER function is EXECUTE-able by authenticated; it runs as its owner and bypasses the caller's RLS, and its body is opaque (could reach RLS data). Review that it re-checks auth."
+    }
+  ]
+}

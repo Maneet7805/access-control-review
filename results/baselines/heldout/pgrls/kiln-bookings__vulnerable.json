@@ -1,0 +1,60 @@
+{
+  "app": "kiln-bookings",
+  "findings": [
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC028, mapped to R4 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R4",
+      "id": "pgrls-R4-kiln_bookings",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC028",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.kiln_bookings.edit bookings\", \"message\": \"Policy 'edit bookings' on public.kiln_bookings covers UPDATE with WITH CHECK (true), so it accepts every write the command allows \\u2014 this policy constrains nothing about the row written, so unless another policy closes the write side a caller it applies to can stamp any tenant id, owner, or value. The TO clause limits who may write, not what. Replace WITH CHECK (true) with a predicate that validates the written row (e.g. the tenant/ownership key), or allowlist the policy in [lint.rules.SEC028] if an open write side is intentional (an append-only audit or event table).\", \"rule_id\": \"SEC028\", \"severity\": \"warning\", \"title\": \"Write-side policy WITH CHECK is constant true (open write)\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    },
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC038, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "pgrls-R1-kiln_bookings",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC038",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.kiln_bookings.calendar is shared\", \"message\": \"Policy 'calendar is shared' on public.kiln_bookings leaks every row to an anonymous session. Under an unauthenticated connection every auth function (auth.uid(), auth.role(), current_setting(), \\u2026) returns NULL, and Z3 proves the USING predicate is then unconditionally TRUE for every row (three-valued / Kleene logic) \\u2014 so the policy reads all rows. Every row is visible unconditionally (the predicate is constant-true under anon \\u2014 it pins no row column). Gate the policy on a non-null auth check (e.g. `auth.uid() IS NOT NULL AND <tenant/owner check>`) or remove the inverting disjunct that admits anonymous. This is the semantic form of the SEC004 inverted-auth hole \\u2014 see SEC004 for the syntactic variant.\", \"rule_id\": \"SEC038\", \"severity\": \"error\", \"title\": \"Anonymous read leak (USING is unconditionally true for an unauthenticated session)\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "kiln_bookings"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 8 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

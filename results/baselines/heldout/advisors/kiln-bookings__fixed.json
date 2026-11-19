@@ -1,0 +1,10 @@
+{
+  "app": "kiln-bookings",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 4 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

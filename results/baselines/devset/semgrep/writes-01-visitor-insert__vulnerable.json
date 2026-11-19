@@ -1,0 +1,10 @@
+{
+  "app": "writes-01-visitor-insert",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "semgrep: 0 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

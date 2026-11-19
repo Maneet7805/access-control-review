@@ -1,0 +1,44 @@
+{
+  "app": "plant-swaps",
+  "findings": [
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC038, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "pgrls-R1-swap_offers",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC038",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.swap_offers.browse offers\", \"message\": \"Policy 'browse offers' on public.swap_offers leaks every row to an anonymous session. Under an unauthenticated connection every auth function (auth.uid(), auth.role(), current_setting(), \\u2026) returns NULL, and Z3 proves the USING predicate is then unconditionally TRUE for every row (three-valued / Kleene logic) \\u2014 so the policy reads all rows. Every row is visible unconditionally (the predicate is constant-true under anon \\u2014 it pins no row column). Gate the policy on a non-null auth check (e.g. `auth.uid() IS NOT NULL AND <tenant/owner check>`) or remove the inverting disjunct that admits anonymous. This is the semantic form of the SEC004 inverted-auth hole \\u2014 see SEC004 for the syntactic variant.\", \"rule_id\": \"SEC038\", \"severity\": \"error\", \"title\": \"Anonymous read leak (USING is unconditionally true for an unauthenticated session)\"}"
+        },
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC049",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.swap_offers\", \"message\": \"Table public.swap_offers is in the PostgREST-exposed schema public, grants SELECT to anon, authenticated, and has no effective row filter (RLS is enabled but only a permissive USING (true) policy, which admits every row) \\u2014 it is directly readable at GET /rest/v1/swap_offers by an unauthenticated or any-authenticated request. Enable RLS with a row-scoping policy (or restrict/REVOKE the grant); if the table is intentionally public, allowlist 'public.swap_offers' in [lint.rules.SEC049]. (SEC001/SEC003/SEC008 each flag a precondition of this in isolation; SEC049 is the conjunction.)\", \"rule_id\": \"SEC049\", \"severity\": \"warning\", \"title\": \"PostgREST-exposed table readable by a low-trust role\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "swap_offers"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 7 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

@@ -1,0 +1,53 @@
+{
+  "violations": [
+    {
+      "rule_id": "SEC001",
+      "severity": "error",
+      "title": "RLS not enabled on table",
+      "message": "Table public.boarding_passes does not have row-level security enabled. Add ENABLE ROW LEVEL SECURITY or include the table in [lint.rules.SEC001].allowlist if it is a public reference table.",
+      "location": "public.boarding_passes"
+    },
+    {
+      "rule_id": "SEC049",
+      "severity": "warning",
+      "title": "PostgREST-exposed table readable by a low-trust role",
+      "message": "Table public.boarding_passes is in the PostgREST-exposed schema public, grants SELECT to anon, authenticated, and has no effective row filter (RLS is disabled) — it is directly readable at GET /rest/v1/boarding_passes by an unauthenticated or any-authenticated request. Enable RLS with a row-scoping policy (or restrict/REVOKE the grant); if the table is intentionally public, allowlist 'public.boarding_passes' in [lint.rules.SEC049]. (SEC001/SEC003/SEC008 each flag a precondition of this in isolation; SEC049 is the conjunction.)",
+      "location": "public.boarding_passes"
+    }
+  ],
+  "summary": {
+    "errors": 1,
+    "warnings": 1,
+    "infos": 0,
+    "others": 0,
+    "total": 2
+  },
+  "schema_source": "sql",
+  "skipped_rules": [
+    "PERF003",
+    "PERF004",
+    "SEC013",
+    "SEC014",
+    "SEC015",
+    "SEC016",
+    "SEC017",
+    "SEC023",
+    "SEC029",
+    "SEC035",
+    "SEC041",
+    "SEC042",
+    "SEC043",
+    "SEC044",
+    "SEC046",
+    "SEC047",
+    "SEC048",
+    "SEC051",
+    "SEC052",
+    "SEC053",
+    "SEC054",
+    "VIEW001",
+    "VIEW002",
+    "VIEW003",
+    "VIEW004"
+  ]
+}

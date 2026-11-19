@@ -1,0 +1,10 @@
+{
+  "app": "rows-01-profiles",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

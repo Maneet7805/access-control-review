@@ -1,0 +1,10 @@
+{
+  "app": "plant-swaps",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 3 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

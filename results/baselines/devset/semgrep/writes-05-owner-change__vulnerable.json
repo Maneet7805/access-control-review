@@ -1,0 +1,10 @@
+{
+  "app": "writes-05-owner-change",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "semgrep: 0 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

@@ -1,0 +1,29 @@
+Score: dev set (self-check, not accuracy)
+  Recall:            8/22 (0.36)
+  Precision:         8/14 (0.57)
+  False alarms:      4
+  False-alarm rate:  4/21 (0.19)
+  Extra findings:    2
+  Not checkable:     0
+  Probe errors:      0
+  needs_decision:    0
+  Missed: columns-01-self-admin/vulnerable: C1 on table members, column role
+  Missed: columns-02-self-paid/vulnerable: C1 on table accounts, column paid
+  Missed: columns-03-phone-exposed/vulnerable: C2 on table directory, column phone
+  Missed: functions-01-admin-delete-any-user/vulnerable: U2 on function admin_delete_user
+  Missed: rows-01-profiles/vulnerable: R2 on table profiles
+  Missed: rows-01-profiles/vulnerable: R3 on table profiles
+  Missed: rows-01-profiles/vulnerable: R4 on table profiles
+  Missed: rows-01-profiles/vulnerable: R5 on table profiles
+  Missed: rows-01-profiles/vulnerable: R6 on table profiles
+  Missed: rows-01-profiles/vulnerable: R7 on table profiles
+  Missed: writes-03-update-others/vulnerable: R5 on table notes
+  Missed: writes-03-update-others/vulnerable: R7 on table notes
+  Missed: writes-04-delete-others/vulnerable: R6 on table notes
+  Missed: writes-05-owner-change/vulnerable: R7 on table notes
+  Extra findings: columns-03-phone-exposed/vulnerable: R1 on table directory
+  Extra findings: functions-01-admin-delete-any-user/vulnerable: U1 on function admin_delete_user
+  False alarms: columns-03-phone-exposed/fixed: R1 on table directory
+  False alarms: decoy-01-public-posts/migrations: R1 on table posts
+  False alarms: decoy-02-public-profile-read/migrations: R1 on table profiles_public
+  False alarms: functions-02-security-definer-no-check/fixed: U1 on function set_note_body

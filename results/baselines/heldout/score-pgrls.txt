@@ -1,0 +1,35 @@
+Score: heldout set
+  Recall:            2/15 (0.13)
+  Precision:         2/15 (0.13)
+  False alarms:      7
+  False-alarm rate:  6/17 (0.35)
+  Extra findings:    6
+  Not checkable:     0
+  Probe errors:      0
+  needs_decision:    0
+  Missed: circle-directory/vulnerable: C2 on table circle_members, column contact_phone
+  Missed: expense-claims/vulnerable: V1 on table claim_overview
+  Missed: ferry-boarding/vulnerable: R2 on table boarding_passes
+  Missed: harbor-helpdesk/vulnerable: R3 on table support_requests
+  Missed: kiln-bookings/vulnerable: R5 on table kiln_bookings
+  Missed: library-fines/vulnerable: U3 on function fee_total
+  Missed: library-fines/vulnerable: U1 on function fee_total
+  Missed: loyalty-punch/vulnerable: U1 on function spend_points
+  Missed: pantry-share/vulnerable: R6 on table pantry_items
+  Missed: plant-swaps/vulnerable: R7 on table swap_offers
+  Missed: quill-journal/vulnerable: R2 on table journal_entries
+  Missed: trailhead-profiles/vulnerable: C1 on table member_profiles, column is_staff
+  Missed: ward-credits/vulnerable: U2 on function admin_grant_credits
+  Extra findings: circle-directory/vulnerable: R1 on table circle_members
+  Extra findings: kiln-bookings/vulnerable: R4 on table kiln_bookings
+  Extra findings: kiln-bookings/vulnerable: R1 on table kiln_bookings
+  Extra findings: pantry-share/vulnerable: R1 on table pantry_items
+  Extra findings: plant-swaps/vulnerable: R1 on table swap_offers
+  Extra findings: quill-journal/vulnerable: R1 on table journal_entries
+  False alarms: circle-directory/fixed: R1 on table circle_members
+  False alarms: expense-claims/fixed: R1 on table claim_overview
+  False alarms: kiln-bookings/fixed: R1 on table kiln_bookings
+  False alarms: launch-waitlist/migrations: R4 on table waitlist_entries
+  False alarms: launch-waitlist/migrations: R3 on table waitlist_entries
+  False alarms: pantry-share/fixed: R1 on table pantry_items
+  False alarms: plant-swaps/fixed: R1 on table swap_offers

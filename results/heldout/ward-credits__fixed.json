@@ -1,0 +1,10 @@
+{
+  "app": "ward-credits",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "These tests could not run, so this result does not cover them: user calls function \"admin_grant_credits\"; user updates rows on \"app_admins\". Do not read this result as a clean one."
+  ],
+  "probe_errors": true,
+  "side": "fixed"
+}
