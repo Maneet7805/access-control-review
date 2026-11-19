@@ -1,0 +1,489 @@
+{
+  "barn-rotas": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "shift_notes",
+        "expect": "team_rows_visible"
+      },
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "shift_notes",
+        "expect": "own_row_inserted"
+      }
+    ],
+    "decoy": true
+  },
+  "circle-directory": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "C2",
+        "table": "circle_members",
+        "column": "contact_phone",
+        "actor": "visitor",
+        "action": "read_column"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "visitor",
+        "action": "read",
+        "table": "circle_members",
+        "expect": "public_columns_readable"
+      },
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "circle_members",
+        "expect": "public_columns_readable"
+      }
+    ],
+    "decoy": false
+  },
+  "expense-claims": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "V1",
+        "table": "claim_overview",
+        "actor": "user-a",
+        "action": "read_view"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "expense_claims",
+        "expect": "own_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "read_view",
+        "table": "claim_overview",
+        "expect": "own_rows_only"
+      }
+    ],
+    "decoy": false
+  },
+  "ferry-boarding": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "R1",
+        "table": "boarding_passes",
+        "actor": "visitor",
+        "action": "read"
+      },
+      {
+        "flaw_id": "R2",
+        "table": "boarding_passes",
+        "actor": "user-a",
+        "action": "read"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "boarding_passes",
+        "expect": "own_rows_only"
+      }
+    ],
+    "decoy": false
+  },
+  "harbor-helpdesk": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "R3",
+        "table": "support_requests",
+        "actor": "visitor",
+        "action": "insert"
+      },
+      {
+        "flaw_id": "R4",
+        "table": "support_requests",
+        "actor": "user-a",
+        "action": "insert"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "support_requests",
+        "expect": "own_row_inserted"
+      },
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "support_requests",
+        "expect": "own_rows_only"
+      }
+    ],
+    "decoy": false
+  },
+  "kiln-bookings": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "R5",
+        "table": "kiln_bookings",
+        "actor": "user-a",
+        "action": "update"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "kiln_bookings",
+        "expect": "all_rows_visible"
+      },
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "kiln_bookings",
+        "expect": "own_row_inserted"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "kiln_bookings",
+        "expect": "own_row_changed"
+      }
+    ],
+    "decoy": false
+  },
+  "lantern-budgets": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "budgets",
+        "expect": "own_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "budgets",
+        "expect": "own_row_inserted"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "budgets",
+        "expect": "own_row_changed"
+      },
+      {
+        "actor": "user-a",
+        "action": "delete",
+        "table": "budgets",
+        "expect": "own_row_deleted"
+      },
+      {
+        "actor": "user-a",
+        "action": "read_view",
+        "table": "budget_totals",
+        "expect": "own_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "call",
+        "function": "rename_budget",
+        "expect": "call_runs"
+      }
+    ],
+    "decoy": false
+  },
+  "launch-waitlist": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "visitor",
+        "action": "insert",
+        "table": "waitlist_entries",
+        "expect": "public_insert_works"
+      },
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "early_access_codes",
+        "expect": "own_rows_only"
+      }
+    ],
+    "decoy": true
+  },
+  "library-fines": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "U3",
+        "function": "fee_total",
+        "actor": "visitor",
+        "action": "call"
+      },
+      {
+        "flaw_id": "U1",
+        "function": "fee_total",
+        "actor": "user-a",
+        "action": "call"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "loan_records",
+        "expect": "own_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "call",
+        "function": "fee_total",
+        "expect": "call_runs"
+      }
+    ],
+    "decoy": false
+  },
+  "loyalty-punch": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "U1",
+        "function": "spend_points",
+        "actor": "user-a",
+        "action": "call"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "loyalty_cards",
+        "expect": "own_row_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "call",
+        "function": "spend_points",
+        "expect": "call_runs"
+      }
+    ],
+    "decoy": false
+  },
+  "orbit-tasks": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "tasks",
+        "expect": "own_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "tasks",
+        "expect": "own_row_inserted"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "tasks",
+        "expect": "own_row_changed"
+      },
+      {
+        "actor": "user-a",
+        "action": "delete",
+        "table": "tasks",
+        "expect": "own_row_deleted"
+      }
+    ],
+    "decoy": false
+  },
+  "pantry-share": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "R6",
+        "table": "pantry_items",
+        "actor": "user-a",
+        "action": "delete"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "visitor",
+        "action": "read",
+        "table": "pantry_items",
+        "expect": "public"
+      },
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "pantry_items",
+        "expect": "own_row_inserted"
+      },
+      {
+        "actor": "user-a",
+        "action": "delete",
+        "table": "pantry_items",
+        "expect": "own_row_deleted"
+      }
+    ],
+    "decoy": false
+  },
+  "plant-swaps": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "R7",
+        "table": "swap_offers",
+        "actor": "user-a",
+        "action": "update"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "visitor",
+        "action": "read",
+        "table": "swap_offers",
+        "expect": "public"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "swap_offers",
+        "expect": "own_row_changed"
+      }
+    ],
+    "decoy": false
+  },
+  "quill-journal": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "R2",
+        "table": "journal_entries",
+        "actor": "user-a",
+        "action": "read"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "journal_entries",
+        "expect": "own_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "insert",
+        "table": "journal_entries",
+        "expect": "own_row_inserted"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "journal_entries",
+        "expect": "own_row_changed"
+      },
+      {
+        "actor": "user-a",
+        "action": "delete",
+        "table": "journal_entries",
+        "expect": "own_row_deleted"
+      }
+    ],
+    "decoy": false
+  },
+  "rind-recipes": {
+    "flaws_vulnerable": [],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "visitor",
+        "action": "read",
+        "table": "recipes",
+        "expect": "published_rows_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "recipes",
+        "expect": "published_or_own_rows"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "recipes",
+        "expect": "own_row_changed"
+      }
+    ],
+    "decoy": true
+  },
+  "trailhead-profiles": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "C1",
+        "table": "member_profiles",
+        "column": "is_staff",
+        "actor": "user-a",
+        "action": "update"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "member_profiles",
+        "expect": "own_row_only"
+      },
+      {
+        "actor": "user-a",
+        "action": "update",
+        "table": "member_profiles",
+        "expect": "own_row_changed"
+      }
+    ],
+    "decoy": false
+  },
+  "ward-credits": {
+    "flaws_vulnerable": [
+      {
+        "flaw_id": "U2",
+        "function": "admin_grant_credits",
+        "actor": "user-a",
+        "action": "call"
+      }
+    ],
+    "flaws_fixed": [],
+    "allowed": [
+      {
+        "actor": "user-a",
+        "action": "read",
+        "table": "credit_accounts",
+        "expect": "own_row_only"
+      },
+      {
+        "actor": "service-role",
+        "action": "call",
+        "function": "admin_grant_credits",
+        "expect": "call_runs"
+      }
+    ],
+    "decoy": false
+  }
+}
