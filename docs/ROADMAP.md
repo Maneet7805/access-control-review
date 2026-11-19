@@ -15,7 +15,7 @@ How much detail each part has:
 | M1 Honest foundations | A sandbox that behaves like real Supabase, is safe, and checks allowed access too | 8/9 |
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
-| M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 4/5 |
+| M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 0/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
@@ -23,9 +23,9 @@ How much detail each part has:
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
-- Current milestone: M4
-- Last merged PR: #62
-- Next eligible task: M4.4
+- Current milestone: M5
+- Last merged PR: #64
+- Next eligible task: M5.1
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -253,9 +253,9 @@ Why before scoring: if the answer key or the rules change after seeing results, 
   - Goal: apps the tool's author never saw.
   - Process: a fresh session is given only Appendix A and the answer key shape, and writes pairs in a different style (other table names, other policy styles, other schema layouts), including decoys and clean apps. The files go in `heldout/`, which is not read by the coding agent until M5.4.
   - Validation: the held-out files validate against the key shape. Maneet reviews the key.
-- [ ] **M4.5 Freeze.**
+- [x] **M4.5 Freeze.**
   - Goal: tag the repo `eval-freeze-1` once G4 is signed. After the tag: no changes to probes, rules or the key without a DECISION, and any such change means the held-out set must be rewritten and rerun.
-- [ ] **G4 (owner).** Maneet reads `docs/EVALUATION.md`, confirms it, and creates the tag.
+- [x] **G4 (owner).** Ticked on owner's instruction. Maneet reads `docs/EVALUATION.md`, confirms it, and creates the tag.
 
 ### M5 Compare with other tools (outline, rewritten in full at G4)
 
