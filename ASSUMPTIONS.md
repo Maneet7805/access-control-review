@@ -136,3 +136,12 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - rlsautotest executed fields (idgrid, leak_cells, column_security) never failed on a dev run, so they have no rule and count as unmapped if they fire.
   - Mapped baseline items on fixed or clean runs are reported as false alarms, not filtered.
   - Fixture runs cover 36 dev runs per tool (31 vulnerable and fixed folders, 5 decoy and clean); `hostile-01-callout` is skipped because it has no key entry.
+- 2026-11-19, M5.3 baseline adapters and runner (src/access_review/adapters/, scripts/run_baselines.py). Defaults, one line each:
+  - The docs/baselines.md mapping tables are implemented as written; no table was changed. An advisors UPDATE policy with both permissive_using and permissive_with_check true gives R5 and R7 (the rows are independent).
+  - Proof of a mapped finding is one Evidence: probe `<tool>:<rule>`, actor `baseline:<tool>`, result `ok`, statement the raw item (JSON item, footgun text, or CSV row re-written on one line).
+  - Two mapped items with the same flaw id and target are one finding that keeps every raw line as proof.
+  - Semgrep output with errors, or with no file scanned, is not_checkable: a partial or empty scan must not look clean.
+  - Advisors CSV without name and metadata columns, or with unparseable metadata, is not_checkable. Any missing key in rlsautotest or pgrls JSON is not_checkable.
+  - Runner exit codes: pgrls accepts 0 and 1 (it exits 1 when it reports violations, checked on one dev app); other tools accept 0 only. Any other code is not_checkable with the first stderr line.
+  - Runner runs pgrls on exactly one .sql file per folder, as in docs/baselines.md 2.5; more or fewer is not_checkable, not a guess. Semgrep needs --rules (the semgrep-rules clone).
+  - Tests run with PYTHONPATH=src because the package is not installed in this Python.
