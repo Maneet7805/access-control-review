@@ -117,3 +117,10 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Baseline findings are emitted as `proved` and labelled "reported, not executed"; confirmed by Maneet in PR 66. EVALUATION.md is unchanged.
   - Crash rule for the held-out run: re-run only if the fix changes no counted finding; otherwise a not-checkable miss. Confirmed by Maneet in PR 66.
   - The no-tuning check (M5.5) is a local script with a test on a temporary git repo, not a CI test, because CI has no history.
+- 2026-11-19, M5.1 DECISION D4, baselines (see docs/baselines.md). Options seen: Semgrep, Supabase advisors, rlsautotest, pgrls, rlsgrid, SupaShield. Picks and defaults, one line each:
+  - Included: Semgrep, Supabase advisors, rlsautotest (the execution-based tool) and pgrls (static). Dropped: rlsgrid and SupaShield.
+  - Extra candidates are included only if a page I read states they run offline. rlsautotest and pgrls do; rlsgrid and SupaShield do not say, so they count as unproven and are dropped.
+  - Semgrep and the advisors are kept on D4's order although neither page states a fully offline run. M5.2 must prove it with the network off, or stop and ask.
+  - The advisors are run as the splinter lint file through psql in the sandbox database. The Studio, MCP and Management API routes need a Supabase project and account, so they are not used.
+  - Semgrep Rules License v1.0 forbids distributing the rules. M5.2 pins registry rules by id and version and does not commit rule files without Maneet's say-so.
+  - All "Covers" cells are read from documentation, not run. pgrls was read to its verify section and searched, not read line by line, for network and account terms. The SupaShield website and npm page could not be opened.
