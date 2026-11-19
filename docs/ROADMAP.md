@@ -16,7 +16,7 @@ How much detail each part has:
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
-| M5 Compare | Run other tools on the same apps and score everyone | 4/6 |
+| M5 Compare | Run other tools on the same apps and score everyone | 5/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M5
-- Last merged PR: #68
-- Next eligible task: M5.5
+- Last merged PR: #72
+- Next eligible task: M5.6
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -353,7 +353,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `docker ps -a` shows no leftover sandbox container.
   - Done when: every tool has saved raw outputs and a score table for both sets, `RUN.txt` records the commit used, and the PR names every not-checkable run and every crash.
   - Stop and ask if: the held-out key or folder layout is not accepted by the scorer and the fix is more than tiny; the held-out run would need a rule, probe, key or mapping change; Docker does not start; a tool needs a network at run time.
-- [ ] **M5.5 Check that nothing was tuned after the held-out run.**
+- [x] **M5.5 Check that nothing was tuned after the held-out run.**
   - Depends on: M5.4.
   - Goal: a command that fails if any frozen file changed after the held-out run, so the no-tuning rule can be checked and not only stated. If it must fail for a real reason, the held-out set is replaced (Maneet decides, by D3 and a new freeze tag).
   - Files: create `scripts/check_no_tuning.py`, `tests/test_check_no_tuning.py`. Do not touch: `results/`, `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/baselines.md`.
