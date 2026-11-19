@@ -32,6 +32,7 @@ create policy notes_team_insert on public.shift_notes
   with check (author_id = auth.uid() and public.is_team_member(team_id));
 create policy notes_author_update on public.shift_notes
   for update to authenticated
-  using (author_id = auth.uid()) with check (author_id = auth.uid());
+  using (author_id = auth.uid() and public.is_team_member(team_id))
+  with check (author_id = auth.uid() and public.is_team_member(team_id));
 create policy notes_author_delete on public.shift_notes
   for delete to authenticated using (author_id = auth.uid());

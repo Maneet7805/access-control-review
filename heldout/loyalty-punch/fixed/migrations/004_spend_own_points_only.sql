@@ -10,6 +10,9 @@ begin
   if card_owner is distinct from auth.uid() then
     raise exception 'not your card' using errcode = '42501';
   end if;
+  if amount is null or amount <= 0 then
+    raise exception 'amount must be positive';
+  end if;
   update public.loyalty_cards
      set points = points - amount
    where owner_id = card_owner
