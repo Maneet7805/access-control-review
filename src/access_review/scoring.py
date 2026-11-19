@@ -126,7 +126,8 @@ def main(argv):
         print("Not scored, saved run missing: " + ", ".join(missing), file=sys.stderr)
         return 2
     result = score(list(runs.values()), load_key(planted / "answer_key.json"))
-    print(format_table("dev set (self-check, not accuracy)", result))
+    name = "dev set (self-check, not accuracy)" if planted.name == "planted" else f"{planted.name} set"
+    print(format_table(name, result))
     return 0
 
 

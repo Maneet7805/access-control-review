@@ -1,0 +1,35 @@
+{
+  "app": "rows-01-profiles",
+  "findings": [
+    {
+      "actor": "baseline:rlsautotest",
+      "explanation": "rlsautotest reported rule exposed, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "rlsautotest-R1-profiles",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:rlsautotest",
+          "error": null,
+          "probe": "rlsautotest:exposed",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"table\": \"profiles\", \"exposed\": true}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "profiles"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 0 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

@@ -1,0 +1,11 @@
+{
+  "app": "writes-03-update-others",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 5 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

@@ -1,0 +1,10 @@
+{
+  "app": "clean-01-all-correct",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 5 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

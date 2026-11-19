@@ -1,0 +1,10 @@
+{
+  "app": "columns-01-self-admin",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 2 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

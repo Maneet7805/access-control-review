@@ -1,0 +1,11 @@
+{
+  "app": "clean-02-all-correct-different-style",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 2 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

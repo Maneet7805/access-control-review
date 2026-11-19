@@ -1,0 +1,10 @@
+{
+  "app": "decoy-01-public-posts",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "advisors: 0 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "migrations"
+}

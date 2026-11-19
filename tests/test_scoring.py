@@ -149,3 +149,11 @@ def test_main_scores_saved_runs_and_refuses_a_missing_one(tmp_path, capsys):
     assert "Recall:            " in capsys.readouterr().out
     (tmp_path / "rows-01-profiles__fixed.json").unlink()  # negative control
     assert scoring.main([str(PLANTED), "--runs", str(tmp_path)]) == 2
+
+
+def test_main_names_a_non_dev_folder_by_its_own_name(tmp_path, capsys):
+    folder = tmp_path / "other"
+    folder.mkdir()
+    (folder / "answer_key.json").write_text("{}", encoding="utf-8")
+    assert scoring.main([str(folder), "--runs", str(tmp_path)]) == 0
+    assert capsys.readouterr().out.startswith("Score: other set")

@@ -1,0 +1,198 @@
+{
+  "tables": [
+    {
+      "table": "directory",
+      "rls_enabled": true,
+      "policied": [
+        "SELECT"
+      ],
+      "cells": {
+        "SELECT": {
+          "grant": true
+        },
+        "INSERT": {
+          "deny": true
+        },
+        "UPDATE": {
+          "deny": true
+        },
+        "DELETE": {
+          "deny": true
+        }
+      },
+      "idgrid": {
+        "SELECT": {
+          "service_role": {
+            "exp": true,
+            "pass": true
+          },
+          "authorized": {
+            "exp": true,
+            "pass": true
+          },
+          "other": {
+            "exp": true,
+            "pass": true
+          },
+          "anon": {
+            "exp": true,
+            "pass": true
+          }
+        },
+        "INSERT": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "UPDATE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        },
+        "DELETE": {
+          "authorized": {
+            "exp": false,
+            "pass": true
+          },
+          "anon": {
+            "exp": false,
+            "pass": true
+          }
+        }
+      },
+      "footguns": [
+        "policy public profiles: SELECT USING (true) -> every ['anon', 'authenticated'] sees ALL rows (review)"
+      ],
+      "coverage": [
+        2,
+        2
+      ],
+      "transition_leaks": [],
+      "leak_cells": [],
+      "unreliable": [],
+      "unreliable_cells": [],
+      "sanctioned_cells": [],
+      "partial": [],
+      "multi_findings": [],
+      "multi_cells": {},
+      "branch_nt": [],
+      "auth": {
+        "flavor": "supabase",
+        "authenticated": "authenticated",
+        "unauth": "anon",
+        "service_role": "postgres",
+        "claim_style": "flat"
+      },
+      "has_policy": true,
+      "exposed": false,
+      "grants": {
+        "authenticated:SELECT": false,
+        "authenticated:INSERT": true,
+        "authenticated:UPDATE": true,
+        "authenticated:DELETE": true,
+        "anon:SELECT": false,
+        "anon:INSERT": true,
+        "anon:UPDATE": true,
+        "anon:DELETE": true,
+        "anonymous:SELECT": false,
+        "anonymous:INSERT": false,
+        "anonymous:UPDATE": false,
+        "anonymous:DELETE": false,
+        "service_role:SELECT": true,
+        "service_role:INSERT": true,
+        "service_role:UPDATE": true,
+        "service_role:DELETE": true
+      },
+      "column_security": {
+        "columns": [
+          "id",
+          "display_name",
+          "phone"
+        ],
+        "cells": {
+          "postgres": {
+            "SELECT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "authenticated": {
+            "SELECT": {
+              "kind": "scoped",
+              "granted": [
+                "id",
+                "display_name"
+              ],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          },
+          "anon": {
+            "SELECT": {
+              "kind": "scoped",
+              "granted": [
+                "id",
+                "display_name"
+              ],
+              "leaked": []
+            },
+            "INSERT": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            },
+            "UPDATE": {
+              "kind": "unscoped",
+              "granted": [],
+              "leaked": []
+            }
+          }
+        }
+      }
+    }
+  ],
+  "bypass_surfaces": [
+    {
+      "object": "supabase_etl_admin",
+      "type": "role",
+      "severity": "CRITICAL",
+      "why": "role is BYPASSRLS and bypasses RLS but is not a sanctioned bypass role and is client-reachable (login / client role / SET ROLE-able by a client). Confirm it should have this, revoke it, or pass --allow-bypass-role."
+    },
+    {
+      "object": "directory",
+      "type": "table",
+      "severity": "HIGH",
+      "why": "RLS is enabled but not FORCED and the owner (postgres) is not a superuser, so the owner bypasses this table's RLS. Add: ALTER TABLE ... FORCE ROW LEVEL SECURITY."
+    }
+  ]
+}

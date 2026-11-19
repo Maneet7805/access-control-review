@@ -1,0 +1,10 @@
+{
+  "app": "rows-03-locked-out",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 3 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}

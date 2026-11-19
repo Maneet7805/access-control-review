@@ -1,0 +1,23 @@
+Score: dev set (self-check, not accuracy)
+  Recall:            11/22 (0.50)
+  Precision:         11/14 (0.79)
+  False alarms:      1
+  False-alarm rate:  1/21 (0.05)
+  Extra findings:    2
+  Not checkable:     0
+  Probe errors:      0
+  needs_decision:    0
+  Missed: columns-01-self-admin/vulnerable: C1 on table members, column role
+  Missed: columns-02-self-paid/vulnerable: C1 on table accounts, column paid
+  Missed: columns-03-phone-exposed/vulnerable: C2 on table directory, column phone
+  Missed: functions-01-admin-delete-any-user/vulnerable: U2 on function admin_delete_user
+  Missed: rows-01-profiles/vulnerable: R2 on table profiles
+  Missed: rows-01-profiles/vulnerable: R3 on table profiles
+  Missed: rows-01-profiles/vulnerable: R4 on table profiles
+  Missed: rows-01-profiles/vulnerable: R5 on table profiles
+  Missed: rows-01-profiles/vulnerable: R6 on table profiles
+  Missed: rows-01-profiles/vulnerable: R7 on table profiles
+  Missed: rows-02-profiles-all-authenticated/vulnerable: R2 on table profiles
+  Extra findings: functions-01-admin-delete-any-user/vulnerable: U1 on function admin_delete_user
+  Extra findings: functions-03-default-execute/vulnerable: U1 on function note_count
+  False alarms: functions-02-security-definer-no-check/fixed: U1 on function set_note_body

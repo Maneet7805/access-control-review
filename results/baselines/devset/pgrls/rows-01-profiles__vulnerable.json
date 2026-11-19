@@ -1,0 +1,36 @@
+{
+  "app": "rows-01-profiles",
+  "findings": [
+    {
+      "actor": "baseline:pgrls",
+      "explanation": "pgrls reported rule SEC001, mapped to R1 by docs/baselines.md section 3. Reported by the tool, not executed by this project.",
+      "fix": "The baseline gives no fix in this shape; see the raw output.",
+      "flaw_id": "R1",
+      "id": "pgrls-R1-profiles",
+      "owasp": [
+        "A01",
+        "API1"
+      ],
+      "proof": [
+        {
+          "actor": "baseline:pgrls",
+          "error": null,
+          "probe": "pgrls:SEC001",
+          "result": "ok",
+          "rows_seen": [],
+          "statement": "{\"location\": \"public.profiles\", \"message\": \"Table public.profiles does not have row-level security enabled. Add ENABLE ROW LEVEL SECURITY or include the table in [lint.rules.SEC001].allowlist if it is a public reference table.\", \"rule_id\": \"SEC001\", \"severity\": \"error\", \"title\": \"RLS not enabled on table\"}"
+        }
+      ],
+      "schema_version": "0.1",
+      "status": "proved",
+      "table": "profiles"
+    }
+  ],
+  "not_checkable": false,
+  "notes": [
+    "pgrls: 0 unmapped item(s) not emitted",
+    "pgrls: 25 rule(s) skipped, so an empty result is not a pass"
+  ],
+  "probe_errors": false,
+  "side": "vulnerable"
+}

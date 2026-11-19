@@ -1,0 +1,10 @@
+{
+  "app": "functions-01-admin-delete-any-user",
+  "findings": [],
+  "not_checkable": false,
+  "notes": [
+    "rlsautotest: 0 unmapped item(s) not emitted"
+  ],
+  "probe_errors": false,
+  "side": "fixed"
+}
