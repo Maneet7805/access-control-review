@@ -316,3 +316,77 @@ def test_runner_commands(tmp_path):
     (migrations / "002.sql").write_text("-- more", encoding="utf-8")
     assert isinstance(runner.command("pgrls", folder, migrations), str)
     assert runner.command("advisors", folder, migrations)[-1] == str(migrations)
+
+
+# --- pgrls on an app with several migration files (docs/baselines.md 2.5) ---
+
+def two_file_folder(tmp_path, names=("001_a.sql", "002_b.sql")):
+    folder = make_folder(tmp_path / "apps", sides=("vulnerable",))
+    migrations = folder / "app-x" / "vulnerable" / "migrations"
+    (migrations / "001_init.sql").unlink()
+    for name in names:
+        (migrations / name).write_text("-- sql", encoding="utf-8")
+    return folder
+
+
+def run_pgrls(folder, tmp_path, outputs):
+    """Run the runner with the command layer faked; outputs maps a file name to (exit code, text)."""
+    calls = []
+
+    def fake(argv):
+        calls.append(argv[-3].rsplit("/", 1)[-1])
+        code, text, *err = outputs[calls[-1]]
+        return code, text, (err or [""])[0]
+
+    out = tmp_path / "out"
+    assert runner.main([str(folder), "--tool", "pgrls", "--out", str(out)], fake) == 0
+    return json.loads((out / "app-x__vulnerable.json").read_text(encoding="utf-8")), calls, out
+
+
+def test_pgrls_two_files_each_finding_once_and_in_order(tmp_path):
+    folder = two_file_folder(tmp_path)
+    a, b = pgrls_json(violation("SEC001", "public.a")), pgrls_json(violation("SEC039", "public.b.p"),
+                                                                   violation("SEC002", "public.z"))
+    run, calls, out = run_pgrls(folder, tmp_path, {"001_a.sql": (1, a), "002_b.sql": (1, b)})
+    assert calls == ["001_a.sql", "002_b.sql"] and not run["not_checkable"]
+    assert pairs(run) == [("R1", "a", None, None), ("R3", "b", None, None)]
+    assert "1 unmapped" in run["notes"][0]
+    assert [p["statement"][:9] for f in run["findings"] for p in f["proof"]] == ["001_a.sql", "002_b.sql"]
+    assert (out / "raw" / "app-x__vulnerable__002_b.sql.json").read_text(encoding="utf-8") == b
+
+
+def test_pgrls_duplicate_across_files_is_one_finding(tmp_path):
+    folder = two_file_folder(tmp_path)
+    same = pgrls_json(violation("SEC001", "public.a"))
+    run, _, _ = run_pgrls(folder, tmp_path, {"001_a.sql": (1, same), "002_b.sql": (1, same)})
+    assert pairs(run) == [("R1", "a", None, None)] and len(run["findings"][0]["proof"]) == 2
+
+
+def test_pgrls_failing_second_file_is_not_checkable(tmp_path):
+    folder = two_file_folder(tmp_path)
+    good = pgrls_json(violation("SEC001", "public.a"))
+    for bad in ((2, "", "boom"), (0, "garbage", ""), (1, "{}", "")):
+        run, _, _ = run_pgrls(folder, tmp_path / str(id(bad)), {"001_a.sql": (1, good), "002_b.sql": bad})
+        assert run["not_checkable"] is True and run["findings"] == [] and "002_b.sql" in run["notes"][0]
+
+
+def test_pgrls_no_sql_file_is_not_checkable(tmp_path):
+    folder = two_file_folder(tmp_path, names=())
+    run, calls, _ = run_pgrls(folder, tmp_path, {})
+    assert run["not_checkable"] is True and run["findings"] == [] and calls == []
+
+
+def test_pgrls_one_file_equals_the_single_file_result(tmp_path):
+    text = sample("pgrls", "rows-01-profiles", "vulnerable")
+    folder = two_file_folder(tmp_path, names=("001_init.sql",))
+    run, _, out = run_pgrls(folder, tmp_path, {"001_init.sql": (1, text)})
+    assert run == adapt("pgrls", text)
+    assert (out / "raw" / "app-x__vulnerable.json").read_text(encoding="utf-8") == text
+
+
+def test_pgrls_negative_control_second_files_finding_counts(tmp_path):
+    a, b = pgrls_json(violation("SEC001", "public.a")), pgrls_json(violation("SEC039", "public.b.p"))
+    both = run_pgrls(two_file_folder(tmp_path / "x"), tmp_path / "x", {"001_a.sql": (1, a), "002_b.sql": (1, b)})[0]
+    without = run_pgrls(two_file_folder(tmp_path / "y"), tmp_path / "y",
+                        {"001_a.sql": (1, a), "002_b.sql": (0, pgrls_json())})[0]
+    assert len(both["findings"]) == len(without["findings"]) + 1

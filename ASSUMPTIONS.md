@@ -143,5 +143,5 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Semgrep output with errors, or with no file scanned, is not_checkable: a partial or empty scan must not look clean.
   - Advisors CSV without name and metadata columns, or with unparseable metadata, is not_checkable. Any missing key in rlsautotest or pgrls JSON is not_checkable.
   - Runner exit codes: pgrls accepts 0 and 1 (it exits 1 when it reports violations, checked on one dev app); other tools accept 0 only. Any other code is not_checkable with the first stderr line.
-  - Runner runs pgrls on exactly one .sql file per folder, as in docs/baselines.md 2.5; more or fewer is not_checkable, not a guess. Semgrep needs --rules (the semgrep-rules clone).
+  - Runner runs pgrls once per .sql file in name order (as the sandbox applies them) and merges the outputs; any failing or unreadable file, or no file, is not_checkable (docs/baselines.md 2.5). Semgrep needs --rules (the semgrep-rules clone).
   - Tests run with PYTHONPATH=src because the package is not installed in this Python.
