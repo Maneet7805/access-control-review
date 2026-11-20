@@ -17,15 +17,15 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 2/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 3/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M6
-- Last merged PR: #77
-- Next eligible task: M6.3 (M6.4 is also eligible; M6.3 is first in order)
+- Last merged PR: #78
+- Next eligible task: M6.4
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -437,7 +437,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container.
   - Done when: every read entry of the key has a rule and a passing test, with a negative control.
   - Stop and ask if: checking an entry needs a new probe or a change to `probes.py`.
-- [ ] **M6.3 Allowed-list check, write and call entries.**
+- [x] **M6.3 Allowed-list check, write and call entries.**
   - Depends on: M6.2.
   - Goal: the same function covers the allowed entries about changing data and calling functions (condition 3 for writes and calls).
   - Files: `src/fix_check/allowed.py`, `tests/test_fix_check_allowed.py`, more fixtures under `tests/fixtures/fixcheck/`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. This task uses Docker.

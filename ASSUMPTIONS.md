@@ -197,3 +197,11 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - Only user-a and user-b (the seeded users) and visitor have rules as actors. Write and call entries return holds: false, not_checkable until M6.3.
   - Each item is {entry, holds, reason, evidence, expected_failure}. Reasons used: not_checkable, no_rows_returned, own_row_missing.
   - Read entries on decoys and clean apps (no fixed folder) are tested on the app itself.
+- 2026-11-20, M6.3 allowed-list check, write and call entries (src/fix_check/allowed.py). Defaults, one line each:
+  - Insert uses the existing probe user_inserts_row_for_other with the actor as both user and owner, so the row is the actor's own.
+  - update and delete hold when the probe changed or removed at least one row owned by the actor. Rows of others do not count here; condition 2 decides that.
+  - service-role has no probe in access_review. call_runs for it reuses the private _call_function from probes.py with an identity from the private _act_as in identity.py. Nothing under src/access_review/ is edited.
+  - own_rows_only holds when the function, called as the actor, returns one number equal to the count of the actor's own rows in the first public table with an owner column and a uuid id.
+  - own_note_changed calls the function as the actor with the id of one of the actor's own rows in that same table as the first argument (uuid) and dummy values for the rest. It holds when that row differs afterwards. Rolled back.
+  - A function entry needs the function in public; a missing function or an unknown actor is not_checkable. New reasons: action_refused, no_row_written, own_row_untouched, own_rows_missing.
+  - The old test that listed an insert entry as not checkable now uses unknown expect values, because insert and call entries have a rule since this task.

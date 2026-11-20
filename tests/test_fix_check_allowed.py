@@ -78,7 +78,10 @@ def test_revoked_public_columns_do_not_hold_but_the_fixed_twin_does():
 @pytest.mark.parametrize("entry", [
     {"actor": "user-a", "action": "read", "table": "t", "expect": "something_new"},
     {"actor": "user-z", "action": "read", "table": "t", "expect": "own_row_only"},
-    {"actor": "user-a", "action": "insert", "table": "t", "expect": "own_owner_accepted"},
+    {"actor": "user-a", "action": "insert", "table": "t", "expect": "something_new"},
+    {"actor": "user-z", "action": "insert", "table": "t", "expect": "own_owner_accepted"},
+    {"actor": "user-z", "action": "call", "function": "f", "expect": "own_rows_only"},
+    {"actor": "user-a", "action": "call", "function": "f", "expect": "something_new"},
 ])
 def test_entry_with_no_rule_is_not_checkable(entry):
     # No rule means no query, so no database is needed.
@@ -86,3 +89,58 @@ def test_entry_with_no_rule_is_not_checkable(entry):
     assert item["holds"] is False
     assert item["reason"] == "not_checkable"
     assert item["entry"] == entry
+
+
+ALL_APPS = [app for app in ANSWER_KEY if ANSWER_KEY[app]["allowed"] and _migrations(app).is_dir()]
+WRITE_AND_CALL = ("update", "insert", "delete", "call")
+
+
+def _row_counts(box):
+    tables = json.loads(box.run("SELECT json_agg(format('%I.%I', schemaname, tablename)) FROM pg_tables "
+                                "WHERE schemaname IN ('public', 'auth')"))
+    return {t: box.run(f"SELECT count(*) FROM {t}") for t in tables}
+
+
+@pytest.mark.parametrize("app", ALL_APPS)
+def test_every_entry_without_expected_failure_holds_and_nothing_is_kept(app):
+    with sandbox(_migrations(app), baseline=True) as box:
+        before = _row_counts(box)
+        items = check_allowed(box, app, ANSWER_KEY)
+        assert _row_counts(box) == before
+    assert len(items) == len(ANSWER_KEY[app]["allowed"])
+    for item in items:
+        assert item["holds"] == (item["expected_failure"] is None), item
+        assert item["reason"] != "not_checkable"
+
+
+def test_the_two_tasks_cover_all_20_entries_of_the_key():
+    entries = [e for app in ALL_APPS for e in ANSWER_KEY[app]["allowed"]]
+    assert len(entries) == 20
+    assert {e["action"] for e in entries if e["action"] not in READ_ACTIONS} == set(WRITE_AND_CALL)
+
+
+def test_every_write_and_call_value_of_the_key_has_a_rule():
+    seen = {(e["action"], e["expect"]) for app in ANSWER_KEY for e in ANSWER_KEY[app]["allowed"]
+            if e["action"] in WRITE_AND_CALL}
+    assert seen == {("update", "own_row_changed"), ("insert", "own_owner_accepted"), ("delete", "own_row_deleted"),
+                    ("call", "call_runs"), ("call", "own_note_changed"), ("call", "own_rows_only")}
+
+
+BLOCKED = [
+    {"actor": "user-a", "action": "update", "table": "notes", "expect": "own_row_changed"},
+    {"actor": "user-a", "action": "insert", "table": "notes", "expect": "own_owner_accepted"},
+    {"actor": "user-a", "action": "delete", "table": "notes", "expect": "own_row_deleted"},
+    {"actor": "service-role", "action": "call", "function": "admin_delete_user", "expect": "call_runs"},
+    {"actor": "user-a", "action": "call", "function": "set_note_body", "expect": "own_note_changed"},
+    {"actor": "user-a", "action": "call", "function": "note_count", "expect": "own_rows_only"},
+]
+
+
+def test_an_app_that_blocks_the_owners_own_action_makes_each_entry_not_hold():
+    with sandbox(FIXTURES / "blocks-owner-actions" / "migrations", baseline=True) as box:
+        before = _row_counts(box)
+        items = check_allowed(box, "app", _key(BLOCKED))
+        assert _row_counts(box) == before
+    for item in items:
+        assert item["holds"] is False, item
+        assert item["reason"] in {"action_refused", "own_row_untouched"}, item
