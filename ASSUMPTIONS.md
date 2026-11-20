@@ -167,9 +167,9 @@ This file records the defaults the agent chose when Maneet had no answer, one li
 - 2026-11-20, M6 roadmap rewrite (docs only). Defaults chosen, one line each:
   - M6 is nine tasks (M6.1 to M6.9) plus G6, one chain. M6.1 writes the plan (attempt counts, AI, prompt) before any run.
   - M6 code lives in a new package src/fix_check/, because scripts/check_no_tuning.py fails on any change under src/access_review/.
-  - Apps in the fix check: those with a vulnerable and a fixed folder and a planted flaw. Decoys, clean apps, rows-03-locked-out and hostile-01-callout are out.
-  - Reference source: one attempt per app. AI source: three independent attempts per app, no retry, no feedback between attempts.
-  - The reference fix is the difference between the vulnerable and fixed folders of an app, written once as one SQL file under fixes/reference/.
-  - The AI (D5) is a fresh session of the coding assistant already used on this project, with no tools and no files, given only the report fix text; M6.1 names the model and fixes the prompt.
+  - Apps in the fix check: those with a vulnerable and a fixed folder and a planted flaw. Decoys, clean apps, rows-03-locked-out and hostile-01-callout are out. Confirmed 2026-11-20; the count is taken by script in M6.1.
+  - Reference source: one attempt per app. AI source: three independent attempts per app, no retry, no feedback between attempts. Confirmed 2026-11-20.
+  - The reference fix is the difference between the vulnerable and fixed folders of an app, written once as one SQL file under fixes/reference/. Confirmed 2026-11-20.
+  - The AI (D5) is a fresh session of the coding assistant already used on this project, with no tools and no files, given only the report fix text; M6.1 names the model and fixes the prompt. Confirmed 2026-11-20; the write-up must name it as a weakness: same assistant family as the one that built the tool.
   - Condition 3 needs a new allowed-list checker (src/fix_check/allowed.py), because only a read check on one table existed (tests/test_planted.py).
   - The fix check runs on the dev set only. The held-out set is spent and is never opened in M6.
