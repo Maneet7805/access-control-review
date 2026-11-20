@@ -24,7 +24,7 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M6
-- Last merged PR: #74
+- Last merged PR: #77
 - Next eligible task: M6.2
 - Open decisions waiting for Maneet: see section 6
 
@@ -582,6 +582,41 @@ A second platform (Firebase or Postgres with another login system), storage buck
 Follow-ups (found during a task, logged, not yet fixed; each needs its own task):
 
 - Done: materialized views are now covered by the view test (V1), with planted app `views-02-matview-leak`. Found in M3.6 (PR 51).
+
+### Planned extras (not tied to a gate)
+
+These are ideas recorded as future work. None is started and none has a task ID, so none is eligible under rule 2 until a later PR turns it into a task. Nothing here changes an M6 task, a gate, or a frozen file: `docs/EVALUATION.md`, `docs/baselines.md`, `planted/`, `heldout/`, `src/access_review/`, the saved files under `results/` and the existing scripts. Every extra view is a new file, built from the saved runs, and is labelled "extra view, not the protocol score". How and when to schedule each item is AGENT-decides, logged in `ASSUMPTIONS.md`. The exceptions are a change to the protocol score and anything that touches a frozen file: Maneet decides those, in their own PR.
+
+| ID | Item | What it is | Who decides |
+| --- | --- | --- | --- |
+| P1 | Extra views of existing results | Paired credit (a flaw counts only if the vulnerable run finds it and its fixed twin stays silent). A combined score in the Youden style (true-positive rate minus false-positive rate). Control tools that flag everything and flag nothing, scored by the same scorer. The unmapped count shown beside each baseline. Each is labelled "extra view, not the protocol score". | Scheduling: AGENT-decides, logged. Making any of these the protocol score, or editing `docs/EVALUATION.md`: DECISION by Maneet, own PR. |
+| P2 | Execute the baselines' claims | Replay each mapped baseline claim through our probes in the sandbox, to see whether it is real. Today baseline findings are "reported, not executed" (PR 66). It cannot change our tool's numbers. Baseline precision could rise, and some matches might fail to reproduce. | Scheduling and an extra view: AGENT-decides, logged. Replacing the baseline numbers in `docs/results.md` or `docs/baselines.md`: DECISION by Maneet, own PR. |
+| P3 | Second independent test round, after M8 | A new freeze tag and a new held-out set, written by someone who has not seen the tool's rules. Ideally a second labeller or an outside key, and AI-written apps from a different model than the one that helped build the tool. The plan is committed before the run. Same scorer. | Scheduling and the plan: AGENT-decides, logged. Reviewing the key and choosing the second labeller: Maneet, as at G4. Any rule change that comes before it: DECISION by Maneet. |
+| P4 | Stability repeats of dev-set runs | Run the dev set several times and check that the findings do not change. The number of repeats is written before the first repeat. Output goes to a new folder under `results/`. Nothing existing is overwritten. | AGENT-decides, logged. |
+| P5 | Read-only research notes (no code) | (a) Why the advisors' always-true SELECT lint is unmapped (`docs/baselines.md`, section 3.3). Do not change the unmapped rules or the mapping: that would be tuning. (b) What reusable test SQL the pgrls and rlsautotest repos hold. (c) The BAC-Bench data file: does it hold apps with SQL migrations and an outside key. Notes are a new docs file. Real-app names stay out (rule 10). | AGENT-decides, logged. |
+
+Open questions, from the discussion log. Parked means no plan yet. Planned means an item above covers it.
+
+| # | Question | Status | Owner |
+| --- | --- | --- | --- |
+| 1 | How should false alarms on tables that are public on purpose be handled? | Parked. M8 is the planned route. | Maneet |
+| 2 | Which extra checks does Maneet want, and does the freeze allow paired credit or a combined score? | Planned: P1 as extra views. A protocol-score change needs a DECISION. | Maneet |
+| 3 | Can real apps be found with an outside key? | Planned: P5(c). | Agent reads, Maneet decides use |
+| 4 | Do pgrls and rlsautotest ship reusable test SQL? | Planned: P5(b). | Agent |
+| 5 | Why is the advisors' always-true SELECT lint unmapped? | Planned: P5(a). | Agent |
+| 6 | How is the M8 question step tested if intent cannot be known on real apps? | Parked until M8. | Maneet |
+| 7 | Which second platform, and when? | Parked (section 8). | Maneet |
+| 8 | Is there a second labeller or an outside list for the 13 flaw types? | Planned inside P3. | Maneet |
+| 9 | Where does "execute the baselines' claims" go, and who decides? | Planned: P2, decided here. | Agent schedules, Maneet decides any score change |
+| 10 | Which fixes for held-out misses are chosen for general reasons, and who writes the next held-out set? | Parked. Any rule fix needs a new freeze tag and a new held-out set (P3). | Maneet |
+
+Known gaps, causes not yet read. Reading a cause is allowed and is a note only. Fixing exactly the held-out misses would be tuning and would inflate the next score. Any rule or probe change needs a DECISION by Maneet, a new freeze tag and a new held-out set.
+
+- A big real app (300 to 400 migrations) has never been tried. If tried, it is a case study, not a score.
+- Six held-out runs of our tool ended in a probe error. The causes are unread.
+- The cause of the `swap_offers` R7 miss on the held-out set is unknown.
+- One pgrls rule behind the R1 false alarm on `pantry-share/fixed` is untraced.
+- `decoy-02-public-profile-read` gave `needs_decision` in 5 of 5 re-runs. The earlier "no finding" run never reproduced and its cause is unknown.
 
 ## Appendix A: Flaw catalogue (the key is written from this)
 
