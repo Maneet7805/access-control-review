@@ -205,3 +205,6 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - own_note_changed calls the function as the actor with the id of one of the actor's own rows in that same table as the first argument (uuid) and dummy values for the rest. It holds when that row differs afterwards. Rolled back.
   - A function entry needs the function in public; a missing function or an unknown actor is not_checkable. New reasons: action_refused, no_row_written, own_row_untouched, own_rows_missing.
   - The old test that listed an insert entry as not checkable now uses unknown expect values, because insert and call entries have a rule since this task.
+  - M6.4: `fix_sql` is the fix's text (str, or UTF-8 bytes, or a path to one file). A folder, a list, empty or whitespace-only text, bytes that are not UTF-8 and text with a NUL are refused.
+  - M6.4: the fix file is named after the largest original name (checked in both case-sensitive and case-insensitive order) plus `_zz_fix.sql`, and the real sort is checked on the copy.
+  - M6.4: the work folder must be outside the vulnerable folder and empty or new. Otherwise the build is refused.

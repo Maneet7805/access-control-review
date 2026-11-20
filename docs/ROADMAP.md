@@ -17,15 +17,15 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 3/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 4/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M6
-- Last merged PR: #78
-- Next eligible task: M6.4
+- Last merged PR: #79
+- Next eligible task: M6.5
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -453,7 +453,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container.
   - Done when: every `expect` value in the key has a rule, a passing test and a negative control.
   - Stop and ask if: an entry cannot be checked with the existing probes.
-- [ ] **M6.4 Build a fix attempt.**
+- [x] **M6.4 Build a fix attempt.**
   - Depends on: M6.1.
   - Goal: from a vulnerable app folder and one SQL file, build a copy with the fix added as a new migration, and never touch the original.
   - Files: create `src/fix_check/attempt.py`, `tests/test_fix_check_attempt.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. No Docker.
