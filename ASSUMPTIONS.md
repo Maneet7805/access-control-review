@@ -164,3 +164,12 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - One row per tool per set, named missed, extra and false-alarm items listed under each table in the scorer's own wording, so the page stays checkable line by line.
   - The test also compares the re-scored tables with the saved score files, so a page, a score file and the raw runs must all agree.
   - Ranges for precision and false-alarm rate in the held-out text leave Semgrep out, because it reports nothing and its 0.00 rate would mislead.
+- 2026-11-20, M6 roadmap rewrite (docs only). Defaults chosen, one line each:
+  - M6 is nine tasks (M6.1 to M6.9) plus G6, one chain. M6.1 writes the plan (attempt counts, AI, prompt) before any run.
+  - M6 code lives in a new package src/fix_check/, because scripts/check_no_tuning.py fails on any change under src/access_review/.
+  - Apps in the fix check: those with a vulnerable and a fixed folder and a planted flaw. Decoys, clean apps, rows-03-locked-out and hostile-01-callout are out.
+  - Reference source: one attempt per app. AI source: three independent attempts per app, no retry, no feedback between attempts.
+  - The reference fix is the difference between the vulnerable and fixed folders of an app, written once as one SQL file under fixes/reference/.
+  - The AI (D5) is a fresh session of the coding assistant already used on this project, with no tools and no files, given only the report fix text; M6.1 names the model and fixes the prompt.
+  - Condition 3 needs a new allowed-list checker (src/fix_check/allowed.py), because only a read check on one table existed (tests/test_planted.py).
+  - The fix check runs on the dev set only. The held-out set is spent and is never opened in M6.
