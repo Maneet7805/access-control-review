@@ -4,7 +4,7 @@ Put this file at `docs/ROADMAP.md`. Claude Code reads it, picks the next eligibl
 
 How much detail each part has:
 - M0 to M4 are written in full. They are the current work and the next work.
-- M5 is written in full. M6 and M7 are medium detail. They are rewritten in full when their turn comes.
+- M5 and M6 are written in full. M7 is medium detail. It is rewritten in full when its turn comes.
 - M8 to M10 are goals and decision points only. Details written months early go stale, and they depend on what M1 and M2 teach us.
 
 ## 1. Where we are (the agent updates this after every PR)
@@ -17,15 +17,15 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
-- Current milestone: M5
-- Last merged PR: #73
-- Next eligible task: G5 (owner)
+- Current milestone: M6
+- Last merged PR: #74
+- Next eligible task: M6.1
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -385,16 +385,182 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `ruff check .` passes.
   - Done when: `docs/results.md` is merged and its test passes in CI.
   - Stop and ask if: a number cannot be reproduced from the saved raw outputs; a table would need the two sets combined.
-- [ ] **G5 (owner).**
+- [x] **G5 (owner).** Signed off by Maneet on 2026-11-20.
   - Depends on: M5.6.
   - Maneet checks the table against the raw outputs for two apps by hand: pick two apps, and for each tool open the raw output, the run object and the key entry named in the "How to check by hand" section of `docs/results.md`. Each reported finding traces to a raw output line and to a mapping rule, and each count in the table follows. Maneet signs off or lists what to fix.
+  - Recorded: Maneet opened the key entry, our tool's run object and the raw outputs for `orbit-tasks` and `pantry-share` (fixed side) for our tool, the Supabase advisors and Semgrep. The rlsautotest and pgrls files for the same two apps were read and summarised for Maneet, who then signed off. Everything matched the table in `docs/results.md`. One pgrls rule that produced R1 on `pantry-share/fixed` was not traced.
 
-### M6 Fix check (outline)
+### M6 Fix check
 
-- [ ] M6.1 A fix is a new migration file added to a copy of the vulnerable app.
-- [ ] M6.2 `recheck` command: reports (a) migrations apply, (b) the same attack now fails, (c) the allowed list still passes, (d) no new leak. Negative controls: a fix that locks everyone out fails (c). A fix on the wrong table fails (b).
-- [ ] M6.3 Run it on the dev set with fixes from the reference twin and from an AI that only sees the report's fix text (D5). Record each run.
+M6 tests the fix step: after a flaw is reported, does a fix remove the flaw without breaking the app. What counts as a successful fix is fixed in `docs/EVALUATION.md` section 6, and this milestone does not change it. Rules for the whole milestone:
+
+- Tasks run in order, one PR each. Nothing in M6 opens `heldout/`: no reading, listing, copying or searching inside it. The held-out set is spent. It is not run, not tuned on and not used for fixes.
+- Only one task at a time uses Docker. M6.2, M6.3, M6.5, M6.6 and M6.8 use it, and so does any run of the full test suite. Run `docker ps -a` first; it must show no sandbox container. Run `python scripts/check.py` alone, in the background, and wait for it.
+- A fix is a new migration file added to a copy of the vulnerable app. The tool never edits the developer's files, and the copy is made outside `planted/`.
+- No-edit rule: M6 never changes `planted/answer_key.json`, `src/access_review/` (probes, rules, sandbox, scoring, baseline.sql, adapters, everything), `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/baselines.md`, `scripts/run_devset.py`, `scripts/run_baselines.py` or the saved files under `results/` that already exist. M6 code lives in a new package `src/fix_check/` and imports `access_review` without editing it. This keeps `scripts/check_no_tuning.py` passing, because it fails on any change under `src/access_review/`. If a task seems to need a change to a frozen file, stop and ask (rule 12). `python scripts/check_no_tuning.py` must still exit 0 after every task.
+- Every attempt is recorded, including failures and attempts that gave no usable fix. The number of attempts is written in `docs/fixcheck-plan.md` (M6.1) and merged before the first run. No attempt is dropped or repeated to get a better number.
+- Fix sources are reported separately: the reference fixed twin, and an AI that sees only the report's fix text (D5). Their numbers are never added together.
+- The dev-set result is a self-check. It is never quoted as accuracy, and the wording is "No violation found under this test." Never "secure".
+- Files for M6 live in these places: `docs/fixcheck-plan.md`, `src/fix_check/`, `tests/test_fix_check_*.py`, `tests/fixtures/fixcheck/`, `fixes/reference/` (one fix file per app), `fixes/ai/` (one folder per AI attempt), `results/fixcheck/` (one run object per attempt, and score tables), `docs/fixcheck-results.md`.
+
+- [ ] **M6.1 Write the plan before any run.**
+  - Depends on: G5.
+  - Goal: a committed plan that fixes the number of attempts, the AI and the prompt before any fix is run, so the numbers cannot be shaped afterwards.
+  - Files: create `docs/fixcheck-plan.md`; add entries to `ASSUMPTIONS.md`. Do not touch: `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `results/`. Never open `heldout/`. No Docker.
+  - Steps:
+    1. Read `docs/EVALUATION.md` section 6 and `planted/answer_key.json` (keys only, not the app folders). List the apps that have both a `vulnerable/` and a `fixed/` folder and at least one planted flaw. These are the apps in the fix check. Apps with no planted flaw (decoys, clean apps, `rows-03-locked-out`) and `hostile-01-callout` are out, because there is nothing to fix.
+    2. Write the attempt counts: reference source, one attempt per app. AI source, three independent attempts per app, no retry after a failure and no feedback from one attempt to the next. Write the totals for both.
+    3. Write which AI and which prompt is used, and say that the prompt is fixed text saved in the plan. The AI sees only the fix text from the tool's report for the vulnerable app (what a developer would paste into their own AI). It never sees the code, the key, the fixed twin or any score. Write how the answer is turned into one SQL file, and that an empty or unusable answer is an attempt that fails condition 1.
+    4. Write the four conditions of `docs/EVALUATION.md` section 6 in plain words, how each failed attempt is labelled by the conditions it broke, and the table that M6.9 will print.
+    5. Write what is out of scope: `heldout/` is not used; no tuning of fixes, prompts or tools after seeing a result; real public apps are not fixed or scored.
+    6. Log every default you chose in `ASSUMPTIONS.md`, one line each, then tick M6.1 and update section 1.
+  - Validation:
+    - `ruff check .` passes.
+    - The attempt counts in the plan equal what the key gives: a one-line script counts the apps from step 1 and prints the same number as the plan. Assertion: the totals are not guessed.
+    - `grep -n -i -E "secure|heldout/" docs/fixcheck-plan.md` prints nothing except the sentence that says `heldout/` is not used. Assertion: the plan names no held-out content.
+    - `git diff --name-only origin/main` lists only `docs/fixcheck-plan.md`, `ASSUMPTIONS.md` and `docs/ROADMAP.md`.
+  - Done when: `docs/fixcheck-plan.md` is merged. After the first fix run it cannot change (M6.8).
+  - Stop and ask if: the plan would need a paid service or a new account; the plan would need `docs/EVALUATION.md` or the key to change.
+- [ ] **M6.2 Allowed-list check, read entries.**
+  - Depends on: M6.1.
+  - Goal: a function that says whether the allowed entries of an app that are about reading still hold on a rebuilt app (condition 3 for reads).
+  - Files: create `src/fix_check/__init__.py`, `src/fix_check/allowed.py`, `tests/test_fix_check_allowed.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. This task uses Docker.
+  - Steps:
+    1. Read `src/access_review/probes.py`, `tests/test_planted.py` (`test_allowed_access_survives_in_the_fixed_twin`) and the `allowed` entries of the key. The read entries are: `read` with `own_row_only`, `public` or `team_rows_visible`; `read_view` with `own_row_visible`; `read_column` with `public_columns_readable`.
+    2. Write `check_allowed(box, app, key)` for those entries, using existing probes only. It returns one item per entry: the entry, `holds` true or false, and the evidence. An entry with `expected_failure` is returned with that field and is not counted when the caller decides condition 3 (`docs/EVALUATION.md` section 6).
+    3. An entry it cannot check (an `expect` value it has no rule for) is returned as `holds: false` with the reason `not_checkable`. It is never skipped, so it cannot look like a pass.
+    4. Tick M6.2 and update section 1.
+  - Validation:
+    - `pytest tests/test_fix_check_allowed.py -v` passes. Assertions: on every fixed twin that has a read entry, every entry without `expected_failure` holds; on `rows-03-locked-out/fixed` the `own_row_only` entry does not hold and carries `locks_out_owner` (negative control).
+    - Negative control: a fixture app under `tests/fixtures/fixcheck/` with a policy that hides every row from a signed-in owner makes a `read` entry not hold.
+    - An unknown `expect` value gives `holds: false` and `not_checkable`.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container.
+  - Done when: every read entry of the key has a rule and a passing test, with a negative control.
+  - Stop and ask if: checking an entry needs a new probe or a change to `probes.py`.
+- [ ] **M6.3 Allowed-list check, write and call entries.**
+  - Depends on: M6.2.
+  - Goal: the same function covers the allowed entries about changing data and calling functions (condition 3 for writes and calls).
+  - Files: `src/fix_check/allowed.py`, `tests/test_fix_check_allowed.py`, more fixtures under `tests/fixtures/fixcheck/`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. This task uses Docker.
+  - Steps:
+    1. The write and call entries are: `update` with `own_row_changed`; `insert` with `own_owner_accepted`; `delete` with `own_row_deleted`; `call` with `call_runs`, `own_note_changed` or `own_rows_only`.
+    2. Extend `check_allowed` for them, using existing probes only. Every write runs inside a transaction that is rolled back, as in M3.1.
+    3. Keep step 3 of M6.2: an entry with no rule is `holds: false`, `not_checkable`.
+    4. Tick M6.3 and update section 1.
+  - Validation:
+    - `pytest tests/test_fix_check_allowed.py -v` passes. Assertion: on every fixed twin, every entry without `expected_failure` holds, for all 20 entries of the two tasks together.
+    - Negative control: for each of `update`, `insert`, `delete` and `call`, a fixture app that blocks the owner's own action makes that entry not hold.
+    - After a check, the database holds the same rows as before it (assert a row count), so the check changes nothing.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container.
+  - Done when: every `expect` value in the key has a rule, a passing test and a negative control.
+  - Stop and ask if: an entry cannot be checked with the existing probes.
+- [ ] **M6.4 Build a fix attempt.**
+  - Depends on: M6.1.
+  - Goal: from a vulnerable app folder and one SQL file, build a copy with the fix added as a new migration, and never touch the original.
+  - Files: create `src/fix_check/attempt.py`, `tests/test_fix_check_attempt.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. No Docker.
+  - Steps:
+    1. Read how `src/access_review/sandbox.py` orders and applies migration files, and how `planted/` names them.
+    2. Write `build_attempt(vulnerable_migrations, fix_sql, workdir)`: copy the migrations to `workdir`, add the fix as one new file that is applied last, return the folder. An empty fix, a fix that is not text, or a fix that is not a single file is refused with a plain reason.
+    3. The original folder is read only. A test hashes it before and after.
+    4. Tick M6.4 and update section 1.
+  - Validation:
+    - `pytest tests/test_fix_check_attempt.py -v` passes. Assertions: the copy holds every original file unchanged plus one new file that sorts last; the original folder hash is equal before and after; an empty fix is refused.
+    - Negative control: a fix file named so that it sorts before the originals is renamed or refused, not applied first.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes.
+  - Done when: the builder exists with a passing test and the no-edit assertion.
+  - Stop and ask if: the sandbox's file ordering cannot guarantee that the fix applies last.
+- [ ] **M6.5 The `recheck` command.**
+  - Depends on: M6.3, M6.4.
+  - Goal: `python -m fix_check recheck <app> <fix.sql>` rebuilds the vulnerable app with the fix and reports the four conditions of `docs/EVALUATION.md` section 6, each PASS or FAIL.
+  - Files: create `src/fix_check/recheck.py`, `src/fix_check/__main__.py`, `tests/test_fix_check_recheck.py`, fixtures under `tests/fixtures/fixcheck/`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `scripts/run_devset.py`. Never open `heldout/`. This task uses Docker.
+  - Steps:
+    1. Read `docs/EVALUATION.md` section 6, `src/access_review/cli.py` (`review`), `src/access_review/scoring.py` and `scripts/run_devset.py` (`run_folder`).
+    2. Condition 1: the attempt folder (M6.4) builds. A `NotCheckable` result fails it and the reason is printed; conditions 2 to 4 are then reported as not run, never as pass.
+    3. Condition 2: review the attempt folder; it fails if any proved finding matches a planted flaw of the app. Use the matching rule in `scoring.py` (section 3 of `docs/EVALUATION.md`); do not write a second copy of it.
+    4. Condition 3: `check_allowed` (M6.2, M6.3). It fails if any entry without `expected_failure` does not hold. An empty `allowed` list passes vacuously and the output says so.
+    5. Condition 4: review the original vulnerable folder in the same command, and fail if the attempt has a proved finding whose flaw id and target are absent from the vulnerable review.
+    6. Output: one line per condition, then `fix works` or `fix does not work`, then the run object (the four results, the broken conditions, the notes). Exit 0 if all four pass, 1 if any fails, 2 if the check cannot run. The command never writes into the app folder.
+    7. Tick M6.5 and update section 1.
+  - Validation:
+    - `pytest tests/test_fix_check_recheck.py -v` passes. Assertion: the fixed twin's change, written as a fix file for `rows-01-profiles`, passes all four conditions and exits 0.
+    - Negative control, lock-out: a fix that locks everyone out of the table (`USING (false)`) fails condition 3 and passes condition 2. This is the case named in `docs/EVALUATION.md` section 6.
+    - Negative control, wrong table: a fix that closes a different table fails condition 2.
+    - Negative control, new leak: a fix that opens a second table to visitors fails condition 4.
+    - Negative control, broken fix: a fix with a syntax error fails condition 1 and reports conditions 2 to 4 as not run.
+    - The original folder hash is equal before and after every run.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container. `python scripts/check.py` prints ALL PASS: run it once, alone, in the background.
+  - Done when: the command exists, and all four negative controls fail the condition they should and no other.
+  - Stop and ask if: a condition cannot be decided without a change to `scoring.py`, `rules.py`, `probes.py` or the key.
+- [ ] **M6.6 Reference fixes and a runner.**
+  - Depends on: M6.5.
+  - Goal: for every app in the fix check, a fix file taken from the reference fixed twin, and one command that runs all of them and records each attempt.
+  - Files: create `fixes/reference/<app>.sql` (one per app), `src/fix_check/run.py`, `tests/test_fix_check_run.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/fixcheck-plan.md`, `results/`. Never open `heldout/`. This task uses Docker.
+  - Steps:
+    1. For each app in `docs/fixcheck-plan.md`, compare its `vulnerable/` and `fixed/` migration files and write the difference as one new SQL file that, applied after the vulnerable files, gives the fixed twin's behaviour (drop or replace the policy, the grant, the view or the function). Use only the two folders of that app. Do not write a fix to pass the checks: write the twin's change.
+    2. Write `python -m fix_check run reference --out DIR`. For every fix file it runs `recheck` and saves one run object `DIR/<app>__<n>.json` with the fix file name, the four results and the broken conditions. It prints one line per attempt and the totals. One run at a time, because each uses Docker.
+    3. Run it once on the dev set into a scratch folder (not `results/`). An app whose fix does not pass is kept as it is and listed in the PR: the reference twin is not corrected to look better. Say why in the PR.
+    4. Tick M6.6 and update section 1.
+  - Validation:
+    - `pytest tests/test_fix_check_run.py -v` passes. Assertions: the runner counts as many attempts as the plan says; a missing fix file is an attempt that fails condition 1 and is counted, not skipped.
+    - Run the command on the dev set and paste the totals line. Assertion: the attempts equal the plan's reference total.
+    - Negative control: replace one fix file in a scratch copy by a lock-out fix; the totals show one more failure and name condition 3.
+    - `grep -rn heldout fixes src/fix_check tests/test_fix_check_run.py` prints nothing.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container.
+  - Done when: every app in the plan has a reference fix file and the runner reports the totals.
+  - Stop and ask if: a twin differs from the vulnerable side in a way one added migration cannot express.
+- [ ] **M6.7 The AI fix source.**
+  - Depends on: M6.6.
+  - Goal: a command that gives an AI only the report's fix text, saves everything it said, and turns its answer into a fix file. Tested with a stand-in AI, so no real model is called in this task.
+  - Files: create `src/fix_check/ai.py`, `tests/test_fix_check_ai.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/fixcheck-plan.md`, `results/`. Never open `heldout/`. No Docker for the tests.
+  - Steps:
+    1. Read the "fix" part of a report (`src/access_review/report.py`, the golden files in `tests/golden/`). Write `fix_text(app_run)`, which returns only the fix sentences of a run's proved findings, with no table data beyond what the report itself shows a developer.
+    2. Write `ask_ai(fix_text, ask)`: build the prompt from the saved prompt in `docs/fixcheck-plan.md`, call `ask` (a function; the real one is the AI chosen in the plan, the test one is a stand-in), and return the prompt, the raw answer and the SQL taken from it. The prompt contains the fix text and nothing else about the app.
+    3. Write `python -m fix_check run ai --out DIR`: for each app and each attempt number in the plan it saves the prompt, the raw answer and the fix file under `fixes/ai/<app>/<n>/`, then runs `recheck`. An empty or unusable answer is recorded and fails condition 1. No retry.
+    4. The answer is untrusted text: it is applied only inside the sandbox, never run on the host, and the AI is given no tools and no files.
+    5. Tick M6.7 and update section 1.
+  - Validation:
+    - `pytest tests/test_fix_check_ai.py -v` passes. Assertions: the prompt built for an app contains its fix text and does not contain its table data, key entry, fixed twin or any word from the key; an answer that holds SQL gives one fix file; an answer with no SQL gives an empty fix that is recorded.
+    - Negative control: the test feeds a stand-in AI that returns text meant to trick the tool (an instruction to ignore the checks); the run object is unchanged and the attempt is judged only by the four conditions.
+    - `grep -rn heldout src/fix_check tests/test_fix_check_ai.py` prints nothing.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes.
+  - Done when: the AI path is tested with a stand-in and its prompt is shown to hold only the fix text.
+  - Stop and ask if: the AI chosen in the plan needs a paid service or a new account; the fix text alone cannot name the table (that is a result, not a reason to feed the AI more).
+- [ ] **M6.8 Run the fix check on the dev set.**
+  - Depends on: M6.7.
+  - Goal: raw outputs and score tables for the reference source and the AI source, every attempt recorded.
+  - Files: create `results/fixcheck/reference/`, `results/fixcheck/ai/`, `results/fixcheck/RUN.txt`, `fixes/ai/**`, and the score tables. Bug fixes in `src/fix_check/` found in a dry run only. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/fixcheck-plan.md`. Never open `heldout/`. This task uses Docker.
+  - Rule: the numbers of attempts come from `docs/fixcheck-plan.md` and are not changed. No fix, prompt, probe or rule is changed after seeing a result.
+  - Steps:
+    1. `docker ps -a` shows no sandbox container. `git status --short` prints nothing. Write `results/fixcheck/RUN.txt` with `git rev-parse HEAD`, the AI and its version, and the date.
+    2. Run `python -m fix_check run reference --out results/fixcheck/reference`, alone. Save the table to `results/fixcheck/score-reference.txt`.
+    3. Run `python -m fix_check run ai --out results/fixcheck/ai`, in the background and alone, and wait for it. Save the table to `results/fixcheck/score-ai.txt`.
+    4. A crash before any result is saved may be repeated once. An attempt that produced a result is never repeated or replaced. Crashes and repeats are listed in the PR and in `ASSUMPTIONS.md`.
+    5. A failed attempt stays in the totals with the conditions it broke. Do not edit a fix file by hand.
+    6. Tick M6.8 and update section 1.
+  - Validation:
+    - The number of run files in each folder equals the plan's total for that source. Assertion: no attempt was dropped.
+    - Each table prints attempts, successes and the failure count per condition. Assertion: every failed attempt is counted under at least one condition (an attempt can break more than one).
+    - `git diff --name-only <hash in RUN.txt> -- src/access_review planted heldout docs/EVALUATION.md docs/fixcheck-plan.md` prints nothing.
+    - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `python scripts/check.py` prints ALL PASS, run once and alone after the Docker runs finish. `docker ps -a` shows no leftover sandbox container.
+  - Done when: both folders hold every attempt, `RUN.txt` records the commit, and the PR names every crash, repeat and not-checkable attempt.
+  - Stop and ask if: the AI is not reachable or needs payment; a run would need a change to a frozen file.
+- [ ] **M6.9 Fix-check results page.**
+  - Depends on: M6.8.
+  - Goal: one page that shows, per fix source, attempts, successes and which condition each failure broke, and a test that re-scores it from the saved runs.
+  - Files: create `docs/fixcheck-results.md`, `tests/test_fixcheck_results.py`. Do not touch: `results/` raw files, `src/access_review/`, `docs/EVALUATION.md`, `planted/answer_key.json`.
+  - Steps:
+    1. Two tables, one per fix source, never added together. Columns: attempts, successes (counts first, ratio second), failures that broke condition 1, 2, 3 and 4 (an attempt can appear in more than one). Under each table list every failed attempt by app, number and broken conditions.
+    2. A line that this is the dev set, a self-check, never quoted as accuracy, and a line that a success means the four conditions held for that attempt, which is not proof that the app is safe. Wording: "No violation found under this test." Never "secure".
+    3. A short "How to check by hand" section: for any attempt, the paths of the fix file, the run object and the key entry, so G6 can be done.
+    4. Tick M6.9 and update section 1.
+  - Validation:
+    - `pytest tests/test_fixcheck_results.py -v` passes. It re-reads every saved run object and asserts every number in the page equals the recount, and that the attempts equal the plan's totals.
+    - Negative control: the test, run on a copy of the page with one number changed, fails.
+    - `grep -n -i secure docs/fixcheck-results.md` prints nothing. `ruff check .` passes.
+  - Done when: `docs/fixcheck-results.md` is merged and its test passes in CI.
+  - Stop and ask if: a number cannot be reproduced from the saved runs; the two sources would need to be combined.
 - [ ] **G6 (owner).**
+  - Depends on: M6.9.
+  - Maneet checks the fix check by hand for two attempts: one that passed and one that failed. For each, open the fix file, the run object and the key entry named in the "How to check by hand" section of `docs/fixcheck-results.md`, and the attempt's recheck output. Each condition shown matches the run object, and the failed attempt names the condition it broke. Maneet signs off or lists what to fix.
 
 ### M7 Real public apps (outline)
 
