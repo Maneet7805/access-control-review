@@ -189,3 +189,11 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - The second test round (P3) has the agent write the plan, and Maneet review the key and pick the second labeller, as at G4.
   - The five known gaps (probe errors, swap_offers R7, pgrls rule, decoy-02, big real app) may be read as notes. Fixing them for the held-out set would be tuning.
   - ROADMAP section 1 Last merged PR changed from #74 to #77, the merge now on main.
+- 2026-11-20, M6.2 allowed-list check, read entries (src/fix_check/allowed.py). Defaults, one line each:
+  - read_column has no probe in access_review, so a private helper in fix_check runs one SELECT of the non-private columns through box.run. No new probe in access_review. Decided by the main chat under rule 12 on 2026-11-20.
+  - public_columns_readable holds when that SELECT returns rows and no error. A refusal, an error or an empty table means holds: false.
+  - own_row_only holds when the owner reads at least one row and every row is theirs. A policy that hides every row does not hold.
+  - public and team_rows_visible hold when the reader gets at least one row. A view has no foreign key, so own_row_visible assumes the owner column is owner_id.
+  - Only user-a and user-b (the seeded users) and visitor have rules as actors. Write and call entries return holds: false, not_checkable until M6.3.
+  - Each item is {entry, holds, reason, evidence, expected_failure}. Reasons used: not_checkable, no_rows_returned, own_row_missing.
+  - Read entries on decoys and clean apps (no fixed folder) are tested on the app itself.

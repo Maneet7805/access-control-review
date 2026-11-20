@@ -17,7 +17,7 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 1/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 2/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
@@ -25,7 +25,7 @@ How much detail each part has:
 
 - Current milestone: M6
 - Last merged PR: #77
-- Next eligible task: M6.2
+- Next eligible task: M6.3 (M6.4 is also eligible; M6.3 is first in order)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -421,7 +421,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `git diff --name-only origin/main` lists only `docs/fixcheck-plan.md`, `ASSUMPTIONS.md` and `docs/ROADMAP.md`.
   - Done when: `docs/fixcheck-plan.md` is merged. After the first fix run it cannot change (M6.8).
   - Stop and ask if: the plan would need a paid service or a new account; the plan would need `docs/EVALUATION.md` or the key to change.
-- [ ] **M6.2 Allowed-list check, read entries.**
+- [x] **M6.2 Allowed-list check, read entries.**
   - Depends on: M6.1.
   - Goal: a function that says whether the allowed entries of an app that are about reading still hold on a rebuilt app (condition 3 for reads).
   - Files: create `src/fix_check/__init__.py`, `src/fix_check/allowed.py`, `tests/test_fix_check_allowed.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`. Never open `heldout/`. This task uses Docker.
