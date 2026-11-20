@@ -16,7 +16,7 @@ How much detail each part has:
 | M2 Thin slice | One app, one attack, one plain-language report, end to end | 6/6 |
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
-| M5 Compare | Run other tools on the same apps and score everyone | 5/6 |
+| M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
 | M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/3 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
@@ -24,8 +24,8 @@ How much detail each part has:
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M5
-- Last merged PR: #72
-- Next eligible task: M5.6
+- Last merged PR: #73
+- Next eligible task: G5 (owner)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -367,7 +367,7 @@ M5 runs other tools on the same apps and scores every tool with the frozen rules
     - `ruff check .` passes.
   - Done when: the script passes on `main` after the PR, and the rule is written in M5.4 and here.
   - Stop and ask if: the script fails on the real repo (do not change the frozen file back by hand: report which path changed and why).
-- [ ] **M5.6 Results table for the report.**
+- [x] **M5.6 Results table for the report.**
   - Depends on: M5.5.
   - Goal: one results page where every score has its `needs_decision` count beside it, and the dev set and the held-out set are never merged.
   - Files: create `docs/results.md`, `tests/test_results_table.py`. Do not touch: `scoring.py`, `results/` raw files, `docs/EVALUATION.md`, `planted/answer_key.json`.

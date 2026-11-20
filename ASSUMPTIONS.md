@@ -159,3 +159,8 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - The script compares the RUN.txt commit with the working tree (not HEAD), so uncommitted edits to tracked frozen files also fail it. Untracked new files are not seen.
   - Renames are treated as delete plus add, so a moved held-out result counts as deleted. A file changed in type also counts as modified.
   - A missing RUN.txt or an unknown commit exits 2 (cannot check), not 1, so it is not mistaken for tuning.
+- 2026-11-20, M5.6. Defaults, one line each:
+  - docs/results.md is written from a throwaway script and then checked by tests/test_results_table.py; the script is not committed (the test is the check).
+  - One row per tool per set, named missed, extra and false-alarm items listed under each table in the scorer's own wording, so the page stays checkable line by line.
+  - The test also compares the re-scored tables with the saved score files, so a page, a score file and the raw runs must all agree.
+  - Ranges for precision and false-alarm rate in the held-out text leave Semgrep out, because it reports nothing and its 0.00 rate would mislead.
