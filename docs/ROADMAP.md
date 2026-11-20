@@ -17,7 +17,7 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 0/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 1/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
@@ -25,7 +25,7 @@ How much detail each part has:
 
 - Current milestone: M6
 - Last merged PR: #74
-- Next eligible task: M6.1
+- Next eligible task: M6.2
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -403,7 +403,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
 - The dev-set result is a self-check. It is never quoted as accuracy, and the wording is "No violation found under this test." Never "secure".
 - Files for M6 live in these places: `docs/fixcheck-plan.md`, `src/fix_check/`, `tests/test_fix_check_*.py`, `tests/fixtures/fixcheck/`, `fixes/reference/` (one fix file per app), `fixes/ai/` (one folder per AI attempt), `results/fixcheck/` (one run object per attempt, and score tables), `docs/fixcheck-results.md`.
 
-- [ ] **M6.1 Write the plan before any run.**
+- [x] **M6.1 Write the plan before any run.**
   - Depends on: G5.
   - Goal: a committed plan that fixes the number of attempts, the AI and the prompt before any fix is run, so the numbers cannot be shaped afterwards.
   - Files: create `docs/fixcheck-plan.md`; add entries to `ASSUMPTIONS.md`. Do not touch: `src/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `results/`. Never open `heldout/`. No Docker.

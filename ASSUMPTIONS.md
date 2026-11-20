@@ -173,3 +173,12 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - The AI (D5) is a fresh session of the coding assistant already used on this project, with no tools and no files, given only the report fix text; M6.1 names the model and fixes the prompt. Confirmed 2026-11-20; the write-up must name it as a weakness: same assistant family as the one that built the tool.
   - Condition 3 needs a new allowed-list checker (src/fix_check/allowed.py), because only a read check on one table existed (tests/test_planted.py).
   - The fix check runs on the dev set only. The held-out set is spent and is never opened in M6.
+- 2026-11-20, M6.1 fix check plan (docs/fixcheck-plan.md). Defaults, one line each:
+  - Apps in the check are counted by a one-line script from the key: 15 apps, so reference 15 attempts and AI 45 attempts.
+  - The AI sees the "Suggested fix" sentence of every proved finding of the vulnerable run, in report order, and nothing else.
+  - The prompt is fixed text in the plan; only the fix text changes between apps.
+  - An answer becomes one SQL file from its fenced code blocks (tagged sql or untagged), joined in order; no block means an empty fix that fails condition 1.
+  - A failed attempt is labelled by the conditions it broke (for example 2+4); if condition 1 fails, 2 to 4 are "not run" and the label is 1.
+  - The plan does not name the model. Its name and version are written to results/fixcheck/RUN.txt before the first AI attempt (M6.8), so the model is fixed before the run but not in the plan.
+  - Each AI attempt is its own fresh session, so no attempt can see another.
+  - Same assistant family as the tool's author is written into the plan as a weakness.
