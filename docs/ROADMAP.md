@@ -17,15 +17,15 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 5/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 6/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M6
-- Last merged PR: #80
-- Next eligible task: M6.6
+- Last merged PR: #81
+- Next eligible task: M6.7
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -490,7 +490,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `docker ps -a` shows no leftover sandbox container. `python scripts/check.py` prints ALL PASS: run it once, alone, in the background.
   - Done when: the command exists, and all four negative controls fail the condition they should and no other.
   - Stop and ask if: a condition cannot be decided without a change to `scoring.py`, `rules.py`, `probes.py` or the key.
-- [ ] **M6.6 Reference fixes and a runner.**
+- [x] **M6.6 Reference fixes and a runner.**
   - Depends on: M6.5.
   - Goal: for every app in the fix check, a fix file taken from the reference fixed twin, and one command that runs all of them and records each attempt.
   - Files: create `fixes/reference/<app>.sql` (one per app), `src/fix_check/run.py`, `tests/test_fix_check_run.py`. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/fixcheck-plan.md`, `results/`. Never open `heldout/`. This task uses Docker.
