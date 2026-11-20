@@ -182,3 +182,10 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - The plan does not name the model. Its name and version are written to results/fixcheck/RUN.txt before the first AI attempt (M6.8), so the model is fixed before the run but not in the plan.
   - Each AI attempt is its own fresh session, so no attempt can see another.
   - Same assistant family as the tool's author is written into the plan as a weakness.
+- 2026-11-20, roadmap planning (docs only). Defaults chosen, one line each:
+  - The planned extras are a subsection of ROADMAP section 8 (not a new milestone), with IDs P1 to P5 and no task IDs, so rule 2 never picks them up.
+  - Scheduling of every extra is AGENT-decides, logged. A change to the protocol score, or to any frozen file, is a DECISION by Maneet in its own PR.
+  - Execute-the-baselines'-claims (P2) may run as an extra view by the agent. Replacing the baseline numbers in docs/results.md or docs/baselines.md needs Maneet.
+  - The second test round (P3) has the agent write the plan, and Maneet review the key and pick the second labeller, as at G4.
+  - The five known gaps (probe errors, swap_offers R7, pgrls rule, decoy-02, big real app) may be read as notes. Fixing them for the held-out set would be tuning.
+  - ROADMAP section 1 Last merged PR changed from #74 to #77, the merge now on main.
