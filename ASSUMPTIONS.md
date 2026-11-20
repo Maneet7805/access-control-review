@@ -213,3 +213,7 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - M6.5: a vulnerable app that does not rebuild, a refused fix (empty, not text) or a missing key entry also gives exit 2. Only a fix that does not build fails condition 1.
   - M6.5: conditions 2 and 3 use one sandbox of the fixed copy; condition 4 builds the vulnerable app in a second one. Matching uses `scoring._matches` (private name, imported, not copied).
   - M6.5: a condition 3 entry with `holds: false` and reason `not_checkable` counts as broken, never skipped.
+  - M6.6: the runner takes the app list from the key by the plan's rule (flaws on the vulnerable side, both folders present), not from the fix files, so a missing fix file is still an attempt.
+  - M6.6: a missing, empty or refused fix file fails condition 1 and counts; any other reason the check cannot run is recorded as "could not run" and the command exits 2. Failed fixes alone exit 0.
+  - M6.6: where a twin edits a policy or function in place, the reference fix drops and recreates the policy, or uses create or replace, with the twin's text. views-01 uses `alter view ... set (security_invoker = true)` instead of recreating the view.
+  - M6.6: run objects are saved as `<app>__1.json` (reference has one attempt per app) with `attempt` and `fix_file` added to the recheck run object.
