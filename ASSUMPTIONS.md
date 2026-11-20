@@ -208,3 +208,8 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - M6.4: `fix_sql` is the fix's text (str, or UTF-8 bytes, or a path to one file). A folder, a list, empty or whitespace-only text, bytes that are not UTF-8 and text with a NUL are refused.
   - M6.4: the fix file is named after the largest original name (checked in both case-sensitive and case-insensitive order) plus `_zz_fix.sql`, and the real sort is checked on the copy.
   - M6.4: the work folder must be outside the vulnerable folder and empty or new. Otherwise the build is refused.
+  - M6.5: `<app>` is an app folder holding `vulnerable/migrations`; the key is `answer_key.json` next to it, or `--key FILE`. The app name is the folder name.
+  - M6.5: if a review of the fixed copy or of the vulnerable app has a probe-error note, the check cannot run (exit 2), because a missing finding would look like a pass.
+  - M6.5: a vulnerable app that does not rebuild, a refused fix (empty, not text) or a missing key entry also gives exit 2. Only a fix that does not build fails condition 1.
+  - M6.5: conditions 2 and 3 use one sandbox of the fixed copy; condition 4 builds the vulnerable app in a second one. Matching uses `scoring._matches` (private name, imported, not copied).
+  - M6.5: a condition 3 entry with `holds: false` and reason `not_checkable` counts as broken, never skipped.
