@@ -17,15 +17,15 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 8/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 9/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M6
-- Last merged PR: #83
-- Next eligible task: M6.9
+- Last merged PR: #84
+- Next eligible task: G6 (owner check by Maneet)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -543,7 +543,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes. `python scripts/check.py` prints ALL PASS, run once and alone after the Docker runs finish. `docker ps -a` shows no leftover sandbox container.
   - Done when: both folders hold every attempt, `RUN.txt` records the commit, and the PR names every crash, repeat and not-checkable attempt.
   - Stop and ask if: the AI is not reachable or needs payment; a run would need a change to a frozen file.
-- [ ] **M6.9 Fix-check results page.**
+- [x] **M6.9 Fix-check results page.**
   - Depends on: M6.8.
   - Goal: one page that shows, per fix source, attempts, successes and which condition each failure broke, and a test that re-scores it from the saved runs.
   - Files: create `docs/fixcheck-results.md`, `tests/test_fixcheck_results.py`. Do not touch: `results/` raw files, `src/access_review/`, `docs/EVALUATION.md`, `planted/answer_key.json`.
