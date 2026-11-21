@@ -1,5 +1,6 @@
 """Command line: python -m fix_check recheck <app> <fix.sql> [--key answer_key.json]
               python -m fix_check run reference --out DIR [--fixes fixes/reference] [--planted planted]
+              python -m fix_check run ai --out DIR --ask-cmd "<command>" [--fixes fixes/ai] [--planted planted]
 
 <app> is an app folder that holds vulnerable/migrations (for example planted/rows-01-profiles).
 Exit code 0: fix works. 1: fix does not work. 2: the check cannot run.
@@ -10,6 +11,7 @@ import json
 import sys
 from pathlib import Path
 
+from fix_check.ai import command_ask, run_ai
 from fix_check.recheck import CannotRun, format_run, recheck
 from fix_check.run import run_reference, totals
 
@@ -22,18 +24,24 @@ def main(argv=None):
     parser_recheck.add_argument("fix")
     parser_recheck.add_argument("--key", help="answer key file (default: answer_key.json next to the app folder)")
     parser_run = commands.add_parser("run", help="run every fix of one source and save one run object per attempt")
-    parser_run.add_argument("source", choices=["reference"])
+    parser_run.add_argument("source", choices=["reference", "ai"])
     parser_run.add_argument("--out", required=True)
-    parser_run.add_argument("--fixes", default="fixes/reference")
+    parser_run.add_argument("--fixes")
+    parser_run.add_argument("--ask-cmd", help="ai only: command that reads the prompt on stdin and prints its answer")
     parser_run.add_argument("--planted", default="planted")
     args = parser.parse_args(argv)
     if args.command == "run":
         try:
-            runs = run_reference(args.out, args.fixes, args.planted)
+            if args.source == "ai":
+                if not args.ask_cmd:
+                    raise ValueError("run ai needs --ask-cmd")
+                runs = run_ai(args.out, command_ask(args.ask_cmd), args.fixes or "fixes/ai", args.planted)
+            else:
+                runs = run_reference(args.out, args.fixes or "fixes/reference", args.planted)
         except (OSError, ValueError, KeyError) as error:
             print(f"Cannot run: {error}", file=sys.stderr)
             return 2
-        print(totals(runs))
+        print(totals(runs, "AI" if args.source == "ai" else "Reference"))
         return 2 if any("cannot_run" in r for r in runs) else 0
     try:
         key = None

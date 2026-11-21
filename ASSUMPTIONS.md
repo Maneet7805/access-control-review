@@ -217,3 +217,11 @@ This file records the defaults the agent chose when Maneet had no answer, one li
   - M6.6: a missing, empty or refused fix file fails condition 1 and counts; any other reason the check cannot run is recorded as "could not run" and the command exits 2. Failed fixes alone exit 0.
   - M6.6: where a twin edits a policy or function in place, the reference fix drops and recreates the policy, or uses create or replace, with the twin's text. views-01 uses `alter view ... set (security_invoker = true)` instead of recreating the view.
   - M6.6: run objects are saved as `<app>__1.json` (reference has one attempt per app) with `attempt` and `fix_file` added to the recheck run object.
+- M6.7: `fix_text` takes the findings of the vulnerable review and keeps only the proved findings' fix sentences, in report order, one paragraph each, passed through the report's own `_plain`.
+- M6.7: the prompt is read at run time from the one fenced block of `docs/fixcheck-plan.md` that holds `{FIX_TEXT}`, so there is no second copy.
+- M6.7: the SQL is the text of the `sql` or untagged fenced blocks, joined with a blank line; blocks tagged with another language are ignored. SQL that is not valid SQL is applied as it is and fails condition 1 in the sandbox.
+- M6.7: the real AI is reached by `--ask-cmd`: the user's own command gets the prompt on stdin and its stdout is the answer. No shell, no files, a 600 second limit. The command must be one with no tools and no account beyond what the plan names; none is chosen or run in this task.
+- M6.7: an AI command that fails or times out gives an empty answer plus a note in the run object. One call per attempt, no retry.
+- M6.7: the vulnerable app is reviewed once per app (Docker) and its fix text is reused for the 3 attempts. If that review cannot run, the 3 attempts are recorded as could not run.
+- M6.7: an attempt folder under `fixes/ai/<app>/<n>/` that already holds an answer stops the run, so no recorded attempt is replaced or repeated.
+- M6.7: run objects are saved as `<app>__<n>.json` with `attempt`, `fix_file`, `prompt_file` and `answer_file`; `run.py` `line` and `totals` now take the attempt number and a source label (default `Reference`, unchanged output).
