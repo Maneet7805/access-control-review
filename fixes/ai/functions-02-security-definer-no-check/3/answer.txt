@@ -1,0 +1,10 @@
+```sql
+-- Make set_note_body run with the caller's rights so row level security
+-- applies to whatever it reads or writes, instead of running with the
+-- function owner's privileges (which bypasses RLS).
+-- No argument list is given, so this relies on set_note_body being the only
+-- function with that name in the public schema.
+ALTER FUNCTION public.set_note_body SECURITY INVOKER;
+```
+
+This only closes the hole if row level security is enabled on the notes table and has policies that restrict updates to the row owner. I couldn't name that table without seeing the app, so the migration doesn't touch it.

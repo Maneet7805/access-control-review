@@ -1,0 +1,22 @@
+```sql
+-- Make public.all_notes respect row security on public.notes.
+DO $$
+BEGIN
+  -- Do nothing if the view does not exist.
+  IF to_regclass('public.all_notes') IS NULL THEN
+    RAISE NOTICE 'View public.all_notes not found; nothing to do.';
+    RETURN;
+  END IF;
+
+  IF current_setting('server_version_num')::int >= 150000 THEN
+    -- Postgres 15+: run the view with the rights of the reader,
+    -- so RLS policies on public.notes apply.
+    ALTER VIEW public."all_notes" SET (security_invoker = true);
+  ELSE
+    -- Older versions: security_invoker is unavailable, so remove
+    -- access to the view for the API roles.
+    REVOKE ALL ON public."all_notes" FROM anon, authenticated;
+  END IF;
+END
+$$;
+```

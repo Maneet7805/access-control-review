@@ -1,0 +1,13 @@
+A developer prototyped an app on Supabase (PostgreSQL). A test tool found access-control problems in the app's database and wrote the fix text below.
+
+Write one SQL migration that applies these fixes.
+
+Rules:
+- Reply with one SQL code block and nothing that needs to be run outside it.
+- You cannot see the app's code. Name only the tables, columns and functions that the fix text names.
+- Do not drop tables and do not delete data.
+- Keep the app working for the people who are meant to use it.
+
+Fix text:
+
+Stop visitors and signed-in users from reading "phone" on "directory": take away their read access to the table, then give read access only on the columns that are public. Or move the private column to a separate table that has its own row security policy.

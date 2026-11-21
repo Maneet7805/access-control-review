@@ -1,0 +1,31 @@
+{
+  "answer_file": "fixes\\ai\\functions-03-default-execute\\3\\answer.txt",
+  "app": "functions-03-default-execute",
+  "attempt": 3,
+  "broken": [
+    3,
+    4
+  ],
+  "conditions": {
+    "1": {
+      "detail": "the app builds with the fix",
+      "result": "pass"
+    },
+    "2": {
+      "detail": "no planted flaw is proved any more",
+      "result": "pass"
+    },
+    "3": {
+      "detail": "0 of 1 allowed entries hold; broken: call note_count (own_rows_missing)",
+      "result": "fail"
+    },
+    "4": {
+      "detail": "new: U1 on note_count",
+      "result": "fail"
+    }
+  },
+  "fix_file": "fixes\\ai\\functions-03-default-execute\\3\\fix.sql",
+  "notes": [],
+  "prompt_file": "fixes\\ai\\functions-03-default-execute\\3\\prompt.txt",
+  "works": false
+}

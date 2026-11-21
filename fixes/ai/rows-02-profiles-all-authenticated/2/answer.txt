@@ -1,0 +1,16 @@
+```sql
+-- Restrict reads on "profiles" to the row owner.
+-- Enabling RLS makes access default-deny; the policy below lets each
+-- authenticated user read only rows where owner_id matches their own id.
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Make idempotent: replace the policy if it already exists.
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
+
+CREATE POLICY "profiles_select_own"
+  ON public.profiles
+  FOR SELECT
+  TO authenticated
+  USING (owner_id = (SELECT auth.uid()));
+```

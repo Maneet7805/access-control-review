@@ -1,0 +1,36 @@
+```sql
+-- Migration: restrict DELETE on public.notes to the row owner
+
+-- Make sure row level security is on (no-op if already enabled).
+ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
+
+-- Remove existing DELETE policies on notes. Policies are permissive and
+-- OR-ed together, so any leftover one with an always-true condition
+-- (e.g. USING (true)) would let anyone delete any row.
+-- Policy names are unknown, so look them up in the catalog.
+DO $$
+DECLARE
+  pol record;
+BEGIN
+  FOR pol IN
+    SELECT policyname
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'notes'
+      AND cmd        = 'DELETE'
+  LOOP
+    EXECUTE format('DROP POLICY %I ON public.notes', pol.policyname);
+  END LOOP;
+END
+$$;
+
+-- Owner-only delete.
+CREATE POLICY "notes_delete_own"
+  ON public.notes
+  FOR DELETE
+  TO authenticated
+  USING (owner_id = (SELECT auth.uid()));
+
+-- Note: policies defined FOR ALL are not touched here. If one exists with
+-- USING (true), it would still permit deletes and should be reviewed.
+```

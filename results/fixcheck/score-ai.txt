@@ -1,0 +1,46 @@
+rows-01-profiles__1: ok
+rows-01-profiles__2: ok
+rows-01-profiles__3: ok
+rows-02-profiles-all-authenticated__1: fails 2+3
+rows-02-profiles-all-authenticated__2: fails 2+3
+rows-02-profiles-all-authenticated__3: fails 2+3
+writes-01-visitor-insert__1: fails 2
+writes-01-visitor-insert__2: fails 2
+writes-01-visitor-insert__3: fails 2
+writes-02-spoofed-owner__1: ok
+writes-02-spoofed-owner__2: ok
+writes-02-spoofed-owner__3: ok
+writes-03-update-others__1: ok
+writes-03-update-others__2: ok
+writes-03-update-others__3: ok
+writes-04-delete-others__1: ok
+writes-04-delete-others__2: ok
+writes-04-delete-others__3: ok
+functions-01-admin-delete-any-user__1: ok
+functions-01-admin-delete-any-user__2: ok
+functions-01-admin-delete-any-user__3: ok
+functions-02-security-definer-no-check__1: fails 3
+functions-02-security-definer-no-check__2: fails 3
+functions-02-security-definer-no-check__3: fails 3
+functions-03-default-execute__1: fails 3+4
+functions-03-default-execute__2: fails 3+4
+functions-03-default-execute__3: fails 3+4
+writes-05-owner-change__1: ok
+writes-05-owner-change__2: ok
+writes-05-owner-change__3: ok
+columns-01-self-admin__1: ok
+columns-01-self-admin__2: ok
+columns-01-self-admin__3: ok
+columns-02-self-paid__1: ok
+columns-02-self-paid__2: ok
+columns-02-self-paid__3: ok
+views-01-bypass__1: ok
+views-01-bypass__2: ok
+views-01-bypass__3: ok
+views-02-matview-leak__1: ok
+views-02-matview-leak__2: ok
+views-02-matview-leak__3: ok
+columns-03-phone-exposed__1: ok
+columns-03-phone-exposed__2: ok
+columns-03-phone-exposed__3: ok
+AI: 45 attempts, 33 of 45 succeeded, broke 1: 0, broke 2: 6, broke 3: 9, broke 4: 3, could not run: 0

@@ -1,0 +1,36 @@
+```sql
+-- Stop signed-in users from changing "role" on public.members.
+-- Table-level UPDATE overrides column-level revokes, so revoke the table-level
+-- privilege first, then grant UPDATE back on every column except "role".
+
+BEGIN;
+
+REVOKE UPDATE ON public.members FROM authenticated;
+REVOKE UPDATE ON public.members FROM anon;
+REVOKE UPDATE (role) ON public.members FROM authenticated;
+REVOKE UPDATE (role) ON public.members FROM anon;
+
+DO $$
+DECLARE
+  cols text;
+BEGIN
+  SELECT string_agg(format('%I', a.attname), ', ' ORDER BY a.attnum)
+    INTO cols
+  FROM pg_attribute a
+  WHERE a.attrelid = 'public.members'::regclass
+    AND a.attnum > 0
+    AND NOT a.attisdropped
+    AND a.attname <> 'role';
+
+  IF cols IS NOT NULL THEN
+    EXECUTE format('GRANT UPDATE (%s) ON public.members TO authenticated', cols);
+  END IF;
+END
+$$;
+
+-- Note: columns added to members later will not be updatable by users until
+-- UPDATE is explicitly granted on them. "role" stays writable only by
+-- service_role / the table owner (e.g. via server-side code or the dashboard).
+
+COMMIT;
+```

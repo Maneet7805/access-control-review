@@ -1,0 +1,30 @@
+{
+  "answer_file": "fixes\\ai\\views-02-matview-leak\\1\\answer.txt",
+  "app": "views-02-matview-leak",
+  "attempt": 1,
+  "broken": [],
+  "conditions": {
+    "1": {
+      "detail": "the app builds with the fix",
+      "result": "pass"
+    },
+    "2": {
+      "detail": "no planted flaw is proved any more",
+      "result": "pass"
+    },
+    "3": {
+      "detail": "the allowed list is empty, so this passes with nothing to check",
+      "result": "pass"
+    },
+    "4": {
+      "detail": "no new proved finding",
+      "result": "pass"
+    }
+  },
+  "fix_file": "fixes\\ai\\views-02-matview-leak\\1\\fix.sql",
+  "notes": [
+    "The allowed list of this app is empty, so condition 3 passes with nothing to check."
+  ],
+  "prompt_file": "fixes\\ai\\views-02-matview-leak\\1\\prompt.txt",
+  "works": true
+}

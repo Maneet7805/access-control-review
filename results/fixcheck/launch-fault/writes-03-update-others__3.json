@@ -1,0 +1,32 @@
+{
+  "answer_file": "fixes\\ai\\writes-03-update-others\\3\\answer.txt",
+  "app": "writes-03-update-others",
+  "attempt": 3,
+  "broken": [
+    1
+  ],
+  "conditions": {
+    "1": {
+      "detail": "the fix was refused: the fix is empty",
+      "result": "fail"
+    },
+    "2": {
+      "detail": "",
+      "result": "not run"
+    },
+    "3": {
+      "detail": "",
+      "result": "not run"
+    },
+    "4": {
+      "detail": "",
+      "result": "not run"
+    }
+  },
+  "fix_file": "fixes\\ai\\writes-03-update-others\\3\\fix.sql",
+  "notes": [
+    "The AI could not be asked: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+  ],
+  "prompt_file": "fixes\\ai\\writes-03-update-others\\3\\prompt.txt",
+  "works": false
+}

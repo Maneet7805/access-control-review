@@ -1,0 +1,30 @@
+-- Require that an updated row in public.notes still belongs to the caller.
+-- The existing UPDATE policy name isn't known, so it is looked up in pg_policies.
+-- ALTER POLICY keeps each policy's name, roles and USING clause. Only WITH CHECK
+-- changes: any existing check is kept and ANDed with the owner check.
+DO $$
+DECLARE
+  pol record;
+  new_check text;
+BEGIN
+  FOR pol IN
+    SELECT policyname, with_check
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'notes'
+      AND cmd = 'UPDATE'
+  LOOP
+    IF pol.with_check IS NULL THEN
+      new_check := '(owner_id = auth.uid())';
+    ELSE
+      new_check := '(' || pol.with_check || ') AND (owner_id = auth.uid())';
+    END IF;
+
+    EXECUTE format(
+      'ALTER POLICY %I ON public.notes WITH CHECK (%s)',
+      pol.policyname,
+      new_check
+    );
+  END LOOP;
+END
+$$;
