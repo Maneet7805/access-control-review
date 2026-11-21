@@ -13,6 +13,8 @@ The four conditions (`docs/EVALUATION.md` section 6):
 
 If condition 1 fails, conditions 2 to 4 are not run. An attempt can break more than one condition, so the "Broke" columns can add to more than the number of failures. The two sources are never added together.
 
+Note on condition 3: conditions 2 and 3 can fail from the same cause. For `rows-02-profiles-all-authenticated` the key's `own_row_only` allowed entry tests the same behaviour as the planted flaw. So the condition 3 count (9 of 45) is not 9 separate problems.
+
 ## Reference fixes
 
 | Source | Attempts | Successes | Broke 1 | Broke 2 | Broke 3 | Broke 4 |
@@ -48,7 +50,7 @@ Failed attempts (app, attempt number, conditions broken):
 
 Only what the run objects and fix files record. Where they do not say, this page says "cannot tell".
 
-- `rows-02-profiles-all-authenticated`: the fix adds a new owner-only read policy. It drops only that new name. The old policy "any signed-in user" is not dropped, so the old permissive rule stays. The run object says the flaw is "still proved". Why the own-row read check (condition 3) also failed: cannot tell.
+- `rows-02-profiles-all-authenticated`: the fix adds a new owner-only read policy. It drops only that new name. The old policy "any signed-in user" is not dropped, so the old permissive rule stays. The run object says the flaw is "still proved". Why condition 3 also failed: the key's allowed entry for this app is `own_row_only` (user-a must see only their own rows). The old policy is still there, so user-a still sees other users' rows. The check's reason label `own_row_missing` is worded unclearly for this rule: it means rows that are not the user's own were seen, not that the user's own row is missing.
 - `writes-01-visitor-insert`: the fix adds a new insert policy for signed-in users. It drops only that new name. The old policy "anyone adds" is not dropped. The run object says the flaw is "still proved".
 - `functions-02-security-definer-no-check`: the fix changes the function to run with the caller's rights and limits who can call it. The run object says the own-row update through the function did not hold (condition 3). The run object does not say why.
 - `functions-03-default-execute`: the fix revokes the default call right from visitors and gives it to signed-in users. It does not change the function's rights. The run object says a new finding "U1 on note_count" appeared (condition 4) and the own-rows count did not hold (condition 3). Why: cannot tell.
