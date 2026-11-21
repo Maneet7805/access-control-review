@@ -56,15 +56,16 @@ def run_reference(out, fixes="fixes/reference", planted="planted", apps=None):
 
 
 def line(run):
+    name = f'{run["app"]}__{run.get("attempt", 1)}'
     if "cannot_run" in run:
-        return f'{run["app"]}__1: cannot run - {run["cannot_run"]}'
-    return f'{run["app"]}__1: ' + ("ok" if run["works"] else "fails " + "+".join(map(str, run["broken"])))
+        return f'{name}: cannot run - {run["cannot_run"]}'
+    return f'{name}: ' + ("ok" if run["works"] else "fails " + "+".join(map(str, run["broken"])))
 
 
-def totals(runs):
+def totals(runs, source="Reference"):
     n = len(runs)
     broke = {c: sum(c in r["broken"] for r in runs) for c in NAMES}
     cannot = sum("cannot_run" in r for r in runs)
     ok = sum(r["works"] for r in runs)
-    return (f"Reference: {n} attempts, {ok} of {n} succeeded, broke 1: {broke[1]}, broke 2: {broke[2]}, "
+    return (f"{source}: {n} attempts, {ok} of {n} succeeded, broke 1: {broke[1]}, broke 2: {broke[2]}, "
             f"broke 3: {broke[3]}, broke 4: {broke[4]}, could not run: {cannot}")
