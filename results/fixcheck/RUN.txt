@@ -1,0 +1,25 @@
+Fix check run (M6.8)
+Date: 2026-11-21
+Commit (git rev-parse HEAD): a74ba1e92d65bb9813b1b5900d49c17283d15490
+
+AI: a fresh session of the Claude Code command line (claude) for every attempt, as in docs/fixcheck-plan.md section 4.
+Version: 2.1.327 (Claude Code)
+Model: claude-opus-5-5 (the command line's default model; read from the session's own start report; no --model flag given)
+Account: the owner's own sign-in (claude.ai login). No API key, no new account.
+
+Tool-free setup: no tools, no session saved, no settings/CLAUDE.md/memory/skills/MCP/plugins/hooks loaded, run from an empty folder
+outside the repo, with the Claude environment variables of the host removed. Start report of the session showed tools [], mcp_servers [],
+skills [], slash_commands [], only built-in plugins. Test before the first attempt: a prompt asking it to run a shell command got text
+only; nothing ran and the empty folder stayed empty.
+
+Command (the --ask-cmd), run as: python -I <wrapper> with the prompt on stdin, answer on stdout:
+  python -m fix_check run ai --out results/fixcheck/ai --ask-cmd "<venv python> -I <scratch>/ask_claude.py"
+
+Wrapper (ask_claude.py, in a scratch folder outside the repo; <scratch>/empty is an empty folder):
+import os, subprocess, sys
+HERE = os.path.dirname(os.path.abspath(__file__))
+env = {k: v for k, v in os.environ.items() if not k.startswith(("ANTHROPIC", "CLAUDE_CODE"))}
+cmd = [r"C:\Users\Maneet\.local\bin\claude.exe", "-p", "--tools", "", "--no-session-persistence",
+       "--setting-sources", "", "--strict-mcp-config", "--disable-slash-commands"]
+done = subprocess.run(cmd, input=sys.stdin.buffer.read(), stdout=subprocess.PIPE, cwd=os.path.join(HERE, "empty"), env=env, check=True)
+sys.stdout.buffer.write(done.stdout)
