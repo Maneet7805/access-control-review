@@ -23,9 +23,9 @@ How much detail each part has:
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
-- Current milestone: M6
-- Last merged PR: #84
-- Next eligible task: G6 (owner check by Maneet)
+- Current milestone: M7
+- Last merged PR: #85
+- Next eligible task: M7.1 (Decision D6 and licence check)
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -558,7 +558,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `grep -n -i secure docs/fixcheck-results.md` prints nothing. `ruff check .` passes.
   - Done when: `docs/fixcheck-results.md` is merged and its test passes in CI.
   - Stop and ask if: a number cannot be reproduced from the saved runs; the two sources would need to be combined.
-- [ ] **G6 (owner).**
+- [x] **G6 (owner).** Ticked on owner's instruction (G6, signed off by Maneet in the main chat).
   - Depends on: M6.9.
   - Maneet checks the fix check by hand for two attempts: one that passed and one that failed. For each, open the fix file, the run object and the key entry named in the "How to check by hand" section of `docs/fixcheck-results.md`, and the attempt's recheck output. Each condition shown matches the run object, and the failed attempt names the condition it broke. Maneet signs off or lists what to fix.
 
