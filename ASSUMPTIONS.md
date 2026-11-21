@@ -232,3 +232,7 @@ M6.8: launch fault: the first AI launch of 45 attempts used a wrong command path
 M6.8: an earlier launch with a path broken by spaces was stopped by hand before it saved any attempt; its leftover sandbox container was removed. No attempt came of it.
 M6.8: the 45 AI attempts were rerun once, same prompt, same code, after the exact command returned text on a harmless prompt; the rerun had no crash, no repeat and no attempt that could not be checked. The reference run had none either.
 M6.8: `results/fixcheck/score-reference.txt` and `score-ai.txt` hold the per-attempt lines and the totals line printed by the run.
+M6.9: the test parses the page's two table rows and failed-attempt lists and compares them with a recount of the run objects; the attempt totals come from `apps_in_plan` times the plan's attempts per app (1 and 3).
+M6.9: the percentage in the table is rounded to a whole number (33 of 45 is 73%); the count comes first.
+M6.9: the "why" notes on the page use only the saved fix files and run objects; where they do not show a reason, the page says "cannot tell".
+M6.9: the passed example for gate G6 is AI `writes-02-spoofed-owner` attempt 1; the failed example is AI `rows-02-profiles-all-authenticated` attempt 1.
