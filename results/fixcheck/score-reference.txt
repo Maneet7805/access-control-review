@@ -1,0 +1,16 @@
+rows-01-profiles__1: ok
+rows-02-profiles-all-authenticated__1: ok
+writes-01-visitor-insert__1: ok
+writes-02-spoofed-owner__1: ok
+writes-03-update-others__1: ok
+writes-04-delete-others__1: ok
+functions-01-admin-delete-any-user__1: ok
+functions-02-security-definer-no-check__1: ok
+functions-03-default-execute__1: ok
+writes-05-owner-change__1: ok
+columns-01-self-admin__1: ok
+columns-02-self-paid__1: ok
+views-01-bypass__1: ok
+views-02-matview-leak__1: ok
+columns-03-phone-exposed__1: ok
+Reference: 15 attempts, 15 of 15 succeeded, broke 1: 0, broke 2: 0, broke 3: 0, broke 4: 0, could not run: 0

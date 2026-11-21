@@ -1,0 +1,28 @@
+{
+  "answer_file": "fixes\\ai\\rows-01-profiles\\1\\answer.txt",
+  "app": "rows-01-profiles",
+  "attempt": 1,
+  "broken": [],
+  "conditions": {
+    "1": {
+      "detail": "the app builds with the fix",
+      "result": "pass"
+    },
+    "2": {
+      "detail": "no planted flaw is proved any more",
+      "result": "pass"
+    },
+    "3": {
+      "detail": "1 of 1 allowed entries hold",
+      "result": "pass"
+    },
+    "4": {
+      "detail": "no new proved finding",
+      "result": "pass"
+    }
+  },
+  "fix_file": "fixes\\ai\\rows-01-profiles\\1\\fix.sql",
+  "notes": [],
+  "prompt_file": "fixes\\ai\\rows-01-profiles\\1\\prompt.txt",
+  "works": true
+}

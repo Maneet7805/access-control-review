@@ -1,0 +1,39 @@
+```sql
+-- Require that an updated row in "notes" still belongs to the caller.
+-- The existing update policy's name is not known, so it is looked up in the
+-- catalog. Each existing UPDATE policy keeps its USING clause and roles; only
+-- WITH CHECK is changed, and any existing WITH CHECK condition is kept.
+DO $$
+DECLARE
+  p record;
+BEGIN
+  FOR p IN
+    SELECT policyname, with_check
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'notes'
+      AND cmd        = 'UPDATE'
+  LOOP
+    -- Skip if an owner check is already present (keeps the migration re-runnable)
+    IF p.with_check IS NOT NULL
+       AND p.with_check ILIKE '%owner_id%'
+       AND p.with_check ILIKE '%auth.uid()%' THEN
+      CONTINUE;
+    END IF;
+
+    IF p.with_check IS NULL THEN
+      EXECUTE format(
+        'ALTER POLICY %I ON public.notes WITH CHECK (owner_id = (select auth.uid()))',
+        p.policyname
+      );
+    ELSE
+      EXECUTE format(
+        'ALTER POLICY %I ON public.notes WITH CHECK ((%s) AND owner_id = (select auth.uid()))',
+        p.policyname,
+        p.with_check
+      );
+    END IF;
+  END LOOP;
+END
+$$;
+```

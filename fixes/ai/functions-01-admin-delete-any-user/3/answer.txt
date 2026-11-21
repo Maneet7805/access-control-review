@@ -1,0 +1,10 @@
+```sql
+-- Make admin_delete_user callable only by trusted server-side roles.
+-- Without an argument list, this resolves only if the function name is unique in schema public.
+REVOKE EXECUTE ON FUNCTION public."admin_delete_user" FROM PUBLIC, anon, authenticated;
+
+-- Keep the function usable from your server (service_role bypasses client-side access).
+GRANT EXECUTE ON FUNCTION public."admin_delete_user" TO service_role;
+```
+
+After this migration, `admin_delete_user` must be called only from your server using the service role key, never from client code. I didn't add an in-function admin check because I can't see the function's signature or body.

@@ -17,15 +17,15 @@ How much detail each part has:
 | M3 More attacks | Write rows, protected columns, views, functions, plus decoy apps | 9/9 |
 | M4 Evaluation frozen | Scoring rules, held-out test apps and a freeze tag, before any scoring | 5/5 |
 | M5 Compare | Run other tools on the same apps and score everyone | 6/6 |
-| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 7/9 |
+| M6 Fix check | Does the suggested fix remove the flaw without breaking the app | 8/9 |
 | M7 Real apps | Unscored case studies on public apps | 0/4 |
 | M8 Questions | Ask the developer when the code cannot decide | later |
 | M9 Delivery | GitHub Action, then a local web page | later |
 | M10 Handover | Docs, install experience, evidence pack for the report | later |
 
 - Current milestone: M6
-- Last merged PR: #82
-- Next eligible task: M6.8
+- Last merged PR: #83
+- Next eligible task: M6.9
 - Open decisions waiting for Maneet: see section 6
 
 ## 2. The flow, and what each stage hands to the next
@@ -524,7 +524,7 @@ M6 tests the fix step: after a flaw is reported, does a fix remove the flaw with
     - `python scripts/check_no_tuning.py` exits 0. `ruff check .` passes.
   - Done when: the AI path is tested with a stand-in and its prompt is shown to hold only the fix text.
   - Stop and ask if: the AI chosen in the plan needs a paid service or a new account; the fix text alone cannot name the table (that is a result, not a reason to feed the AI more).
-- [ ] **M6.8 Run the fix check on the dev set.**
+- [x] **M6.8 Run the fix check on the dev set.**
   - Depends on: M6.7.
   - Goal: raw outputs and score tables for the reference source and the AI source, every attempt recorded.
   - Files: create `results/fixcheck/reference/`, `results/fixcheck/ai/`, `results/fixcheck/RUN.txt`, `fixes/ai/**`, and the score tables. Bug fixes in `src/fix_check/` found in a dry run only. Do not touch: `src/access_review/`, `planted/`, `heldout/`, `docs/EVALUATION.md`, `docs/fixcheck-plan.md`. Never open `heldout/`. This task uses Docker.

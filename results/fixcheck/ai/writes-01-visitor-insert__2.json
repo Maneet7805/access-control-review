@@ -1,0 +1,30 @@
+{
+  "answer_file": "fixes\\ai\\writes-01-visitor-insert\\2\\answer.txt",
+  "app": "writes-01-visitor-insert",
+  "attempt": 2,
+  "broken": [
+    2
+  ],
+  "conditions": {
+    "1": {
+      "detail": "the app builds with the fix",
+      "result": "pass"
+    },
+    "2": {
+      "detail": "still proved: R3 on notes",
+      "result": "fail"
+    },
+    "3": {
+      "detail": "1 of 1 allowed entries hold",
+      "result": "pass"
+    },
+    "4": {
+      "detail": "no new proved finding",
+      "result": "pass"
+    }
+  },
+  "fix_file": "fixes\\ai\\writes-01-visitor-insert\\2\\fix.sql",
+  "notes": [],
+  "prompt_file": "fixes\\ai\\writes-01-visitor-insert\\2\\prompt.txt",
+  "works": false
+}

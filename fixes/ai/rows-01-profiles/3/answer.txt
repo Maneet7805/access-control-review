@@ -1,0 +1,52 @@
+```sql
+-- Lock down public.profiles so each signed-in user can only access their own rows.
+
+alter table public.profiles enable row level security;
+
+-- Remove any existing policies on profiles. Permissive policies are OR'd together,
+-- so a leftover always-true policy (e.g. USING (true)) would defeat the fixes below.
+-- This removes policies only, not tables or data.
+do $$
+declare
+  pol record;
+begin
+  for pol in
+    select policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'profiles'
+  loop
+    execute format('drop policy if exists %I on public.profiles', pol.policyname);
+  end loop;
+end
+$$;
+
+-- SELECT: signed-in users, own rows only.
+create policy profiles_select_own
+  on public.profiles
+  for select
+  to authenticated
+  using (owner_id = (select auth.uid()));
+
+-- INSERT: signed-in users, and the new row's owner_id must be their own id.
+create policy profiles_insert_own
+  on public.profiles
+  for insert
+  to authenticated
+  with check (owner_id = (select auth.uid()));
+
+-- UPDATE: only own rows, and the changed row must still belong to them.
+create policy profiles_update_own
+  on public.profiles
+  for update
+  to authenticated
+  using (owner_id = (select auth.uid()))
+  with check (owner_id = (select auth.uid()));
+
+-- DELETE: only own rows.
+create policy profiles_delete_own
+  on public.profiles
+  for delete
+  to authenticated
+  using (owner_id = (select auth.uid()));
+```

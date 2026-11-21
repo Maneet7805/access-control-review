@@ -1,0 +1,34 @@
+-- Stop signed-in users from updating accounts.paid.
+-- A column-level REVOKE does nothing while a table-level UPDATE grant exists,
+-- so revoke table-level UPDATE and re-grant UPDATE on every column except "paid".
+-- The column list is read from the catalog, so no other column names are assumed.
+-- service_role and the table owner are unaffected, so server-side code can still set "paid".
+
+begin;
+
+revoke update on table public.accounts from authenticated;
+
+do $$
+declare
+  col_list text;
+begin
+  select string_agg(format('%I', column_name), ', ' order by ordinal_position)
+    into col_list
+  from information_schema.columns
+  where table_schema = 'public'
+    and table_name   = 'accounts'
+    and column_name <> 'paid';
+
+  if col_list is not null then
+    execute format(
+      'grant update (%s) on table public.accounts to authenticated',
+      col_list
+    );
+  end if;
+end
+$$;
+
+-- Note: columns added to public.accounts later are not auto-granted;
+-- grant UPDATE on them explicitly if users should be able to change them.
+
+commit;

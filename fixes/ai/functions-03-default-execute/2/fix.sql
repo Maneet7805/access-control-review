@@ -1,0 +1,8 @@
+-- Remove the default PUBLIC execute privilege and the anon grant on note_count.
+-- (If no overload resolution is needed, the unqualified name works as long as
+-- the function name is unique in the public schema.)
+REVOKE EXECUTE ON FUNCTION public."note_count" FROM PUBLIC, anon;
+
+-- Re-grant only to the roles that need it, so signed-in users and the
+-- backend keep working.
+GRANT EXECUTE ON FUNCTION public."note_count" TO authenticated, service_role;

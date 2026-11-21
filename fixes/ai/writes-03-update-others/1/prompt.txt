@@ -1,0 +1,15 @@
+A developer prototyped an app on Supabase (PostgreSQL). A test tool found access-control problems in the app's database and wrote the fix text below.
+
+Write one SQL migration that applies these fixes.
+
+Rules:
+- Reply with one SQL code block and nothing that needs to be run outside it.
+- You cannot see the app's code. Name only the tables, columns and functions that the fix text names.
+- Do not drop tables and do not delete data.
+- Keep the app working for the people who are meant to use it.
+
+Fix text:
+
+Add a row security policy on "notes" so a user can only change rows where "owner_id" equals their own user id (auth.uid()). Check the update policy for a condition that is always true.
+
+Add a check to the update policy on "notes" so a changed row must still have "owner_id" equal to the user's own user id (auth.uid()). In SQL this is the WITH CHECK part of the policy.

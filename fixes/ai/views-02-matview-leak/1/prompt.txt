@@ -1,0 +1,13 @@
+A developer prototyped an app on Supabase (PostgreSQL). A test tool found access-control problems in the app's database and wrote the fix text below.
+
+Write one SQL migration that applies these fixes.
+
+Rules:
+- Reply with one SQL code block and nothing that needs to be run outside it.
+- You cannot see the app's code. Name only the tables, columns and functions that the fix text names.
+- Do not drop tables and do not delete data.
+- Keep the app working for the people who are meant to use it.
+
+Fix text:
+
+Remove access to the materialized view "all_notes" for anon and authenticated: REVOKE ALL ON public."all_notes" FROM anon, authenticated; Or move it to a schema that is not exposed. A materialized view stores its rows and ignores row security, so security_invoker does not help.

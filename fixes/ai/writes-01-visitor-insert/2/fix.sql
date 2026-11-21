@@ -1,0 +1,15 @@
+-- Ensure row level security is enabled on "notes"
+ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
+
+-- Replace any previous version of this policy so the migration is re-runnable
+DROP POLICY IF EXISTS "notes_insert_own" ON public.notes;
+
+-- Only signed-in users may insert, and only rows they own
+CREATE POLICY "notes_insert_own"
+  ON public.notes
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    auth.uid() IS NOT NULL
+    AND owner_id = auth.uid()
+  );

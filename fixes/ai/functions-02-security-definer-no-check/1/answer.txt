@@ -1,0 +1,29 @@
+```sql
+-- Make set_note_body run with the caller's rights so row-level security
+-- applies to whatever it reads or writes, and limit who can call it.
+-- Loops over every overload so the signature need not be known.
+DO $$
+DECLARE
+  fn regprocedure;
+BEGIN
+  FOR fn IN
+    SELECT p.oid::regprocedure
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE p.proname = 'set_note_body'
+      AND n.nspname = 'public'
+  LOOP
+    -- Run as the caller, not the function owner, so RLS is enforced.
+    EXECUTE format('ALTER FUNCTION %s SECURITY INVOKER', fn);
+
+    -- Anonymous/public callers should not be able to invoke it.
+    EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC', fn);
+    EXECUTE format('REVOKE ALL ON FUNCTION %s FROM anon', fn);
+
+    -- Signed-in users (and the backend service role) keep access.
+    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated', fn);
+    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role', fn);
+  END LOOP;
+END
+$$;
+```
